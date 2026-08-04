@@ -3417,8 +3417,8 @@ mean/nice
         this.openModal(this.$.firstRunOverlay, this.$.firstRunGotItBtn);
       }
 
-        // Start with a Numbers question (preserves original default)
-        this.nextQuestion({ forceModule: 'numbers', keepFeedback: false });
+        // Questions are created when the user enters a dashboard. This keeps
+        // dashboard state from leaking into the next practice session.
         this.runAutomatedChecks({ startup: true });
       } catch (err) {
         console.error('App init failed', err);
@@ -4704,9 +4704,11 @@ mean/nice
       document.body.classList.add('practice-mode');
       this.$.mainCard.classList.add('is-entering');
       setTimeout(() => this.$.mainCard.classList.remove('is-entering'), 260);
-      if (this.currentLevel === 'spanish2') {
-        this.nextQuestion({ keepFeedback: false });
-      }
+      this.currentQuestion = null;
+      this.currentNumber = null;
+      this.practiceRequested = false;
+      this.numbersStatus = '';
+      this.nextQuestion({ keepFeedback: false });
       this.$.revealBtn?.focus?.();
     },
 
