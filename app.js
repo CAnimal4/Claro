@@ -45,6 +45,7 @@
   const LEGACY_STORAGE_KEY = 'spanishPracticeApp_v1';
   const PROFILE_COOKIE_KEY = 'claro_profile_id';
   const APP_VERSION = 2;
+  const ANALYTICS_VERSION = 2;
 
   window.APP_DEBUG = false;
 
@@ -2540,6 +2541,7 @@ mean/nice
       vocabChecksum: '',
       userStats: {},
       profileId: '',
+      analyticsVersion: ANALYTICS_VERSION,
       practiceSessions: [],
       lifetimeStats: { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 }
     };
@@ -2633,7 +2635,7 @@ mean/nice
     }
 
     if (typeof raw.profileId === 'string') out.profileId = raw.profileId.slice(0, 120);
-    if (Array.isArray(raw.practiceSessions)) {
+    if (Number(raw.analyticsVersion) === ANALYTICS_VERSION && Array.isArray(raw.practiceSessions)) {
       out.practiceSessions = raw.practiceSessions.slice(-50).map((session) => ({
         id: String(session?.id || '').slice(0, 80),
         level: session?.level === 'spanish2' ? 'spanish2' : 'spanish1',
@@ -2647,13 +2649,21 @@ mean/nice
         modules: Array.isArray(session?.modules) ? session.modules.map((m) => String(m).slice(0, 80)).slice(0, 30) : []
       })).filter((session) => session.id && session.startedAt);
     }
-    if (isPlainObject(raw.lifetimeStats)) {
+    if (Number(raw.analyticsVersion) === ANALYTICS_VERSION && isPlainObject(raw.lifetimeStats)) {
       out.lifetimeStats = {
         answered: Math.max(0, Number(raw.lifetimeStats.answered) || 0),
         correct: Math.max(0, Number(raw.lifetimeStats.correct) || 0),
         currentStreak: Math.max(0, Number(raw.lifetimeStats.currentStreak) || 0),
         bestStreak: Math.max(0, Number(raw.lifetimeStats.bestStreak) || 0)
       };
+    }
+
+    // Analytics intentionally start fresh after the first implementation and
+    // remain independent from older per-item learning statistics.
+    if (Number(raw.analyticsVersion) !== ANALYTICS_VERSION) {
+      out.analyticsVersion = ANALYTICS_VERSION;
+      out.practiceSessions = [];
+      out.lifetimeStats = { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 };
     }
 
     return out;
@@ -3370,6 +3380,7 @@ mean/nice
     premiumAccessMode: null,
     premiumAccessExpiresAt: 0,
     activeSession: null,
+    sessionQuestionRecorded: false,
 
     // Numbers module (original behavior)
     currentNumber: null,
@@ -4841,14 +4852,6 @@ mean/nice
       persistProfileId(profileId);
       this.state.practiceSessions = Array.isArray(this.state.practiceSessions) ? this.state.practiceSessions : [];
       this.state.lifetimeStats = this.state.lifetimeStats || { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 };
-      if (!this.state.lifetimeStats.answered && Object.keys(this.state.userStats || {}).length) {
-        const totals = Object.values(this.state.userStats).reduce((sum, item) => ({
-          answered: sum.answered + Math.max(0, Number(item.attempts) || 0),
-          correct: sum.correct + Math.max(0, Number(item.correct) || 0)
-        }), { answered: 0, correct: 0 });
-        this.state.lifetimeStats.answered = totals.answered;
-        this.state.lifetimeStats.correct = totals.correct;
-      }
     },
 
     formatPercent(correct, total) {
@@ -4867,11 +4870,13 @@ mean/nice
         bestStreak: 0,
         modules: new Set()
       };
+      this.sessionQuestionRecorded = false;
       this.updateSessionStatsUI();
     },
 
     recordSessionAnswer(correct) {
-      if (!this.activeSession) return;
+      if (!this.activeSession || this.sessionQuestionRecorded) return;
+      this.sessionQuestionRecorded = true;
       const session = this.activeSession;
       session.answered += 1;
       if (correct) {
@@ -4940,6 +4945,7 @@ mean/nice
       });
       this.state.practiceSessions = this.state.practiceSessions.slice(-50);
       this.activeSession = null;
+      this.sessionQuestionRecorded = false;
       this.currentQuestion = null;
       this.closeModal(this.$.endSessionOverlay);
       saveState(this.state);
@@ -5177,6 +5183,7 @@ mean/nice
 
       this.currentQuestion = q;
       this.answered = false;
+      this.sessionQuestionRecorded = false;
 
       this.updateActiveModuleChip(q.module);
       this.renderQuestion(q, { keepFeedback });
