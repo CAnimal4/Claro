@@ -43,6 +43,7 @@
 
   const STORAGE_KEY = 'spanish_app_v2_state';
   const LEGACY_STORAGE_KEY = 'spanishPracticeApp_v1';
+  const PROFILE_COOKIE_KEY = 'claro_profile_id';
   const APP_VERSION = 2;
 
   window.APP_DEBUG = false;
@@ -2537,7 +2538,10 @@ mean/nice
       itemScores: {},
       moduleChoices: { practiceMix: 50, showKeyHintStrip: false, newModulesAnswerMode: 'spelling' },
       vocabChecksum: '',
-      userStats: {}
+      userStats: {},
+      profileId: '',
+      practiceSessions: [],
+      lifetimeStats: { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 }
     };
   }
 
@@ -2628,6 +2632,30 @@ mean/nice
       }
     }
 
+    if (typeof raw.profileId === 'string') out.profileId = raw.profileId.slice(0, 120);
+    if (Array.isArray(raw.practiceSessions)) {
+      out.practiceSessions = raw.practiceSessions.slice(-50).map((session) => ({
+        id: String(session?.id || '').slice(0, 80),
+        level: session?.level === 'spanish2' ? 'spanish2' : 'spanish1',
+        startedAt: String(session?.startedAt || '').slice(0, 40),
+        endedAt: String(session?.endedAt || '').slice(0, 40),
+        durationSeconds: Math.max(0, Number(session?.durationSeconds) || 0),
+        answered: Math.max(0, Number(session?.answered) || 0),
+        correct: Math.max(0, Number(session?.correct) || 0),
+        incorrect: Math.max(0, Number(session?.incorrect) || 0),
+        bestStreak: Math.max(0, Number(session?.bestStreak) || 0),
+        modules: Array.isArray(session?.modules) ? session.modules.map((m) => String(m).slice(0, 80)).slice(0, 30) : []
+      })).filter((session) => session.id && session.startedAt);
+    }
+    if (isPlainObject(raw.lifetimeStats)) {
+      out.lifetimeStats = {
+        answered: Math.max(0, Number(raw.lifetimeStats.answered) || 0),
+        correct: Math.max(0, Number(raw.lifetimeStats.correct) || 0),
+        currentStreak: Math.max(0, Number(raw.lifetimeStats.currentStreak) || 0),
+        bestStreak: Math.max(0, Number(raw.lifetimeStats.bestStreak) || 0)
+      };
+    }
+
     return out;
   }
 
@@ -2660,6 +2688,28 @@ mean/nice
       memoryState = sanitizeState(state);
       console.error('Failed to save state; using memory fallback:', err);
     }
+  }
+
+  function createProfileId() {
+    if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
+    return `profile-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  function readProfileId() {
+    try {
+      const stored = localStorage.getItem('claro_profile_id');
+      if (stored) return stored;
+    } catch (_) {}
+    try {
+      const cookie = document.cookie.split('; ').find((part) => part.startsWith(`${PROFILE_COOKIE_KEY}=`));
+      if (cookie) return decodeURIComponent(cookie.slice(PROFILE_COOKIE_KEY.length + 1));
+    } catch (_) {}
+    return '';
+  }
+
+  function persistProfileId(profileId) {
+    try { localStorage.setItem('claro_profile_id', profileId); } catch (_) {}
+    try { document.cookie = `${PROFILE_COOKIE_KEY}=${encodeURIComponent(profileId)}; max-age=31536000; path=/; SameSite=Lax`; } catch (_) {}
   }
 
   // --------------------------------------------
@@ -3319,6 +3369,7 @@ mean/nice
     mayoPremiumUnlocked: false,
     premiumAccessMode: null,
     premiumAccessExpiresAt: 0,
+    activeSession: null,
 
     // Numbers module (original behavior)
     currentNumber: null,
@@ -3384,6 +3435,7 @@ mean/nice
       this.state.hiddenQuestions = this.state.hiddenItems;
       this.state.moduleChoices = this.state.moduleChoices || { practiceMix: 50, showKeyHintStrip: false, newModulesAnswerMode: 'spelling' };
       this.state.itemScores = this.state.itemScores || {};
+      this.ensureProfileAndAnalytics();
       this.loadPremiumAccess();
       this.setLevel(this.currentLevel);
 
@@ -3492,6 +3544,15 @@ mean/nice
         homeModuleSummary: $('homeModuleSummary'),
         enterPracticeBtn: $('enterPracticeBtn'),
         homeSettingsBtn: $('homeSettingsBtn'),
+        allTimeAccuracy: $('allTimeAccuracy'),
+        allTimeCorrect: $('allTimeCorrect'),
+        allTimeAnsweredLabel: $('allTimeAnsweredLabel'),
+        allTimeCurrentStreak: $('allTimeCurrentStreak'),
+        allTimeBestStreak: $('allTimeBestStreak'),
+        allTimeSessions: $('allTimeSessions'),
+        profileNote: $('profileNote'),
+        sessionHistory: $('sessionHistory'),
+        sessionHistoryEmpty: $('sessionHistoryEmpty'),
         spanish1Tab: $('spanish1Tab'),
         spanish2Tab: $('spanish2Tab'),
         spanish1Panel: $('spanish1Panel'),
@@ -3499,6 +3560,13 @@ mean/nice
         spanish2ModuleSummary: $('spanish2ModuleSummary'),
         backHomeBtn: $('backHomeBtn'),
         mainCard: $('mainCard'),
+        sessionStats: $('sessionStats'),
+        sessionCorrect: $('sessionCorrect'),
+        sessionIncorrect: $('sessionIncorrect'),
+        sessionAnswered: $('sessionAnswered'),
+        sessionAccuracy: $('sessionAccuracy'),
+        sessionStreak: $('sessionStreak'),
+        endSessionBtn: $('endSessionBtn'),
 
         countsRow: $('countsRow'),
 
@@ -3662,6 +3730,13 @@ mean/nice
         feedbackSubmitBtn: $('feedbackSubmitBtn'),
         feedbackStatus: $('feedbackStatus'),
 
+        // end-session confirmation
+        endSessionOverlay: $('endSessionOverlay'),
+        endSessionCloseBtn: $('endSessionCloseBtn'),
+        continueSessionBtn: $('continueSessionBtn'),
+        confirmEndSessionBtn: $('confirmEndSessionBtn'),
+        endSessionSummary: $('endSessionSummary'),
+
         // numbers guide modal
         numbersGuideOverlay: $('numbersGuideOverlay'),
         numbersGuideCloseBtn: $('numbersGuideCloseBtn'),
@@ -3692,7 +3767,7 @@ mean/nice
       this.$.settingsBtn.addEventListener('click', () => this.openSettings());
       this.$.enterPracticeBtn.addEventListener('click', () => this.enterPractice());
       this.$.homeSettingsBtn.addEventListener('click', () => this.openSettings());
-      this.$.backHomeBtn.addEventListener('click', () => this.returnHome());
+      this.$.backHomeBtn.addEventListener('click', () => this.requestEndSession());
       this.$.spanish1Tab.addEventListener('click', () => this.setLevel('spanish1'));
       this.$.spanish2Tab.addEventListener('click', () => this.setLevel('spanish2'));
       this.$.settingsCloseBtn.addEventListener('click', () => this.closeModal(this.$.settingsOverlay));
@@ -3721,6 +3796,15 @@ mean/nice
         if (e.target === this.$.feedbackOverlay) this.closeModal(this.$.feedbackOverlay);
       });
       this.$.feedbackForm.addEventListener('submit', (e) => this.submitFeedback(e));
+
+      // Session lifecycle
+      this.$.endSessionBtn.addEventListener('click', () => this.requestEndSession());
+      this.$.endSessionCloseBtn.addEventListener('click', () => this.closeModal(this.$.endSessionOverlay));
+      this.$.continueSessionBtn.addEventListener('click', () => this.closeModal(this.$.endSessionOverlay));
+      this.$.confirmEndSessionBtn.addEventListener('click', () => this.finishPracticeSession());
+      this.$.endSessionOverlay.addEventListener('click', (e) => {
+        if (e.target === this.$.endSessionOverlay) this.closeModal(this.$.endSessionOverlay);
+      });
       this.$.toggle_mayo_madness.addEventListener('click', (e) => e.stopPropagation());
       this.$.toggle_mayo_madness.addEventListener('change', () => {
         if (!this.hasPremiumAccess()) {
@@ -4246,6 +4330,7 @@ mean/nice
       // Close in priority order
       const modals = [
         this.$.hiddenOverlay,
+        this.$.endSessionOverlay,
         this.$.feedbackOverlay,
         this.$.premiumOverlay,
         this.$.settingsOverlay,
@@ -4712,6 +4797,7 @@ mean/nice
       this.currentNumber = null;
       this.practiceRequested = false;
       this.numbersStatus = '';
+      this.startPracticeSession();
       this.nextQuestion({ keepFeedback: false });
       this.$.revealBtn?.focus?.();
     },
@@ -4749,6 +4835,150 @@ mean/nice
       }
     },
 
+    ensureProfileAndAnalytics() {
+      const profileId = this.state.profileId || readProfileId() || createProfileId();
+      this.state.profileId = profileId;
+      persistProfileId(profileId);
+      this.state.practiceSessions = Array.isArray(this.state.practiceSessions) ? this.state.practiceSessions : [];
+      this.state.lifetimeStats = this.state.lifetimeStats || { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 };
+      if (!this.state.lifetimeStats.answered && Object.keys(this.state.userStats || {}).length) {
+        const totals = Object.values(this.state.userStats).reduce((sum, item) => ({
+          answered: sum.answered + Math.max(0, Number(item.attempts) || 0),
+          correct: sum.correct + Math.max(0, Number(item.correct) || 0)
+        }), { answered: 0, correct: 0 });
+        this.state.lifetimeStats.answered = totals.answered;
+        this.state.lifetimeStats.correct = totals.correct;
+      }
+    },
+
+    formatPercent(correct, total) {
+      return total ? `${Math.round((correct / total) * 100)}%` : '0%';
+    },
+
+    startPracticeSession() {
+      this.activeSession = {
+        id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        level: this.currentLevel === 'spanish2' ? 'spanish2' : 'spanish1',
+        startedAt: new Date().toISOString(),
+        answered: 0,
+        correct: 0,
+        incorrect: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        modules: new Set()
+      };
+      this.updateSessionStatsUI();
+    },
+
+    recordSessionAnswer(correct) {
+      if (!this.activeSession) return;
+      const session = this.activeSession;
+      session.answered += 1;
+      if (correct) {
+        session.correct += 1;
+        session.currentStreak += 1;
+        session.bestStreak = Math.max(session.bestStreak, session.currentStreak);
+      } else {
+        session.incorrect += 1;
+        session.currentStreak = 0;
+      }
+      if (this.currentQuestion?.module) session.modules.add(this.currentQuestion.module);
+
+      const lifetime = this.state.lifetimeStats;
+      lifetime.answered += 1;
+      if (correct) {
+        lifetime.correct += 1;
+        lifetime.currentStreak += 1;
+        lifetime.bestStreak = Math.max(lifetime.bestStreak, lifetime.currentStreak);
+      } else {
+        lifetime.currentStreak = 0;
+      }
+      this.updateSessionStatsUI();
+      this.updateDashboardAnalyticsUI();
+      this.saveSoon();
+    },
+
+    updateSessionStatsUI() {
+      const session = this.activeSession;
+      if (!this.$?.sessionStats) return;
+      this.$.sessionStats.style.display = session ? 'grid' : 'none';
+      if (!session) return;
+      this.$.sessionCorrect.textContent = String(session.correct);
+      this.$.sessionIncorrect.textContent = String(session.incorrect);
+      this.$.sessionAnswered.textContent = String(session.answered);
+      this.$.sessionAccuracy.textContent = this.formatPercent(session.correct, session.answered);
+      this.$.sessionStreak.textContent = String(session.currentStreak);
+    },
+
+    requestEndSession() {
+      if (!this.activeSession) {
+        this.returnHome();
+        return;
+      }
+      const session = this.activeSession;
+      const accuracy = this.formatPercent(session.correct, session.answered);
+      this.$.endSessionSummary.innerHTML = `<strong>${session.correct} correct</strong> · ${session.incorrect} incorrect · ${session.answered} answered · ${accuracy} accuracy`;
+      this.openModal(this.$.endSessionOverlay, this.$.continueSessionBtn);
+    },
+
+    finishPracticeSession() {
+      if (!this.activeSession) return;
+      const session = this.activeSession;
+      const endedAt = new Date();
+      const startedAt = new Date(session.startedAt);
+      this.state.practiceSessions.push({
+        id: session.id,
+        level: session.level,
+        startedAt: session.startedAt,
+        endedAt: endedAt.toISOString(),
+        durationSeconds: Math.max(0, Math.round((endedAt - startedAt) / 1000)),
+        answered: session.answered,
+        correct: session.correct,
+        incorrect: session.incorrect,
+        bestStreak: session.bestStreak,
+        modules: Array.from(session.modules)
+      });
+      this.state.practiceSessions = this.state.practiceSessions.slice(-50);
+      this.activeSession = null;
+      this.currentQuestion = null;
+      this.closeModal(this.$.endSessionOverlay);
+      saveState(this.state);
+      this.updateSessionStatsUI();
+      this.returnHome();
+    },
+
+    updateDashboardAnalyticsUI() {
+      if (!this.$?.allTimeAccuracy || !this.state) return;
+      const stats = this.state.lifetimeStats || { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 };
+      this.$.allTimeAccuracy.textContent = this.formatPercent(stats.correct, stats.answered);
+      this.$.allTimeCorrect.textContent = String(stats.correct);
+      this.$.allTimeAnsweredLabel.textContent = `of ${stats.answered} answered`;
+      this.$.allTimeCurrentStreak.textContent = String(stats.currentStreak);
+      this.$.allTimeBestStreak.textContent = String(stats.bestStreak);
+      this.$.allTimeSessions.textContent = String(this.state.practiceSessions.length);
+      this.$.profileNote.textContent = this.state.profileId ? 'Saved in this browser' : 'Local progress';
+      this.renderSessionHistory();
+    },
+
+    renderSessionHistory() {
+      const list = this.$?.sessionHistory;
+      const empty = this.$?.sessionHistoryEmpty;
+      if (!list || !empty || !this.state) return;
+      list.innerHTML = '';
+      const sessions = [...(this.state.practiceSessions || [])].reverse();
+      empty.style.display = sessions.length ? 'none' : '';
+      for (const session of sessions) {
+        const row = document.createElement('article');
+        row.className = 'session-history-row';
+        const date = new Date(session.endedAt || session.startedAt);
+        const dateLabel = Number.isNaN(date.getTime()) ? 'Practice session' : date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+        const levelLabel = session.level === 'spanish2' ? 'Spanish 2 · Summer Prep' : 'Spanish 1';
+        const modules = session.modules?.length ? session.modules.join(', ') : 'All enabled modules';
+        row.innerHTML = `<div class="session-history-main"><strong>${levelLabel}</strong><small>${dateLabel}</small><small>${modules}</small></div><div class="session-history-result"><strong>${this.formatPercent(session.correct, session.answered)}</strong><small>${session.correct} correct · ${session.incorrect} incorrect · ${session.answered} answered</small></div>`;
+        list.appendChild(row);
+      }
+    },
+
     returnHome() {
       if (!this.$?.homeCard || !this.$?.mainCard) return;
       this.$.homeCard.style.display = 'block';
@@ -4756,6 +4986,7 @@ mean/nice
       document.body.classList.add('home-mode');
       document.body.classList.remove('practice-mode');
       this.updateHomeSummary();
+      this.updateDashboardAnalyticsUI();
     },
 
     updateHomeSummary() {
@@ -5076,6 +5307,7 @@ mean/nice
       const correct = buildAcceptableAnswerSet([expected]).has(normalizeLoose(user));
       this.bumpStats(q.id, correct);
       this.adjustItemScore(q.id, correct);
+      this.recordSessionAnswer(correct);
 
       if (correct) {
         const accentNote = this.accentNoteIfNeeded(user, expected);
@@ -5558,6 +5790,7 @@ mean/nice
       // Stats for MCQ too
       if (q.mode === 'mcq') this.bumpStats(q.id, correct);
       this.adjustItemScore(q.id, correct);
+      this.recordSessionAnswer(correct);
 
       this.answered = (q.mode === 'mcq') ? true : !!correct;
       this.saveSoon();

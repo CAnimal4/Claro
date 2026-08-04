@@ -91,6 +91,19 @@ Developer note:
         <button class="btn primary home-start-btn" id="enterPracticeBtn">Enter practice session <span aria-hidden="true">→</span></button>
         <button class="btn home-settings-btn" id="homeSettingsBtn">Choose modules &amp; settings</button>
       </div>
+      <section class="dashboard-analytics" id="dashboardAnalytics" aria-labelledby="analyticsTitle">
+        <div class="dashboard-section-heading">
+          <div><span class="home-overview-label">Your progress</span><h2 id="analyticsTitle">A clear picture of your practice</h2></div>
+          <small id="profileNote">Saved in this browser</small>
+        </div>
+        <div class="analytics-grid">
+          <div class="analytics-card"><span>Accuracy</span><strong id="allTimeAccuracy">0%</strong><small>all-time correct</small></div>
+          <div class="analytics-card"><span>Correct</span><strong id="allTimeCorrect">0</strong><small id="allTimeAnsweredLabel">of 0 answered</small></div>
+          <div class="analytics-card"><span>Current streak</span><strong id="allTimeCurrentStreak">0</strong><small>correct in a row</small></div>
+          <div class="analytics-card"><span>Best streak</span><strong id="allTimeBestStreak">0</strong><small>personal best</small></div>
+          <div class="analytics-card"><span>Sessions</span><strong id="allTimeSessions">0</strong><small>completed sessions</small></div>
+        </div>
+      </section>
       <div class="home-overview level-panel" id="spanish1Panel" role="tabpanel">
         <div class="home-overview-card">
           <span class="home-overview-label">Ready to practice</span>
@@ -139,6 +152,11 @@ Developer note:
         <summary>How it works</summary>
         <p>Choose your modules in Settings, enter a session, answer at your pace, and use Next whenever you’re ready. You can change settings at any time.</p>
       </details>
+      <section class="session-history" aria-labelledby="historyTitle">
+        <div class="dashboard-section-heading"><div><span class="home-overview-label">History</span><h2 id="historyTitle">Practice sessions</h2></div><small>Most recent first</small></div>
+        <div id="sessionHistory" class="session-history-list"></div>
+        <p id="sessionHistoryEmpty" class="session-history-empty">Complete a session and it will appear here.</p>
+      </section>
     </main>
 
     <main class="practice-card card" id="mainCard">
@@ -152,6 +170,14 @@ Developer note:
           <button class="back-home-btn" id="backHomeBtn" aria-label="Back to home">← Home</button>
         </div>
       </div>
+      <section class="session-stats" id="sessionStats" aria-label="Current session progress">
+        <div class="session-stat"><span>Correct</span><strong id="sessionCorrect">0</strong></div>
+        <div class="session-stat"><span>Incorrect</span><strong id="sessionIncorrect">0</strong></div>
+        <div class="session-stat"><span>Answered</span><strong id="sessionAnswered">0</strong></div>
+        <div class="session-stat session-stat-accent"><span>Accuracy</span><strong id="sessionAccuracy">0%</strong></div>
+        <div class="session-stat"><span>Streak</span><strong id="sessionStreak">0</strong></div>
+        <button class="btn small end-session-btn" id="endSessionBtn">End session</button>
+      </section>
 
       <div class="only-row-wrap">
         <div class="filter-label">Practice focus</div>
@@ -619,6 +645,23 @@ Developer note:
         </div>
         <div class="feedback neutral" id="feedbackStatus" aria-live="polite">Your feedback will be sent securely.</div>
       </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="endSessionOverlay" role="dialog" aria-modal="true" aria-labelledby="endSessionTitle">
+    <div class="modal end-session-modal">
+      <div class="modal-head">
+        <div>
+          <div style="font-weight:900; font-size:1.05rem" id="endSessionTitle">End this session?</div>
+          <div class="muted small">Your progress will be saved to your dashboard.</div>
+        </div>
+        <button class="icon-btn" id="endSessionCloseBtn" aria-label="Keep practicing">✕</button>
+      </div>
+      <div class="end-session-summary" id="endSessionSummary"></div>
+      <div class="feedback-form-actions">
+        <button class="btn ghost" id="continueSessionBtn">Keep practicing</button>
+        <button class="btn primary" id="confirmEndSessionBtn">End &amp; save session</button>
+      </div>
     </div>
   </div>
 
