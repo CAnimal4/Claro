@@ -4338,6 +4338,10 @@ mean/nice
       return true;
     },
 
+    isQuestionAvailableWithoutPremium(question) {
+      return !question || !isPremiumQuestion(question.module, question.id) || this.hasPremiumAccess();
+    },
+
     openPremiumAccess() {
       this.$.premiumPasswordInput.value = '';
       const unlocked = this.hasPremiumAccess();
