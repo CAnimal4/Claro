@@ -4577,28 +4577,20 @@ mean/nice
         this.$.feedbackMessage.focus();
         return;
       }
-      if (location.protocol === 'file:') {
-        this.setFeedbackStatus('Feedback sending is available after this app is deployed online.', 'neutral');
-        return;
-      }
-
       const submit = this.$.feedbackSubmitBtn;
       submit.disabled = true;
       submit.textContent = 'Sending…';
       this.setFeedbackStatus('Sending feedback…', 'neutral');
       try {
-        const response = await fetch('https://formspree.io/f/xjybbapr', {
+        const formData = new FormData(this.$.feedbackForm);
+        formData.append('_subject', `Claro feedback · ${this.currentLevel || 'Spanish 1'}`);
+        formData.append('level', this.currentLevel || 'spanish1');
+        formData.append('module', this.currentQuestion?.module || 'dashboard');
+        formData.append('url', window.location.href);
+        const response = await fetch(this.$.feedbackForm.action, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({
-            message,
-            email,
-            _gotcha: this.$.feedbackWebsite.value,
-            _subject: `Claro feedback · ${this.currentLevel || 'Spanish 1'}`,
-            level: this.currentLevel || 'spanish1',
-            module: this.currentQuestion?.module || 'dashboard',
-            url: window.location.href
-          })
+          headers: { Accept: 'application/json' },
+          body: formData
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || 'Unable to send feedback.');
