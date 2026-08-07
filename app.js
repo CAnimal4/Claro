@@ -2065,6 +2065,28 @@ mean/nice
 
   function pickByWeakScore(arr, scoreMap, recencySet = new Set()) {
     if (!arr.length) return null;
+    const practiceApp = scoreMap?.__practiceApp;
+    if (practiceApp?.state?.settings?.prioritizeWeakQuestions) {
+      const stats = practiceApp.state.userStats || {};
+      const weights = arr.map((item) => {
+        const history = stats[item.id];
+        const attempts = Number(history?.attempts) || 0;
+        const correct = Math.min(attempts, Number(history?.correct) || 0);
+        const accuracy = attempts ? correct / attempts : 0.5;
+        const evidence = Math.min(1, attempts / 5);
+        const weakness = (1 - accuracy) * (0.65 + evidence * 0.35);
+        const exploration = attempts ? 0.12 : 0.3;
+        const recentPenalty = recencySet.has(item.id) ? 0.45 : 1;
+        return Math.max(0.08, weakness + exploration) * recentPenalty;
+      });
+      const total = weights.reduce((sum, weight) => sum + weight, 0);
+      let random = Math.random() * total;
+      for (let i = 0; i < arr.length; i++) {
+        random -= weights[i];
+        if (random <= 0) return arr[i];
+      }
+      return arr[arr.length - 1];
+    }
     const weights = arr.map((item) => {
       const s = scoreMap[item.id] ?? 2;
       const weak = 1 + (5 - s);
@@ -2079,6 +2101,7 @@ mean/nice
     }
     return arr[arr.length - 1];
   }
+
 
   function personIndex(code) {
     return PERSONS.findIndex(p => p.code === code);
@@ -2531,12 +2554,14 @@ mean/nice
         numbersRequireTyping: false,
         numbersSequential: false,
         vocabMode: 'weighted',
+        prioritizeWeakQuestions: true,
         firstRunSeen: false,
         showKeyHintStrip: false
       },
       hiddenItems: {},
       hiddenQuestions: {},
       itemScores: {},
+      answerHistory: {},
       moduleChoices: { practiceMix: 50, showKeyHintStrip: false, newModulesAnswerMode: 'spelling' },
       vocabChecksum: '',
       userStats: {},
@@ -2587,6 +2612,7 @@ mean/nice
       if (typeof s.numbersRequireTyping === 'boolean') out.settings.numbersRequireTyping = s.numbersRequireTyping;
       if (typeof s.numbersSequential === 'boolean') out.settings.numbersSequential = s.numbersSequential;
       if (s.vocabMode === 'uniform' || s.vocabMode === 'weighted') out.settings.vocabMode = s.vocabMode;
+      if (typeof s.prioritizeWeakQuestions === 'boolean') out.settings.prioritizeWeakQuestions = s.prioritizeWeakQuestions;
       if (typeof s.firstRunSeen === 'boolean') out.settings.firstRunSeen = s.firstRunSeen;
       if (typeof s.showKeyHintStrip === 'boolean') out.settings.showKeyHintStrip = s.showKeyHintStrip;
     }
@@ -2606,6 +2632,17 @@ mean/nice
       for (const [k, v] of Object.entries(raw.itemScores)) {
         const n = Number(v);
         if (typeof k === 'string' && Number.isFinite(n)) out.itemScores[k] = Math.max(0, Math.min(5, Math.round(n)));
+      }
+    }
+
+    if (isPlainObject(raw.answerHistory)) {
+      out.answerHistory = {};
+      for (const [id, history] of Object.entries(raw.answerHistory)) {
+        if (!isPlainObject(history)) continue;
+        out.answerHistory[id] = {
+          recent: Array.isArray(history.recent) ? history.recent.filter(x => typeof x === 'string').slice(-8) : [],
+          answers: isPlainObject(history.answers) ? history.answers : {}
+        };
       }
     }
 
@@ -3446,6 +3483,8 @@ mean/nice
       this.state.hiddenQuestions = this.state.hiddenItems;
       this.state.moduleChoices = this.state.moduleChoices || { practiceMix: 50, showKeyHintStrip: false, newModulesAnswerMode: 'spelling' };
       this.state.itemScores = this.state.itemScores || {};
+      this.state.answerHistory = this.state.answerHistory || {};
+      Object.defineProperty(this.state.itemScores, '__practiceApp', { value: this, enumerable: false, configurable: true });
       this.ensureProfileAndAnalytics();
       this.loadPremiumAccess();
       this.setLevel(this.currentLevel);
@@ -4052,6 +4091,10 @@ mean/nice
         this.$.practiceMixValue.textContent = String(v);
         this.saveSoon();
       });
+      this.$.prioritizeWeakQuestions.addEventListener('change', () => {
+        this.state.settings.prioritizeWeakQuestions = this.$.prioritizeWeakQuestions.checked;
+        this.saveSoon();
+      });
       const newModulesModeRadios = [this.$.newModulesMode_spelling, this.$.newModulesMode_mixed];
       for (const r of newModulesModeRadios) {
         if (!r) continue;
@@ -4210,6 +4253,7 @@ mean/nice
       // Vocab mode
       if (this.state.settings.vocabMode === 'uniform') this.$.vocab_uniform.checked = true;
       else this.$.vocab_weighted.checked = true;
+      this.$.prioritizeWeakQuestions.checked = this.state.settings.prioritizeWeakQuestions !== false;
 
       this.$.practiceMixRange.value = String(this.state.moduleChoices.practiceMix ?? 50);
       this.$.practiceMixValue.textContent = String(this.state.moduleChoices.practiceMix ?? 50);
@@ -5036,6 +5080,46 @@ mean/nice
     // --------------------------------------------
     // Rotation / next question
     // --------------------------------------------
+    prepareAnswerTarget(q) {
+      q.differentTarget = false;
+      q.targetAnswerNorm = '';
+      if (q.mode !== 'text' || !q.acceptable || q.acceptable.size < 2 || !q.id) return q;
+      const variants = Array.from(new Set([
+        ...(Array.isArray(q.answerVariants) ? q.answerVariants : []),
+        q.expectedDisplay,
+        ...Array.from(q.acceptable)
+      ].map(value => normalizeLoose(value)).filter(Boolean)));
+      if (variants.length < 2) return q;
+      q.answerVariants = variants;
+      const history = this.state.answerHistory[q.id] || { recent: [], answers: {} };
+      const practiced = variants.filter(answer => (history.answers?.[answer]?.correct || 0) > 0);
+      const unpracticed = variants.filter(answer => !practiced.includes(answer));
+      const last = history.recent?.[history.recent.length - 1];
+      const target = last && unpracticed.find(answer => answer !== last)
+        || unpracticed[0]
+        || variants.find(answer => answer !== last);
+      if (target && last && target !== last && practiced.length < variants.length) {
+        q.targetAnswerNorm = target;
+        q.differentTarget = true;
+        q.targetAnswerDisplay = (q.answerVariants || []).find(answer => normalizeLoose(answer) === target) || target;
+        q.expectedDisplay = q.targetAnswerDisplay;
+      }
+      return q;
+    },
+
+    recordAnswerVariant(q, answer) {
+      if (!q?.id || !q.acceptable || !answer) return;
+      const normalized = normalizeLoose(answer);
+      if (!q.acceptable.has(normalized)) return;
+      const history = this.state.answerHistory[q.id] || { recent: [], answers: {} };
+      const entry = history.answers[normalized] || { attempts: 0, correct: 0 };
+      entry.attempts += 1;
+      entry.correct += 1;
+      history.answers[normalized] = entry;
+      history.recent = [...(history.recent || []), normalized].slice(-8);
+      this.state.answerHistory[q.id] = history;
+    },
+
     setSoloMode(moduleKey) {
       if ((moduleKey === MAYO_MADNESS_KEY || isMayoMadnessKey(moduleKey)) && !this.hasPremiumAccess()) {
         if (this.$.soloSelect) this.$.soloSelect.value = '';
@@ -5184,6 +5268,7 @@ mean/nice
       this.currentQuestion = q;
       this.answered = false;
       this.sessionQuestionRecorded = false;
+      this.prepareAnswerTarget(q);
 
       this.updateActiveModuleChip(q.module);
       this.renderQuestion(q, { keepFeedback });
@@ -5364,7 +5449,9 @@ mean/nice
       const mode = this.state.settings.vocabMode || 'weighted';
 
       let pick = null;
-      if (mode === 'uniform') {
+      if (this.state.settings.prioritizeWeakQuestions) {
+        pick = pickByWeakScore(pool, this.state.itemScores, recent);
+      } else if (mode === 'uniform') {
         pick = pickRandom(pool);
       } else {
         // Weighted by normalized complexity, with jitter and mild recency penalty.
@@ -5393,6 +5480,7 @@ mean/nice
         prompt: `Translate to Spanish: <strong>${escapeHtml(pick.en)}</strong>`,
         expectedDisplay: pick.sp,
         acceptable: pick.acceptable,
+        answerVariants: pick.variants || [pick.sp],
         hasAccent: /[áéíóúñüÁÉÍÓÚÑÜ]/.test(pick.sp)
       };
     },
@@ -5617,6 +5705,7 @@ mean/nice
       const title = MODULES.find(m => m.key === q.module)?.name || 'Question';
       this.$.qaTitle.textContent = title;
       this.$.qaPrompt.innerHTML = q.prompt || '';
+      this.$.practiceIndicator.textContent = q.differentTarget ? 'Different than last time' : '';
 
       // Reset UI
       this.$.mcqBlock.style.display = 'none';
@@ -5783,12 +5872,17 @@ mean/nice
           correct = q.acceptable && q.acceptable.has(userNorm);
         }
 
+        const validAnswer = correct && q.acceptable && q.acceptable.has(userNorm);
+        const targetMissed = validAnswer && q.targetAnswerNorm && userNorm !== q.targetAnswerNorm;
+        if (validAnswer) this.recordAnswerVariant(q, user);
+
         // Stats
         this.bumpStats(q.id, correct);
 
         if (correct) {
           const accentNote = this.accentNoteIfNeeded(user, q.expectedDisplay);
-          this.setFeedback(`✅ Correct: <strong>${escapeHtml(q.expectedDisplay)}</strong>${accentNote ? `<br><small>${accentNote}</small>` : ''}<br><small>${q.explanation || ''}</small>`, 'good');
+          const targetNote = targetMissed ? '<br><small>This was valid. This exercise was practicing a different answer.</small>' : '';
+          this.setFeedback(`✅ Correct: <strong>${escapeHtml(user.trim())}</strong>${targetNote}${accentNote ? `<br><small>${accentNote}</small>` : ''}<br><small>${q.explanation || ''}</small>`, 'good');
         } else {
           this.setFeedback(`❌ Not quite. Correct answer: <strong>${escapeHtml(q.expectedDisplay)}</strong><br><small>${q.explanation || ''}</small><br><small>You must type the correct answer before continuing.</small>`, 'bad');
         }

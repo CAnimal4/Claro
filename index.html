@@ -539,6 +539,10 @@ Developer note:
             <input type="range" id="practiceMixRange" min="0" max="100" value="50" aria-label="Practice mix bias slider" />
             <output id="practiceMixValue">50</output>
           </div>
+          <div class="row">
+            <label class="btn small ghost"><input type="checkbox" id="prioritizeWeakQuestions" aria-label="Prioritize weaker questions" />&nbsp;Review weaker questions first</label>
+          </div>
+          <p class="small muted">On by default. Questions with lower accuracy are more likely to appear; new questions still get occasional practice.</p>
           <h3>New modules answer mode</h3>
           <div class="row">
             <label class="btn small ghost"><input type="radio" name="newModulesAnswerMode" value="spelling" id="newModulesMode_spelling" aria-label="Spelling only mode for new modules" />&nbsp;Spelling only (default)</label>
