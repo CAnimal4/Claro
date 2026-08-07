@@ -621,6 +621,16 @@ Developer note:
         <button class="btn primary" id="premiumSubmitBtn" aria-label="Unlock premium access">Unlock</button>
       </div>
       <div class="feedback neutral" id="premiumFeedback" aria-live="polite">Enter a password to unlock premium.</div>
+      <div class="premium-request-divider"><span>Need access?</span></div>
+      <button class="btn premium-request-toggle" id="premiumRequestToggle" type="button">Request premium access</button>
+      <form class="premium-request-form" id="premiumRequestForm" action="https://formspree.io/f/xaewqnja" method="POST" hidden>
+        <p class="small muted">Send a request and we’ll discuss access by email.</p>
+        <label class="premium-field" for="premiumRequestName"><span>Name</span><input id="premiumRequestName" name="name" type="text" autocomplete="name" required /></label>
+        <label class="premium-field" for="premiumRequestEmail"><span>Email</span><input id="premiumRequestEmail" name="email" type="email" autocomplete="email" required /></label>
+        <input type="hidden" name="_subject" value="Claro premium access request" />
+        <button class="btn primary" id="premiumRequestSubmit" type="submit">Send request</button>
+        <div class="feedback neutral" id="premiumRequestFeedback" aria-live="polite"></div>
+      </form>
     </div>
   </div>
 

@@ -3768,6 +3768,12 @@ mean/nice
         premiumPasswordInput: $('premiumPasswordInput'),
         premiumSubmitBtn: $('premiumSubmitBtn'),
         premiumFeedback: $('premiumFeedback'),
+        premiumRequestToggle: $('premiumRequestToggle'),
+        premiumRequestForm: $('premiumRequestForm'),
+        premiumRequestName: $('premiumRequestName'),
+        premiumRequestEmail: $('premiumRequestEmail'),
+        premiumRequestSubmit: $('premiumRequestSubmit'),
+        premiumRequestFeedback: $('premiumRequestFeedback'),
 
         // feedback
         feedbackBtn: $('feedbackBtn'),
@@ -3838,6 +3844,12 @@ mean/nice
           this.submitPremiumPassword();
         }
       });
+      this.$.premiumRequestToggle.addEventListener('click', () => {
+        const form = this.$.premiumRequestForm;
+        form.hidden = !form.hidden;
+        if (!form.hidden) this.$.premiumRequestName.focus();
+      });
+      this.$.premiumRequestForm.addEventListener('submit', (e) => this.submitPremiumRequest(e));
 
       // Feedback
       this.$.feedbackBtn.addEventListener('click', () => this.openFeedback());
@@ -4485,10 +4497,40 @@ mean/nice
 
     openPremiumAccess() {
       this.$.premiumPasswordInput.value = '';
+      this.$.premiumRequestForm.reset();
+      this.$.premiumRequestForm.hidden = true;
+      this.$.premiumRequestFeedback.textContent = '';
       const unlocked = this.hasPremiumAccess();
       const status = this.premiumAccessMode === 'temporary' ? ' for today' : '';
       this.setPremiumFeedback(unlocked ? `Premium is already active${status}.` : 'Unlock advanced materials and the full question pools.', unlocked ? 'good' : 'neutral');
       this.openModal(this.$.premiumOverlay, this.$.premiumPasswordInput);
+    },
+
+    async submitPremiumRequest(event) {
+      event.preventDefault();
+      const form = this.$.premiumRequestForm;
+      const submit = this.$.premiumRequestSubmit;
+      const status = this.$.premiumRequestFeedback;
+      if (!form.reportValidity()) return;
+      submit.disabled = true;
+      status.className = 'feedback neutral';
+      status.textContent = 'Sending your request…';
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' }
+        });
+        if (!response.ok) throw new Error('Request failed');
+        status.className = 'feedback good';
+        status.textContent = 'Request sent. We’ll discuss access by email.';
+        form.reset();
+      } catch (error) {
+        status.className = 'feedback bad';
+        status.textContent = 'Could not send the request. Please try again.';
+      } finally {
+        submit.disabled = false;
+      }
     },
 
     setPremiumFeedback(html, tone) {
