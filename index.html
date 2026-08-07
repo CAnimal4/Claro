@@ -348,6 +348,14 @@ Developer note:
         <button class="icon-btn" id="settingsCloseBtn" aria-label="Close settings">✕</button>
       </div>
 
+      <div class="settings-quick-toggle toggle">
+        <div>
+          <div class="label">Review weaker questions first</div>
+          <div class="desc">Prioritizes questions you miss while still cycling through the full set.</div>
+        </div>
+        <label><input type="checkbox" id="prioritizeWeakQuestions" aria-label="Prioritize weaker questions" /><span class="switch" aria-hidden="true"></span></label>
+      </div>
+
       <details class="settings-accordion" id="moduleSettingsSection" open>
         <summary>Modules</summary>
         <div class="accordion-inner">
@@ -539,10 +547,6 @@ Developer note:
             <input type="range" id="practiceMixRange" min="0" max="100" value="50" aria-label="Practice mix bias slider" />
             <output id="practiceMixValue">50</output>
           </div>
-          <div class="row">
-            <label class="btn small ghost"><input type="checkbox" id="prioritizeWeakQuestions" aria-label="Prioritize weaker questions" />&nbsp;Review weaker questions first</label>
-          </div>
-          <p class="small muted">On by default. Questions with lower accuracy are more likely to appear; new questions still get occasional practice.</p>
           <h3>New modules answer mode</h3>
           <div class="row">
             <label class="btn small ghost"><input type="radio" name="newModulesAnswerMode" value="spelling" id="newModulesMode_spelling" aria-label="Spelling only mode for new modules" />&nbsp;Spelling only (default)</label>
