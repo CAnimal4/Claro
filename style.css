@@ -660,6 +660,8 @@
     }
     @media (prefers-reduced-motion: reduce){
       .feedback.flash-good,.feedback.flash-bad{animation:none}
+      .analytics-card,.analytics-card:hover{transition:none; transform:none}
+      .session-stat-streak.streak-flare strong,.session-stat-streak.streak-flare::before,.session-stat-streak.streak-flare::after,.session-stats.streak-active,.session-stats.streak-active::before,.session-stats.streak-active::after{animation:none}
     }
 
     /* Focused practice refresh */
@@ -802,10 +804,19 @@
     .dashboard-section-heading h2{margin:4px 0 0; font-size:1.05rem}
     .dashboard-section-heading small{color:var(--muted); font-size:.76rem}
     .analytics-grid{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px}
-    .analytics-card{display:flex; flex-direction:column; gap:3px; min-height:92px; padding:12px; border:1px solid #e0e7ff; border-radius:14px; background:#f8f9ff}
+    .analytics-card{position:relative; display:flex; flex-direction:column; gap:3px; min-height:92px; padding:13px 14px 12px; border:1px solid var(--card-border,#e0e7ff); border-radius:16px; background:linear-gradient(145deg,var(--card-tint,#fbfcff),#fff 82%); box-shadow:0 3px 10px rgba(15,23,42,.035); overflow:hidden; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease}
+    .analytics-card:hover{transform:translateY(-3px); border-color:var(--card-border,#c7d2fe); box-shadow:0 12px 24px rgba(15,23,42,.09)}
     .analytics-card span{color:#64748b; font-size:.7rem; font-weight:900; letter-spacing:.06em; text-transform:uppercase}
     .analytics-card strong{font-size:1.45rem; line-height:1.1; color:#1e1b4b}
     .analytics-card small{color:var(--muted); font-size:.72rem; line-height:1.2}
+    .analytics-card-accuracy{--card-tint:#f4fcf6;--card-border:#d1f3db}
+    .analytics-card-correct{--card-tint:#f5fcf7;--card-border:#d1f3db}
+    .analytics-card-streak{--card-tint:#fffaf2;--card-border:#fce5c1}
+    .analytics-card-best{--card-tint:#fffaf4;--card-border:#f8d9b5}
+    .analytics-card-sessions{--card-tint:#f8f7ff;--card-border:#dfe1ff}
+    .analytics-card-accuracy strong,.analytics-card-correct strong{color:#15803d}
+    .analytics-card-streak strong,.analytics-card-best strong{color:#c2410c}
+    .analytics-card-sessions strong{color:#4f46e5}
     .session-history-list{display:grid; gap:8px}
     .session-history-empty{margin:0; color:var(--muted); font-size:.86rem}
     .session-history-row{display:flex; justify-content:space-between; align-items:center; gap:16px; padding:12px 14px; border:1px solid #e2e8f0; border-radius:14px; background:#fff; transition:transform .18s ease, box-shadow .18s ease}
@@ -815,11 +826,30 @@
     .session-history-row small{color:var(--muted); font-size:.74rem; line-height:1.3}
     .session-history-result{text-align:right; flex:0 0 auto}
     .session-history-result strong{font-size:1.05rem; color:var(--primary-2)}
-    .session-stats{display:none; grid-template-columns:repeat(5,minmax(0,1fr)) auto; align-items:center; gap:8px; margin:4px 0 14px; padding:10px; border:1px solid #dbe4ff; border-radius:14px; background:#f8f9ff}
-    .session-stat{display:flex; flex-direction:column; gap:2px; min-width:0; padding:0 7px; border-right:1px solid #e2e8f0}
+    .session-stats{position:relative; isolation:isolate; display:none; grid-template-columns:repeat(5,minmax(0,1fr)) auto; align-items:center; gap:8px; margin:4px 0 14px; padding:11px; border:1px solid #e3e7f7; border-radius:18px; background:linear-gradient(135deg,#fafbff,#fff 70%); box-shadow:0 5px 16px rgba(79,70,229,.05); overflow:visible}
+    .session-stats.streak-active{animation:streakHalo 1.8s ease-out both}
+    .session-stats.streak-active::before,.session-stats.streak-active::after{position:absolute; z-index:6; pointer-events:none; opacity:0; font-family:system-ui,sans-serif; font-size:1.45rem; line-height:1; filter:drop-shadow(0 3px 4px rgba(234,88,12,.28))}
+    .session-stats.streak-active::before{content:"🔥  🔥   🔥  🔥"; left:12%; bottom:-22px; font-size:1.15rem; letter-spacing:3px; animation:fireRise 1.35s ease-out both}
+    .session-stats.streak-active::after{content:"🔥    🔥   🔥"; left:31%; bottom:-20px; font-size:1.7rem; letter-spacing:14px; animation:fireRise 1.5s ease-out .08s both}
+    .session-stat{display:flex; flex-direction:column; justify-content:center; gap:4px; min-width:0; min-height:72px; padding:10px 12px; border-right:1px solid #e2e8f0}
     .session-stat span{color:#64748b; font-size:.67rem; font-weight:900; letter-spacing:.05em; text-transform:uppercase}
     .session-stat strong{font-size:1.05rem; color:#1e1b4b}
+    .session-stat-correct{background:#f4fcf6; border-radius:12px; border-right-color:#d7f1de}
+    .session-stat-incorrect{background:#fff7f7; border-radius:12px; border-right-color:#f6d6d6}
+    .session-stat-accent{background:#f8f7ff; border-radius:12px}
+    .session-stat-streak{position:relative; z-index:2; min-height:88px; background:#fffaf3; border-radius:12px}
+    .session-stat-correct strong{color:#15803d}
+    .session-stat-incorrect strong{color:#dc2626}
+    .session-stat-streak strong{color:#c2410c}
     .session-stat-accent strong{color:var(--primary-2)}
+    .session-stat-streak.streak-flare{z-index:1}
+    .session-stat-streak.streak-flare strong{display:inline-block; animation:streakPop 1.65s cubic-bezier(.2,.9,.25,1) both}
+    .session-stat-streak.streak-flare::before,.session-stat-streak.streak-flare::after{content:""; position:absolute; pointer-events:none; opacity:0; border-radius:55% 45% 55% 45%; transform-origin:center bottom}
+    .session-stat-streak.streak-flare::before{width:18px; height:27px; right:10px; top:-25px; background:linear-gradient(165deg,#fde047 8%,#fb923c 55%,#ef4444 100%); box-shadow:0 0 0 3px rgba(251,146,60,.1),-9px 8px 0 -4px #facc15; animation:flameRise .9s ease-out both}
+    .session-stat-streak.streak-flare::after{width:9px; height:16px; right:15px; top:-18px; background:#fff7ed; transform:rotate(18deg); animation:flameCore .9s ease-out both}
+    @keyframes streakPop{0%{font-size:1.05rem; transform:rotate(0); text-shadow:none}20%{font-size:2rem; transform:rotate(0); text-shadow:0 7px 22px rgba(234,88,12,.28)}36%{font-size:2rem; transform:rotate(-7deg)}42%{font-size:2rem; transform:rotate(7deg)}48%{font-size:2rem; transform:rotate(-5deg)}54%{font-size:2rem; transform:rotate(4deg)}70%{font-size:1.35rem; transform:rotate(0)}100%{font-size:1.05rem; transform:rotate(0); text-shadow:none}}
+    @keyframes streakHalo{0%{box-shadow:0 5px 16px rgba(79,70,229,.05)}20%{box-shadow:0 0 0 7px rgba(251,146,60,.1),0 0 42px 12px rgba(249,115,22,.32)}58%{box-shadow:0 0 0 3px rgba(251,146,60,.06),0 0 22px 6px rgba(249,115,22,.16)}100%{box-shadow:0 5px 16px rgba(79,70,229,.05)}}
+    @keyframes fireRise{0%{opacity:0; transform:translateY(18px) scale(.65)}18%{opacity:1}70%{opacity:1; transform:translateY(-42px) scale(1.08)}100%{opacity:0; transform:translateY(-78px) scale(.9)}}
     .end-session-btn{white-space:nowrap; color:#475569}
     .end-session-modal{width:min(500px,100%)}
     .end-session-summary{margin:16px 0; padding:16px; border:1px solid #dbe4ff; border-radius:14px; background:#f8f9ff; color:#334155; line-height:1.5}
@@ -855,6 +885,20 @@
     .home-mode #activeModuleChip{display:none}
     .home-mode .banner{display:none!important}
     .practice-mode .banner{display:none!important}
+    /* Soft glass surfaces: translucent, calm, and still readable. */
+    .topbar,.card,.modal,.home-focus-card,.home-overview-card,.spanish2-panel,.session-history-row,.settings-accordion,.module-group,.key-hint-strip{
+      background-color:rgba(255,255,255,.72);
+      backdrop-filter:blur(16px) saturate(115%);
+      -webkit-backdrop-filter:blur(16px) saturate(115%);
+    }
+    .card{border-color:rgba(203,213,225,.78); box-shadow:0 18px 42px rgba(15,23,42,.075), inset 0 1px 0 rgba(255,255,255,.8)}
+    .modal{background:rgba(255,255,255,.86); border-color:rgba(203,213,225,.85); box-shadow:0 24px 65px rgba(15,23,42,.24), inset 0 1px 0 rgba(255,255,255,.9)}
+    .home-overview-card,.home-overview-card-muted{background-color:rgba(248,250,252,.65)}
+    .home-focus-card,.spanish2-panel{background-color:rgba(248,250,252,.62)}
+    .settings-accordion,.module-group{background-color:rgba(255,255,255,.58)}
+    .btn,.icon-btn,.chip,.level-switch{background-color:rgba(255,255,255,.72)}
+    .btn.primary{background-color:var(--primary)}
+    .btn.primary:hover{background-color:var(--primary-2)}
     @media (max-width:700px){
       .home-hero{padding-bottom:20px}
       .home-mark{width:58px; height:58px; border-radius:18px; font-size:2rem}

@@ -97,11 +97,11 @@ Developer note:
           <small id="profileNote">Saved in this browser</small>
         </div>
         <div class="analytics-grid">
-          <div class="analytics-card"><span>Accuracy</span><strong id="allTimeAccuracy">0%</strong><small>all-time correct</small></div>
-          <div class="analytics-card"><span>Correct</span><strong id="allTimeCorrect">0</strong><small id="allTimeAnsweredLabel">of 0 answered</small></div>
-          <div class="analytics-card"><span>Current streak</span><strong id="allTimeCurrentStreak">0</strong><small>correct in a row</small></div>
-          <div class="analytics-card"><span>Best streak</span><strong id="allTimeBestStreak">0</strong><small>personal best</small></div>
-          <div class="analytics-card"><span>Sessions</span><strong id="allTimeSessions">0</strong><small>completed sessions</small></div>
+          <div class="analytics-card analytics-card-accuracy"><span>Accuracy</span><strong id="allTimeAccuracy">0%</strong><small>all-time correct</small></div>
+          <div class="analytics-card analytics-card-correct"><span>Correct</span><strong id="allTimeCorrect">0</strong><small id="allTimeAnsweredLabel">of 0 answered</small></div>
+          <div class="analytics-card analytics-card-streak"><span>Current streak</span><strong id="allTimeCurrentStreak">0</strong><small>correct in a row</small></div>
+          <div class="analytics-card analytics-card-best"><span>Best streak</span><strong id="allTimeBestStreak">0</strong><small>personal best</small></div>
+          <div class="analytics-card analytics-card-sessions"><span>Sessions</span><strong id="allTimeSessions">0</strong><small>completed sessions</small></div>
         </div>
       </section>
       <div class="home-overview level-panel" id="spanish1Panel" role="tabpanel">
@@ -171,11 +171,11 @@ Developer note:
         </div>
       </div>
       <section class="session-stats" id="sessionStats" aria-label="Current session progress">
-        <div class="session-stat"><span>Correct</span><strong id="sessionCorrect">0</strong></div>
-        <div class="session-stat"><span>Incorrect</span><strong id="sessionIncorrect">0</strong></div>
+        <div class="session-stat session-stat-correct"><span>Correct</span><strong id="sessionCorrect">0</strong></div>
+        <div class="session-stat session-stat-incorrect"><span>Incorrect</span><strong id="sessionIncorrect">0</strong></div>
         <div class="session-stat"><span>Answered</span><strong id="sessionAnswered">0</strong></div>
         <div class="session-stat session-stat-accent"><span>Accuracy</span><strong id="sessionAccuracy">0%</strong></div>
-        <div class="session-stat"><span>Streak</span><strong id="sessionStreak">0</strong></div>
+        <div class="session-stat session-stat-streak"><span>Streak</span><strong id="sessionStreak">0</strong></div>
         <button class="btn small end-session-btn" id="endSessionBtn">End session</button>
       </section>
 
@@ -536,18 +536,18 @@ Developer note:
             <label class="btn small ghost"><input type="checkbox" id="numbersSequential" aria-label="Practice numbers in order" />&nbsp;Go in order</label>
           </div>
           <p class="small muted">Use the sliders or type exact endpoints. If the endpoints cross, the app practices the normalized range between them.</p>
-          <h3>Vocab selection</h3>
+          <h3>Vocabulary</h3>
           <div class="row">
-            <label class="btn small ghost"><input type="radio" name="vocabMode" value="weighted" id="vocab_weighted" aria-label="Weighted vocab selection" />&nbsp;Complexity-weighted (default)</label>
-            <label class="btn small ghost"><input type="radio" name="vocabMode" value="uniform" id="vocab_uniform" aria-label="Uniform vocab selection" />&nbsp;Uniform</label>
+            <label class="btn small ghost"><input type="radio" name="vocabMode" value="weighted" id="vocab_weighted" aria-label="Recommended vocabulary mix" />&nbsp;Recommended mix</label>
+            <label class="btn small ghost"><input type="radio" name="vocabMode" value="uniform" id="vocab_uniform" aria-label="Even vocabulary mix" />&nbsp;Even mix</label>
           </div>
-          <h3>Practice mix</h3>
+          <h3>Topic balance</h3>
           <div class="row">
             <label for="practiceMixRange">Bias</label>
             <input type="range" id="practiceMixRange" min="0" max="100" value="50" aria-label="Practice mix bias slider" />
             <output id="practiceMixValue">50</output>
           </div>
-          <h3>New modules answer mode</h3>
+          <h3>Answer style</h3>
           <div class="row">
             <label class="btn small ghost"><input type="radio" name="newModulesAnswerMode" value="spelling" id="newModulesMode_spelling" aria-label="Spelling only mode for new modules" />&nbsp;Spelling only (default)</label>
             <label class="btn small ghost"><input type="radio" name="newModulesAnswerMode" value="mixed" id="newModulesMode_mixed" aria-label="Mixed mode for new modules" />&nbsp;Mixed (spelling + multiple choice)</label>

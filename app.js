@@ -3561,7 +3561,7 @@ mean/nice
       for (const groupInfo of groups) {
         const group = document.createElement('details');
         group.className = 'module-group';
-        group.open = groupInfo.title === 'Essentials' || groupInfo.title === 'Everyday topics';
+        group.open = ['Essentials', 'Everyday topics', 'Grammar', 'Situations'].includes(groupInfo.title);
         const summary = document.createElement('summary');
         summary.textContent = groupInfo.title;
         const content = document.createElement('div');
@@ -4928,6 +4928,9 @@ mean/nice
         session.correct += 1;
         session.currentStreak += 1;
         session.bestStreak = Math.max(session.bestStreak, session.currentStreak);
+        if ([3, 5, 10, 15, 20].includes(session.currentStreak) || (session.currentStreak > 20 && session.currentStreak % 5 === 0)) {
+          this.celebrateStreak();
+        }
       } else {
         session.incorrect += 1;
         session.currentStreak = 0;
@@ -4946,6 +4949,20 @@ mean/nice
       this.updateSessionStatsUI();
       this.updateDashboardAnalyticsUI();
       this.saveSoon();
+    },
+
+    celebrateStreak() {
+      const streakCard = this.$?.sessionStreak?.closest('.session-stat-streak');
+      if (!streakCard) return;
+      const sessionStats = this.$?.sessionStats;
+      sessionStats?.classList.remove('streak-active');
+      requestAnimationFrame(() => sessionStats?.classList.add('streak-active'));
+      streakCard.classList.remove('streak-flare');
+      requestAnimationFrame(() => streakCard.classList.add('streak-flare'));
+      setTimeout(() => {
+        streakCard.classList.remove('streak-flare');
+        sessionStats?.classList.remove('streak-active');
+      }, 1950);
     },
 
     updateSessionStatsUI() {
