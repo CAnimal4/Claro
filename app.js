@@ -3754,6 +3754,7 @@ mean/nice
         undoResetBtn: $('undoResetBtn'),
         practiceMixRange: $('practiceMixRange'),
         practiceMixValue: $('practiceMixValue'),
+        prioritizeWeakQuestions: $('prioritizeWeakQuestions'),
         newModulesMode_spelling: $('newModulesMode_spelling'),
         newModulesMode_mixed: $('newModulesMode_mixed'),
         toggleKeyHintStrip: $('toggleKeyHintStrip'),
