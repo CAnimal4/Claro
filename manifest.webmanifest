@@ -1,0 +1,11 @@
+{
+  "name": "Claro — Spanish 1",
+  "short_name": "Claro",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#2563eb",
+  "icons": [
+    { "src": "assets/claro-mark.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
