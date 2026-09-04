@@ -4631,6 +4631,8 @@ mean/nice
       openTallyForm(TALLY_FEEDBACK_URL, {
         form_type: 'feedback',
         app_name: 'claro',
+        message,
+        email,
         level: this.currentLevel === 'spanish2' ? 'Spanish 2' : 'Spanish 1',
         module: this.currentQuestion?.module || 'dashboard',
         source: 'feedback_button',
