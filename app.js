@@ -4549,6 +4549,8 @@ mean/nice
       openTallyForm(TALLY_PREMIUM_URL, {
         form_type: 'premium_access_request',
         app_name: 'claro',
+        name: this.$.premiumRequestName.value.trim(),
+        email: this.$.premiumRequestEmail.value.trim(),
         source: 'premium_modal',
         current_level: this.currentLevel === 'spanish2' ? 'Spanish 2' : 'Spanish 1',
         current_module: this.currentQuestion?.module || 'dashboard',
