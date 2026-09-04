@@ -46,6 +46,18 @@
   const PROFILE_COOKIE_KEY = 'claro_profile_id';
   const APP_VERSION = 2;
   const ANALYTICS_VERSION = 2;
+  // Paste the public Tally form URLs here after creating the two forms.
+  // Example: https://tally.so/r/xxxxxx
+  const TALLY_FEEDBACK_URL = 'https://tally.so/r/Pdq7AQ';
+  const TALLY_PREMIUM_URL = 'https://tally.so/r/Y5A1Oq';
+
+  function openTallyForm(baseUrl, fields) {
+    const url = new URL(baseUrl);
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value != null && String(value)) url.searchParams.set(key, String(value));
+    });
+    window.open(url.toString(), '_blank', 'noopener,noreferrer');
+  }
 
   window.APP_DEBUG = false;
 
@@ -2569,6 +2581,8 @@ mean/nice
       analyticsVersion: ANALYTICS_VERSION,
       practiceSessions: [],
       lifetimeStats: { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 }
+      ,lastLevel: 'spanish1'
+      ,lastModule: null
     };
   }
 
@@ -2672,6 +2686,8 @@ mean/nice
     }
 
     if (typeof raw.profileId === 'string') out.profileId = raw.profileId.slice(0, 120);
+    if (raw.lastLevel === 'spanish1' || raw.lastLevel === 'spanish2') out.lastLevel = raw.lastLevel;
+    if (typeof raw.lastModule === 'string' && raw.lastModule.length <= 80) out.lastModule = raw.lastModule;
     if (Number(raw.analyticsVersion) === ANALYTICS_VERSION && Array.isArray(raw.practiceSessions)) {
       out.practiceSessions = raw.practiceSessions.slice(-50).map((session) => ({
         id: String(session?.id || '').slice(0, 80),
@@ -2757,6 +2773,19 @@ mean/nice
   function persistProfileId(profileId) {
     try { localStorage.setItem('claro_profile_id', profileId); } catch (_) {}
     try { document.cookie = `${PROFILE_COOKIE_KEY}=${encodeURIComponent(profileId)}; max-age=31536000; path=/; SameSite=Lax`; } catch (_) {}
+  }
+
+  function readLastViewCookie() {
+    try {
+      const part = document.cookie.split('; ').find((item) => item.startsWith('claro_last_view='));
+      return part ? JSON.parse(decodeURIComponent(part.slice('claro_last_view='.length))) : null;
+    } catch (_) { return null; }
+  }
+
+  function persistLastView(view) {
+    try {
+      document.cookie = `claro_last_view=${encodeURIComponent(JSON.stringify(view))}; max-age=31536000; path=/; SameSite=Lax`;
+    } catch (_) {}
   }
 
   // --------------------------------------------
@@ -3474,9 +3503,6 @@ mean/nice
         this.cacheDom();
         this.organizeModuleSettings();
         this.ensureAriaLabels();
-        this.currentLevel = 'spanish1';
-        this.setLevel('spanish1');
-
       // Load state
       this.state = getState();
       this.state.hiddenItems = this.state.hiddenItems || this.state.hiddenQuestions || {};
@@ -3487,6 +3513,9 @@ mean/nice
       Object.defineProperty(this.state.itemScores, '__practiceApp', { value: this, enumerable: false, configurable: true });
       this.ensureProfileAndAnalytics();
       this.loadPremiumAccess();
+      const lastView = readLastViewCookie() || {};
+      this.currentLevel = this.state.lastLevel || lastView.level || 'spanish1';
+      this.soloMode = this.state.lastModule || lastView.module || null;
       this.setLevel(this.currentLevel);
 
       // Parse vocab
@@ -4512,13 +4541,31 @@ mean/nice
       const submit = this.$.premiumRequestSubmit;
       const status = this.$.premiumRequestFeedback;
       if (!form.reportValidity()) return;
+      if (!TALLY_PREMIUM_URL) {
+        status.className = 'feedback bad';
+        status.textContent = 'Tally is not connected yet. Add the premium form URL in app.js.';
+        return;
+      }
+      openTallyForm(TALLY_PREMIUM_URL, {
+        form_type: 'premium_access_request',
+        app_name: 'claro',
+        source: 'premium_modal',
+        current_level: this.currentLevel === 'spanish2' ? 'Spanish 2' : 'Spanish 1',
+        current_module: this.currentQuestion?.module || 'dashboard',
+        page_url: window.location.href
+      });
+      status.className = 'feedback good';
+      status.textContent = 'Tally opened in a new tab. Submit your request there.';
+      return;
+      /* legacy provider path retained below for easy rollback */
       submit.disabled = true;
       status.className = 'feedback neutral';
       status.textContent = 'Sending your request…';
       try {
+        const formData = new FormData(form);
         const response = await fetch(form.action, {
           method: 'POST',
-          body: new FormData(form),
+          body: formData,
           headers: { Accept: 'application/json' }
         });
         if (!response.ok) throw new Error('Request failed');
@@ -4577,6 +4624,20 @@ mean/nice
         this.$.feedbackMessage.focus();
         return;
       }
+      if (!TALLY_FEEDBACK_URL) {
+        this.setFeedbackStatus('Tally is not connected yet. Add the feedback form URL in app.js.', 'bad');
+        return;
+      }
+      openTallyForm(TALLY_FEEDBACK_URL, {
+        form_type: 'feedback',
+        app_name: 'claro',
+        level: this.currentLevel === 'spanish2' ? 'Spanish 2' : 'Spanish 1',
+        module: this.currentQuestion?.module || 'dashboard',
+        source: 'feedback_button',
+        page_url: window.location.href
+      });
+      this.setFeedbackStatus('Tally opened in a new tab. Submit your feedback there.', 'good');
+      return;
       const submit = this.$.feedbackSubmitBtn;
       submit.disabled = true;
       submit.textContent = 'Sending…';
@@ -4894,6 +4955,11 @@ mean/nice
 
     setLevel(level) {
       this.currentLevel = level === 'spanish2' ? 'spanish2' : 'spanish1';
+      if (this.state) {
+        this.state.lastLevel = this.currentLevel;
+        persistLastView({ level: this.currentLevel, module: this.state.lastModule || this.soloMode || null });
+        this.saveSoon();
+      }
       const spanish2 = this.currentLevel === 'spanish2';
       const summerModules = MODULES.filter(m => m.level === 2);
       const enabledSummerModules = summerModules.filter(m => this.state?.settings?.modulesEnabled?.[m.key]);
@@ -5184,6 +5250,9 @@ mean/nice
         return;
       }
       this.soloMode = moduleKey;
+      this.state.lastModule = moduleKey;
+      persistLastView({ level: this.currentLevel, module: moduleKey });
+      this.saveSoon();
       if (this.$.soloSelect) this.$.soloSelect.value = moduleKey;
       const modeName = moduleKey === MAYO_MADNESS_KEY ? 'Mayo Madness' : (MODULES.find(m => m.key===moduleKey)?.name || moduleKey);
       this.showBanner(`Practice-only mode: <strong>${modeName}</strong>. Click “All enabled modules” to return to rotation.`);
@@ -5192,6 +5261,9 @@ mean/nice
 
     clearSoloMode() {
       this.soloMode = null;
+      this.state.lastModule = null;
+      persistLastView({ level: this.currentLevel, module: null });
+      this.saveSoon();
       if (this.$.soloSelect) this.$.soloSelect.value = '';
       this.hideBanner();
       this.nextQuestion({ keepFeedback: false });

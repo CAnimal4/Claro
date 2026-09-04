@@ -628,8 +628,8 @@ Developer note:
       <div class="feedback neutral" id="premiumFeedback" aria-live="polite">Enter a password to unlock premium.</div>
       <div class="premium-request-divider"><span>Need access?</span></div>
       <button class="btn premium-request-toggle" id="premiumRequestToggle" type="button">Request premium access</button>
-      <form class="premium-request-form" id="premiumRequestForm" action="https://api.staticforms.dev/submit" method="POST" hidden>
-        <input type="hidden" name="apiKey" value="sf_90d89f7ba6fe805db47efb8a" />
+      <form class="premium-request-form" id="premiumRequestForm" action="#" method="post" hidden>
+        <input type="hidden" name="form_type" value="premium access request" />
         <p class="small muted">Send a request and we’ll discuss access by email.</p>
         <label class="premium-field" for="premiumRequestName"><span>Name</span><input id="premiumRequestName" name="name" type="text" autocomplete="name" required /></label>
         <label class="premium-field" for="premiumRequestEmail"><span>Email</span><input id="premiumRequestEmail" name="email" type="email" autocomplete="email" required /></label>
@@ -653,8 +653,7 @@ Developer note:
         </div>
         <button class="icon-btn" id="feedbackCloseBtn" aria-label="Close feedback">✕</button>
       </div>
-      <form id="feedbackForm" class="feedback-form" action="https://api.staticforms.dev/submit" method="POST">
-        <input type="hidden" name="apiKey" value="sf_f184da905f5df9a570b15855" />
+      <form id="feedbackForm" class="feedback-form" action="#" method="post">
         <label class="feedback-field" for="feedbackMessage">
           <span>Your feedback</span>
           <textarea id="feedbackMessage" name="message" maxlength="2000" required placeholder="What should be improved?"></textarea>
@@ -668,7 +667,7 @@ Developer note:
           <button class="btn ghost" type="button" id="feedbackCancelBtn">Cancel</button>
           <button class="btn primary" type="submit" id="feedbackSubmitBtn">Send feedback</button>
         </div>
-        <div class="feedback neutral" id="feedbackStatus" aria-live="polite">Your feedback will be sent securely.</div>
+        <div class="feedback neutral" id="feedbackStatus" aria-live="polite">This opens a secure Tally form.</div>
       </form>
     </div>
   </div>
