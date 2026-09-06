@@ -1,16 +1,33 @@
 # Claro Spanish
 
-Claro is a lightweight, dependency-free Spanish practice app built for short, focused study sessions. It runs as a static site and keeps practice progress in the learner’s browser.
+Go straight to the live app: **[clarospanish.vercel.app](https://clarospanish.vercel.app)**.
 
-## What’s included
+Claro is a browser-based Spanish learning application designed for focused practice, repeatable study habits, and gradual expansion into new course levels and learning activities. The live product is deployed through Vercel, while the repository contains the static frontend that Vercel serves.
 
-- Spanish 1 practice for numbers, days, months, seasons, time, colors, and additional grammar and vocabulary modules.
-- Spanish 2 Honors practice with:
-  - **Ordinal Numbers** — English → Spanish translation, gender agreement, `primer`/`tercer`, and sentence context.
-  - **Test 1 Review** — regular preterite and imperfect conjugation, past-tense time vocabulary, tense choice, and explicit Spanish → English verb translation.
-- One-question-at-a-time practice with answer feedback, hints, keyboard shortcuts, hidden questions, and progress scoring.
-- Optional premium access that expands practice depth and variety without paywalling the Honors curriculum.
-- Responsive dashboard and practice layouts with saved level, module, settings, scores, and session history.
+## Overview
+
+Claro is intentionally simple to run and easy to extend. It does not require a backend for normal practice: the interface, learning content, question generation, scoring, and browser persistence are handled by the frontend. A learner can open the public Vercel URL and begin practicing immediately.
+
+The app is designed around a few principles:
+
+- short sessions instead of overwhelming study screens;
+- clear prompts and immediate feedback;
+- content organized by course level and topic;
+- flexible answer matching without ignoring grammar;
+- local progress that remains available in the same browser;
+- a data-driven structure that makes new modules easier to add.
+
+## Learning experience
+
+Claro supports multiple levels, modules, and question styles while keeping the core interaction consistent. Current content includes foundational Spanish practice and Spanish 2 Honors work covering vocabulary, conjugation, tense selection, ordinal numbers, translation, and sentence context.
+
+Practice includes one-question-at-a-time feedback, hints, keyboard shortcuts, hidden questions, weak-question rotation, score tracking, and session history. Optional premium access expands depth and variety where enabled; it does not replace the underlying curriculum or make core learning content inaccessible.
+
+## Live deployment
+
+The public site is hosted on [Vercel](https://vercel.com/) at [clarospanish.vercel.app](https://clarospanish.vercel.app). Vercel provides the public HTTPS URL and serves the static frontend files from the deployed project. The app itself does not depend on Vercel-specific runtime code for ordinary practice, which keeps local development straightforward and makes the frontend portable.
+
+When the project is connected to Vercel, a new deployment can publish updated versions of the static files. After deployment, verify the live URL separately from local checks: confirm the expected version is served, load the dashboard, switch levels, enter practice, and exercise the changed interaction in a real browser.
 
 ## Run locally
 
@@ -22,7 +39,7 @@ python3 -m http.server 8765
 
 Then open [http://127.0.0.1:8765/](http://127.0.0.1:8765/) in a browser.
 
-No package installation is required for the app itself.
+No package installation is required for the app itself. Local serving is useful for development and validation; it does not change the live Vercel deployment.
 
 ## Project structure
 
@@ -36,7 +53,13 @@ No package installation is required for the app itself.
 └── README.md               # Project documentation
 ```
 
-## How the app works
+## Architecture
+
+The application is a static frontend with three primary layers:
+
+- `index.html` provides the semantic app shell, dashboard, settings, practice surface, and dialogs;
+- `style.css` provides the visual system, responsive layout, and interaction states;
+- `app.js` contains application state, module definitions, question pools, generators, answer checking, persistence, and UI behavior.
 
 `app.js` uses a data-driven module registry. Each module has a key, display name, level, and question generator. Question pools provide stable IDs so the app can support:
 
@@ -48,7 +71,7 @@ No package installation is required for the app itself.
 
 Spanish 1 modules remain level-filtered from Spanish 2 Honors modules. The dashboard and practice selector use the selected level when deciding which modules are visible and available.
 
-## Persistence
+## Browser data and privacy
 
 Primary state is stored under:
 
@@ -58,9 +81,9 @@ spanish_app_v2_state
 
 The state includes settings, enabled modules, hidden items, item scores, answer history, profile information, session history, and lifetime statistics. The app also keeps compatibility with the legacy `spanishPracticeApp_v1` key and uses defensive migration when loading saved data.
 
-Premium access is stored separately from normal practice state. No credentials or private access values belong in this repository.
+Premium access is stored separately from normal practice state. Normal practice data is local to the learner’s browser unless a future integration explicitly adds another service. Clearing browser storage, changing browsers, or using a different device can remove or separate local progress. No credentials or private access values belong in this repository.
 
-## Answer matching
+## Content and answer matching
 
 Answers are normalized for harmless differences such as capitalization, surrounding punctuation, spacing, and accents. Accepted-answer sets are still module-specific, so the app remains strict about grammar and meaning:
 
@@ -69,7 +92,7 @@ Answers are normalized for harmless differences such as capitalization, surround
 - Spanish 2 time expressions can accept appropriate wording variants;
 - incorrect meanings are not accepted merely because formatting is similar.
 
-## Keyboard shortcuts
+## Interaction conventions
 
 When an answer field is not focused:
 
@@ -82,7 +105,7 @@ When an answer field is not focused:
 
 When typing, `Enter` submits the answer, and after a correct answer it advances to the next question.
 
-## Validation
+## Development and validation
 
 Check JavaScript syntax with:
 
@@ -98,8 +121,16 @@ runAutomatedChecks()
 
 The Developer Checks section in Settings runs the same checks and reports a pass summary in the UI and console.
 
-For rendered QA, verify the level switch, module toggles, practice entry, answer submission, modal controls, responsive layout, and browser console after starting the local server.
+For rendered QA, verify the level switch, module toggles, practice entry, answer submission, modal controls, responsive layout, and browser console after starting the local server. For a release intended for the public site, repeat the important checks against [clarospanish.vercel.app](https://clarospanish.vercel.app) after Vercel finishes deploying.
 
-## Editing guidance
+## Contributing and extending
 
-Keep new learning content data-driven and give every question a stable, unique ID. Preserve the existing state keys and module-level filtering. When changing visible behavior, validate both Spanish 1 and Spanish 2 Honors so a new module does not leak into the wrong dashboard.
+Keep new learning content data-driven and give every question a stable, unique ID. Preserve the existing state keys, level filtering, answer conventions, and keyboard behavior. New modules should fit the existing dashboard and practice flow rather than introducing a separate interaction model.
+
+Before publishing a meaningful change:
+
+1. Check the source for syntax errors.
+2. Run the in-app Developer Checks.
+3. Test the changed flow locally in a browser.
+4. Confirm that unrelated levels and modules still work.
+5. Verify the deployed result at the Vercel URL.
