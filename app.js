@@ -2895,8 +2895,6 @@ mean/nice
   const ORDINAL_EN = { first: ['first'], second: ['second'], third: ['third'], fourth: ['fourth'], fifth: ['fifth'], sixth: ['sixth'], seventh: ['seventh'], eighth: ['eighth', '8th'], ninth: ['ninth'], tenth: ['tenth'] };
   const ORDINAL_POOL = ORDINALS.flatMap(([number, masc, fem, en]) => [
     { id: `ordinal-en-${number}`, prompt: `Translate <strong>“${en}”</strong> into Spanish.`, expectedDisplay: masc, acceptable: [masc, fem], explanation: 'With no noun, the masculine form is the default. A feminine form is also accepted when appropriate.' },
-    { id: `ordinal-es-${number}`, prompt: `Translate the Spanish ordinal <strong>“${masc}”</strong> into English.`, expectedDisplay: en, acceptable: ORDINAL_EN[en] },
-    { id: `ordinal-number-from-es-${number}`, prompt: `Which number is <strong>“${masc}”</strong>? Answer with <strong>${number}</strong> or <strong>${number}th</strong>.`, expectedDisplay: `${number}th`, acceptable: [`${number}th`, String(number)] },
     { id: `ordinal-number-${number}`, prompt: `Translate <strong>“${number}th”</strong> into Spanish.`, expectedDisplay: masc, acceptable: [masc, fem] },
     { id: `ordinal-context-f-${number}`, prompt: `Translate <strong>“the ${en} page”</strong>. Complete: <strong>la ___ página</strong>`, expectedDisplay: fem, acceptable: [fem], explanation: 'La página is feminine, so the ordinal must be feminine.' },
     { id: `ordinal-context-m-${number}`, prompt: `Translate <strong>“the ${en} chapter”</strong>. Complete: <strong>el ___ capítulo</strong>`, expectedDisplay: number === 1 ? 'primer' : number === 3 ? 'tercer' : masc, acceptable: [number === 1 ? 'primer' : number === 3 ? 'tercer' : masc], explanation: number === 1 || number === 3 ? 'Primero becomes primer and tercero becomes tercer before a masculine singular noun.' : 'El capítulo is masculine, so the ordinal must be masculine.' }
@@ -3544,8 +3542,8 @@ mean/nice
   function generateHonorsTest1Question(app) {
     const sections = ['preterite', 'imperfect', 'vocabulary', 'translation', 'choice'];
     const open = sections.filter((section) => honorsQuota(app, section).used < honorsQuota(app, section).max);
-    if (!open.length) return null;
-    const section = pickRandom(open);
+    // Quotas shape the beginning of a session; they never end practice.
+    const section = pickRandom(open.length ? open : sections);
     let q;
     if (section === 'vocabulary') {
       const item = chooseHonorsItem(app, 'honors_test1_review', HONORS_TIME_WORDS.slice(0, app.hasPremiumAccess() ? HONORS_TIME_WORDS.length : 12), 5);
@@ -4049,8 +4047,12 @@ mean/nice
 
       // Session lifecycle
       this.$.endSessionBtn.addEventListener('click', () => this.requestEndSession());
-      this.$.endSessionCloseBtn.addEventListener('click', () => this.closeModal(this.$.endSessionOverlay));
-      this.$.continueSessionBtn.addEventListener('click', () => this.closeModal(this.$.endSessionOverlay));
+      this.$.endSessionCloseBtn.addEventListener('click', () => this.resumePracticeSession());
+      this.$.continueSessionBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        this.resumePracticeSession();
+      });
       this.$.confirmEndSessionBtn.addEventListener('click', () => this.finishPracticeSession());
       this.$.endSessionOverlay.addEventListener('click', (e) => {
         if (e.target === this.$.endSessionOverlay) this.closeModal(this.$.endSessionOverlay);
@@ -5272,6 +5274,14 @@ mean/nice
       this.openModal(this.$.endSessionOverlay, this.$.continueSessionBtn);
     },
 
+    resumePracticeSession() {
+      this.closeModal(this.$.endSessionOverlay);
+      document.body.classList.remove('home-mode');
+      document.body.classList.add('practice-mode');
+      if (this.currentQuestion?.mode === 'text') this.$.answerInput?.focus?.();
+      else this.$.revealBtn?.focus?.();
+    },
+
     finishPracticeSession() {
       if (!this.activeSession) return;
       const session = this.activeSession;
@@ -5509,11 +5519,6 @@ mean/nice
 
     nextQuestion(opts = {}) {
       const { forceModule = null, keepFeedback = false } = opts;
-
-      if (!forceModule && this.activeSession?.target && this.activeSession.answered >= this.activeSession.target) {
-        this.requestEndSession();
-        return;
-      }
 
       if (this.currentQuestion && !forceModule && !this.canAdvanceFromCurrentQuestion()) {
         if (this.currentQuestion.module === 'numbers') {
