@@ -2894,12 +2894,12 @@ mean/nice
   ];
   const ORDINAL_EN = { first: ['first'], second: ['second'], third: ['third'], fourth: ['fourth'], fifth: ['fifth'], sixth: ['sixth'], seventh: ['seventh'], eighth: ['eighth', '8th'], ninth: ['ninth'], tenth: ['tenth'] };
   const ORDINAL_POOL = ORDINALS.flatMap(([number, masc, fem, en]) => [
-    { id: `ordinal-en-${number}`, prompt: `Translate to Spanish: <strong>${en}</strong>`, expectedDisplay: masc, acceptable: [masc, fem], explanation: 'Use the masculine form unless the context gives a feminine noun.' },
-    { id: `ordinal-es-${number}`, prompt: `Translate to English: <strong>${masc}</strong>`, expectedDisplay: en, acceptable: ORDINAL_EN[en] },
-    { id: `ordinal-number-from-es-${number}`, prompt: `What number is <strong>${masc}</strong>?`, expectedDisplay: `${number}th`, acceptable: [`${number}th`, String(number)] },
-    { id: `ordinal-number-${number}`, prompt: `Write the ordinal for <strong>${number}th</strong> in Spanish.`, expectedDisplay: masc, acceptable: [masc, fem] },
-    { id: `ordinal-context-f-${number}`, prompt: `Complete the sentence: <strong>la ___ página</strong>`, expectedDisplay: fem, acceptable: [fem], explanation: 'Ordinal adjectives agree with a feminine singular noun.' },
-    { id: `ordinal-context-m-${number}`, prompt: `Complete the sentence: <strong>el ___ capítulo</strong>`, expectedDisplay: number === 1 ? 'primer' : number === 3 ? 'tercer' : masc, acceptable: [number === 1 ? 'primer' : number === 3 ? 'tercer' : masc], explanation: number === 1 || number === 3 ? 'Primero and tercero shorten to primer and tercer before a masculine singular noun.' : 'Ordinal adjectives agree with a masculine singular noun.' }
+    { id: `ordinal-en-${number}`, prompt: `Translate <strong>“${en}”</strong> into Spanish.`, expectedDisplay: masc, acceptable: [masc, fem], explanation: 'With no noun, the masculine form is the default. A feminine form is also accepted when appropriate.' },
+    { id: `ordinal-es-${number}`, prompt: `Translate the Spanish ordinal <strong>“${masc}”</strong> into English.`, expectedDisplay: en, acceptable: ORDINAL_EN[en] },
+    { id: `ordinal-number-from-es-${number}`, prompt: `Which number is <strong>“${masc}”</strong>? Answer with <strong>${number}</strong> or <strong>${number}th</strong>.`, expectedDisplay: `${number}th`, acceptable: [`${number}th`, String(number)] },
+    { id: `ordinal-number-${number}`, prompt: `Translate <strong>“${number}th”</strong> into Spanish.`, expectedDisplay: masc, acceptable: [masc, fem] },
+    { id: `ordinal-context-f-${number}`, prompt: `Translate <strong>“the ${en} page”</strong>. Complete: <strong>la ___ página</strong>`, expectedDisplay: fem, acceptable: [fem], explanation: 'La página is feminine, so the ordinal must be feminine.' },
+    { id: `ordinal-context-m-${number}`, prompt: `Translate <strong>“the ${en} chapter”</strong>. Complete: <strong>el ___ capítulo</strong>`, expectedDisplay: number === 1 ? 'primer' : number === 3 ? 'tercer' : masc, acceptable: [number === 1 ? 'primer' : number === 3 ? 'tercer' : masc], explanation: number === 1 || number === 3 ? 'Primero becomes primer and tercero becomes tercer before a masculine singular noun.' : 'El capítulo is masculine, so the ordinal must be masculine.' }
   ]);
   const HONORS_TIME_WORDS = [
     ['ayer', ['yesterday']], ['anoche', ['last night']], ['la semana pasada', ['last week']], ['el mes pasado', ['last month']],
@@ -3550,7 +3550,7 @@ mean/nice
     if (section === 'vocabulary') {
       const item = chooseHonorsItem(app, 'honors_test1_review', HONORS_TIME_WORDS.slice(0, app.hasPremiumAccess() ? HONORS_TIME_WORDS.length : 12), 5);
       if (!item) return null;
-      q = { id: item.id, prompt: `Translate this past-tense time expression to English: <strong>${escapeHtml(item.sp)}</strong>`, expectedDisplay: item.en[0], acceptable: item.en, explanation: 'Several natural English equivalents are accepted.' };
+      q = { id: item.id, prompt: `Translate into Spanish: <strong>“${escapeHtml(item.en[0])}”</strong>`, expectedDisplay: item.sp, acceptable: [item.sp], explanation: 'Write the Spanish time expression. Accents are optional for correctness.' };
     } else if (section === 'translation') {
       const sourcePool = app.hasPremiumAccess() ? HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL) : HONORS_PRETERITE_POOL.slice(0, 30).concat(HONORS_IMPERFECT_POOL.slice(0, 30));
       const item = chooseHonorsItem(app, 'honors_test1_review', sourcePool, 5);
