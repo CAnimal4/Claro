@@ -90,7 +90,7 @@ Developer note:
       </div>
       <div class="level-switch" role="tablist" aria-label="Spanish level">
         <button class="level-tab is-active" id="spanish1Tab" role="tab" aria-selected="true">Spanish 1</button>
-        <button class="level-tab" id="spanish2Tab" role="tab" aria-selected="false">Spanish 2 <span>Summer Prep</span></button>
+        <button class="level-tab" id="spanish2Tab" role="tab" aria-selected="false">Spanish 2 <span>Honors</span></button>
       </div>
       <div class="home-actions">
         <button class="btn primary home-start-btn" id="enterPracticeBtn">Enter practice session <span aria-hidden="true">→</span></button>
@@ -125,8 +125,8 @@ Developer note:
         <div class="spanish2-icon" aria-hidden="true">✦</div>
         <div>
           <span class="home-overview-label">Spanish 2</span>
-          <h2>Summer Prep is ready.</h2>
-          <p>Choose from the Summer Prep modules in Settings to practice past-tense vocabulary, conjugation, tense choice, and translations.</p>
+          <h2>Spanish 2 Honors is ready.</h2>
+          <p>Choose from Summer Prep and Honors modules in Settings to practice past-tense skills, ordinal numbers, tense choice, and translations.</p>
           <small class="summer-summary" id="spanish2ModuleSummary">No Summer Prep modules enabled yet</small>
           <div class="summer-resources">
             <a class="resource-link" href="https://quizlet.com/717244172/past-tense-times-flash-cards/?funnelUUID=5a5b427d-69c4-4a3b-a133-b0254b36035f" target="_blank" rel="noopener">Open the past-tense Quizlet ↗</a>
@@ -212,6 +212,8 @@ Developer note:
           <button class="btn small" data-solo="ser_estar" id="soloSerEstarBtn" aria-label="Practice only Ser Estar">Practice only Ser/Estar</button>
           <button class="btn small" data-solo="gustar" id="soloGustarBtn" aria-label="Practice only Gustar">Practice only Gustar</button>
           <button class="btn small" data-solo="dates" id="soloDatesBtn" aria-label="Practice only Dates">Practice only Dates</button>
+          <button class="btn small" data-solo="honors_ordinal_numbers" id="soloHonorsOrdinalBtn" aria-label="Practice only Ordinal Numbers">Practice only Ordinal Numbers</button>
+          <button class="btn small" data-solo="honors_test1_review" id="soloHonorsTest1Btn" aria-label="Practice only Test 1 Review">Practice only Test 1 Review</button>
           <button class="btn small ghost" id="soloOffBtn" title="Return to random rotation across enabled modules" aria-label="All enabled modules">All enabled modules</button>
         </div>
         <div class="only-row-mobile" id="practiceOnlyMobile">
@@ -243,6 +245,8 @@ Developer note:
             <option value="ser_estar">Ser / Estar</option>
             <option value="gustar">Gustar</option>
             <option value="dates">Dates</option>
+            <option value="honors_ordinal_numbers">Ordinal Numbers</option>
+            <option value="honors_test1_review">Test 1 Review</option>
           </select>
           <button class="btn small ghost" id="soloOffMobileBtn" aria-label="Use all enabled modules">All enabled modules</button>
         </div>
@@ -475,9 +479,17 @@ Developer note:
       </details>
 
       <details class="settings-accordion summer-prep-settings" id="summerPrepSettings">
-        <summary>Summer Prep <span class="summary-note">Spanish 2</span></summary>
+        <summary>Spanish 2 Honors <span class="summary-note">Spanish 2</span></summary>
         <div class="accordion-inner">
           <p class="settings-section-intro">Past-tense preparation from your Spanish 2 Honors summer packet.</p>
+          <div class="toggle">
+            <div><div class="label">Ordinal Numbers</div><div class="desc">First, second, third, and beyond — ordinal numbers, gender agreement, and real sentence practice.</div></div>
+            <label><input type="checkbox" id="toggle_honors_ordinal_numbers" aria-label="Toggle Ordinal Numbers module" /><span class="switch" aria-hidden="true"></span></label>
+          </div>
+          <div class="toggle">
+            <div><div class="label">Test 1 Review</div><div class="desc">Preterite, imperfect, past-tense vocabulary, tense choice, and verb translation.</div></div>
+            <label><input type="checkbox" id="toggle_honors_test1_review" aria-label="Toggle Test 1 Review module" /><span class="switch" aria-hidden="true"></span></label>
+          </div>
           <div class="toggle">
             <div><div class="label">Past-tense time words</div><div class="desc">Ayer, siempre, de repente, and other time signals.</div></div>
             <label><input type="checkbox" id="toggle_summer_time_words" aria-label="Toggle past-tense time words module" /><span class="switch" aria-hidden="true"></span></label>

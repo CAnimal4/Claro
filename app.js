@@ -92,7 +92,9 @@
     { key: 'summer_irregular_preterite', name: 'Irregular preterite', level: 2, category: 'Summer Prep' },
     { key: 'summer_irregular_imperfect', name: 'Irregular imperfect', level: 2, category: 'Summer Prep' },
     { key: 'summer_tense_choice', name: 'Preterite or imperfect?', level: 2, category: 'Summer Prep' },
-    { key: 'summer_translations', name: 'Summer translation challenge', level: 2, category: 'Summer Prep' }
+    { key: 'summer_translations', name: 'Summer translation challenge', level: 2, category: 'Summer Prep' },
+    { key: 'honors_ordinal_numbers', name: 'Ordinal Numbers', description: 'First, second, third, and beyond — ordinal numbers, gender agreement, and real sentence practice.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'honors_test1_review', name: 'Test 1 Review', description: 'Preterite, imperfect, past-tense vocabulary, tense choice, and verb translation.', level: 2, category: 'Spanish 2 Honors' }
   ];
 
   const MAYO_MADNESS_KEY = 'mayo_madness';
@@ -164,6 +166,15 @@
     { code: '2s', label: 'tú', display: 'tú (you)' },
     { code: '3s', label: 'él/ella/usted', display: 'él/ella/usted (he/she/you formal)' },
     { code: '1p', label: 'nosotros', display: 'nosotros/nosotras (we)' },
+    { code: '3p', label: 'ellos/ellas/ustedes', display: 'ellos/ellas/ustedes (they/you all)' }
+  ];
+
+  const HONORS_PERSONS = [
+    { code: '1s', label: 'yo', display: 'yo (I)' },
+    { code: '2s', label: 'tú', display: 'tú (you)' },
+    { code: '3s', label: 'él/ella/usted', display: 'él/ella/usted (he/she/you formal)' },
+    { code: '1p', label: 'nosotros', display: 'nosotros/nosotras (we)' },
+    { code: '2p', label: 'vosotros', display: 'vosotros/vosotras (you all)' },
     { code: '3p', label: 'ellos/ellas/ustedes', display: 'ellos/ellas/ustedes (they/you all)' }
   ];
 
@@ -2556,7 +2567,9 @@ mean/nice
           summer_irregular_preterite: false,
           summer_irregular_imperfect: false,
           summer_tense_choice: false,
-          summer_translations: false
+          summer_translations: false,
+          honors_ordinal_numbers: false,
+          honors_test1_review: false
         },
         mayoMadnessEnabled: true,
         tensesEnabled: { present: true, preterite: false, imperfect: false },
@@ -2869,6 +2882,79 @@ mean/nice
     })))
   );
   const SUMMER_IRREGULAR_IMPERFECT_POOL = buildSummerConjugationPool('summer-irregular-imperfect', ['ser', 'ir', 'ver'], 'imperfect');
+
+  // Spanish 2 Honors content stays isolated from Spanish 1 and the existing
+  // Summer Prep modules, but uses the same hidden-item and scoring framework.
+  const ORDINALS = [
+    [1, 'primero', 'primera', 'first'], [2, 'segundo', 'segunda', 'second'],
+    [3, 'tercero', 'tercera', 'third'], [4, 'cuarto', 'cuarta', 'fourth'],
+    [5, 'quinto', 'quinta', 'fifth'], [6, 'sexto', 'sexta', 'sixth'],
+    [7, 'séptimo', 'séptima', 'seventh'], [8, 'octavo', 'octava', 'eighth'],
+    [9, 'noveno', 'novena', 'ninth'], [10, 'décimo', 'décima', 'tenth']
+  ];
+  const ORDINAL_EN = { first: ['first'], second: ['second'], third: ['third'], fourth: ['fourth'], fifth: ['fifth'], sixth: ['sixth'], seventh: ['seventh'], eighth: ['eighth', '8th'], ninth: ['ninth'], tenth: ['tenth'] };
+  const ORDINAL_POOL = ORDINALS.flatMap(([number, masc, fem, en]) => [
+    { id: `ordinal-en-${number}`, prompt: `Translate to Spanish: <strong>${en}</strong>`, expectedDisplay: masc, acceptable: [masc, fem], explanation: 'Use the masculine form unless the context gives a feminine noun.' },
+    { id: `ordinal-es-${number}`, prompt: `Translate to English: <strong>${masc}</strong>`, expectedDisplay: en, acceptable: ORDINAL_EN[en] },
+    { id: `ordinal-number-from-es-${number}`, prompt: `What number is <strong>${masc}</strong>?`, expectedDisplay: `${number}th`, acceptable: [`${number}th`, String(number)] },
+    { id: `ordinal-number-${number}`, prompt: `Write the ordinal for <strong>${number}th</strong> in Spanish.`, expectedDisplay: masc, acceptable: [masc, fem] },
+    { id: `ordinal-context-f-${number}`, prompt: `Complete the sentence: <strong>la ___ página</strong>`, expectedDisplay: fem, acceptable: [fem], explanation: 'Ordinal adjectives agree with a feminine singular noun.' },
+    { id: `ordinal-context-m-${number}`, prompt: `Complete the sentence: <strong>el ___ capítulo</strong>`, expectedDisplay: number === 1 ? 'primer' : number === 3 ? 'tercer' : masc, acceptable: [number === 1 ? 'primer' : number === 3 ? 'tercer' : masc], explanation: number === 1 || number === 3 ? 'Primero and tercero shorten to primer and tercer before a masculine singular noun.' : 'Ordinal adjectives agree with a masculine singular noun.' }
+  ]);
+  const HONORS_TIME_WORDS = [
+    ['ayer', ['yesterday']], ['anoche', ['last night']], ['la semana pasada', ['last week']], ['el mes pasado', ['last month']],
+    ['esta mañana', ['this morning']], ['siempre', ['always']], ['casi siempre', ['almost always']], ['normalmente', ['normally', 'usually']],
+    ['de vez en cuando', ['every now and then', 'from time to time']], ['frecuentemente', ['frequently', 'often']], ['el verano pasado', ['last summer']],
+    ['cuando era un niño', ['when I was a kid', 'when I was a child']], ['cuando tenía quince años', ['when I was 15 years old', 'when I was fifteen years old']],
+    ['cuando vivía en…', ['when I lived in']], ['anteayer', ['the day before yesterday']], ['anteanoche', ['the night before last']],
+    ['hace tres días', ['three days ago']], ['por lo general', ['normally', 'generally']], ['era costumbre que…', ['it was customary for', 'it was normal for']],
+    ['ayer por la tarde', ['yesterday afternoon']], ['ayer por la noche', ['yesterday evening', 'last night']], ['ayer por la mañana', ['yesterday morning']],
+    ['una vez', ['once', 'one time']], ['el otro día', ['the other day']], ['en febrero', ['in February']], ['por fin', ['finally']],
+    ['un día por mes', ['one day per month']], ['constantemente', ['constantly']], ['todos los días', ['every day']], ['cada día', ['every day', 'each day']],
+    ['de costumbre', ['normally', 'as usual']], ['a menudo', ['often']], ['a veces', ['sometimes']], ['con frecuencia', ['frequently', 'often']],
+    ['de repente', ['suddenly', 'all of a sudden']]
+  ].map(([sp, en], index) => ({ id: `honors-time-${index + 1}`, sp, en }));
+  const HONORS_PERSONS_BY_CODE = Object.fromEntries(HONORS_PERSONS.map((person) => [person.code, person]));
+  const HONORS_PRETERITE_VERBS = ['hablar','estudiar','trabajar','caminar','mirar','bailar','comprar','comer','beber','aprender','correr','vender','vivir','escribir','recibir','decidir','abrir','asistir'];
+  const HONORS_IMPERFECT_VERBS = [...HONORS_PRETERITE_VERBS];
+  const HONORS_CHOICE_POOL = [
+    ['Cuando era niño, ___ al parque todos los días.', 'caminar', '1s', 'imperfect', 'habitual past action'],
+    ['Ayer ___ mi tarea después de cenar.', 'terminar', '1s', 'preterite', 'completed action with ayer'],
+    ['Mientras estudiábamos, ___ la música.', 'escuchar', '1p', 'imperfect', 'background action'],
+    ['De repente, ___ la puerta.', 'abrir', '3s', 'preterite', 'sudden completed action'],
+    ['El verano pasado ___ en México.', 'vivir', '1p', 'preterite', 'completed time period'],
+    ['Normalmente ___ a las siete.', 'trabajar', '1s', 'imperfect', 'habitual action']
+  ].map(([sentence, verb, person, tense, clue], index) => ({ id: `honors-choice-${index + 1}`, sentence, verb, person, tense, clue }));
+
+  function honorsRegularConjugate(verb, tense, code) {
+    const type = verbType(verb);
+    const stem = stripDiacritics(verb).slice(0, -2);
+    const endings = {
+      preterite: { ar: ['é','aste','ó','amos','asteis','aron'], er: ['í','iste','ió','imos','isteis','ieron'], ir: ['í','iste','ió','imos','isteis','ieron'] },
+      imperfect: { ar: ['aba','abas','aba','ábamos','abais','aban'], er: ['ía','ías','ía','íamos','íais','ían'], ir: ['ía','ías','ía','íamos','íais','ían'] }
+    };
+    const idx = ['1s','2s','3s','1p','2p','3p'].indexOf(code);
+    return type && idx >= 0 ? stem + endings[tense][type][idx] : '';
+  }
+
+  function buildHonorsConjugationPool(prefix, verbs, tense) {
+    return verbs.flatMap((verb) => HONORS_PERSONS.map((person) => ({ id: `${prefix}-${verb}-${person.code}`, verb, person: person.code, tense })));
+  }
+  const HONORS_PRETERITE_POOL = buildHonorsConjugationPool('honors-preterite', HONORS_PRETERITE_VERBS, 'preterite');
+  const HONORS_IMPERFECT_POOL = buildHonorsConjugationPool('honors-imperfect', HONORS_IMPERFECT_VERBS, 'imperfect');
+  const HONORS_ENGLISH_VERBS = { hablar: ['speak', 'talk'], estudiar: ['study'], trabajar: ['work'], caminar: ['walk'], mirar: ['watch', 'look at'], bailar: ['dance'], comprar: ['buy'], comer: ['eat'], beber: ['drink'], aprender: ['learn'], correr: ['run'], vender: ['sell'], vivir: ['live'], escribir: ['write'], recibir: ['receive', 'get'], decidir: ['decide'], abrir: ['open'], asistir: ['attend'] };
+
+  function honorsEnglishTranslation(verb, tense, person) {
+    const pronoun = { '1s': 'I', '2s': 'you', '3s': 'he/she/you', '1p': 'we', '2p': 'you all', '3p': 'they' }[person] || 'they';
+    const roots = HONORS_ENGLISH_VERBS[verb] || [verb];
+    const past = { buy: 'bought', eat: 'ate', write: 'wrote', run: 'ran', drink: 'drank', speak: 'spoke', talk: 'talked', live: 'lived', sell: 'sold', work: 'worked', study: 'studied', walk: 'walked', dance: 'danced', watch: 'watched', 'look at': 'looked at', learn: 'learned', receive: 'received', get: 'got', decide: 'decided', open: 'opened', attend: 'attended' };
+    const answers = [];
+    for (const root of roots) {
+      if (tense === 'preterite') answers.push(`${pronoun} ${past[root] || `${root}ed`}`);
+      else answers.push(`${pronoun} ${root}`, `${pronoun} used to ${root}`, `${pronoun} ${['I', 'he/she/you'].includes(pronoun) ? 'was' : 'were'} ${root}ing`);
+    }
+    return answers;
+  }
 
   const SUMMER_TENSE_CHOICE_POOL = [
     { id:'summer-choice-younger', en:'When I was younger, I would always play with my friends.', verb:'jugar', person:'1s', tense:'imperfect', clue:'habitual action' },
@@ -3361,6 +3447,14 @@ mean/nice
 
     summer_translations: {
       generateQuestion(app) { return generateSummerTranslationQuestion(app); }
+    },
+
+    honors_ordinal_numbers: {
+      generateQuestion(app) { return generateOrdinalQuestion(app); }
+    },
+
+    honors_test1_review: {
+      generateQuestion(app) { return generateHonorsTest1Question(app); }
     }
   };
 
@@ -3423,6 +3517,66 @@ mean/nice
       expectedDisplay: item.sp,
       acceptable: buildAcceptableAnswerSet(item.acceptable)
     };
+  }
+
+  function chooseHonorsItem(app, moduleKey, pool, recentLimit = 6) {
+    const hidden = app.state.hiddenItems;
+    const recent = new Set((app.recentByModule[moduleKey] || []).slice(-recentLimit));
+    const available = pool.filter((item) => !hidden[item.id] && !recent.has(item.id));
+    const fallback = pool.filter((item) => !hidden[item.id]);
+    return pickByWeakScore(available.length ? available : fallback, app.state.itemScores, recent);
+  }
+
+  function generateOrdinalQuestion(app) {
+    const freeLimit = 12; // compact free rotation; premium sees the complete variety
+    const pool = app.hasPremiumAccess() ? ORDINAL_POOL : ORDINAL_POOL.slice(0, freeLimit);
+    const item = chooseHonorsItem(app, 'honors_ordinal_numbers', pool, 5);
+    if (!item) return null;
+    return { module: 'honors_ordinal_numbers', id: item.id, mode: 'text', prompt: item.prompt, expectedDisplay: item.expectedDisplay, acceptable: buildAcceptableAnswerSet(item.acceptable), explanation: item.explanation || 'Ordinal numbers agree with the noun they describe.' };
+  }
+
+  function honorsQuota(app, section) {
+    const premium = app.hasPremiumAccess();
+    const quotas = premium ? { preterite: 6, imperfect: 6, vocabulary: 5, translation: 4, choice: 3 } : { preterite: 4, imperfect: 4, vocabulary: 3, translation: 2, choice: 3 };
+    return { target: Object.values(quotas).reduce((sum, value) => sum + value, 0), used: app.activeSession?.sectionCounts?.[section] || 0, max: quotas[section] };
+  }
+
+  function generateHonorsTest1Question(app) {
+    const sections = ['preterite', 'imperfect', 'vocabulary', 'translation', 'choice'];
+    const open = sections.filter((section) => honorsQuota(app, section).used < honorsQuota(app, section).max);
+    if (!open.length) return null;
+    const section = pickRandom(open);
+    let q;
+    if (section === 'vocabulary') {
+      const item = chooseHonorsItem(app, 'honors_test1_review', HONORS_TIME_WORDS.slice(0, app.hasPremiumAccess() ? HONORS_TIME_WORDS.length : 12), 5);
+      if (!item) return null;
+      q = { id: item.id, prompt: `Translate this past-tense time expression to English: <strong>${escapeHtml(item.sp)}</strong>`, expectedDisplay: item.en[0], acceptable: item.en, explanation: 'Several natural English equivalents are accepted.' };
+    } else if (section === 'translation') {
+      const sourcePool = app.hasPremiumAccess() ? HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL) : HONORS_PRETERITE_POOL.slice(0, 30).concat(HONORS_IMPERFECT_POOL.slice(0, 30));
+      const item = chooseHonorsItem(app, 'honors_test1_review', sourcePool, 5);
+      if (!item) return null;
+      const form = honorsRegularConjugate(item.verb, item.tense, item.person);
+      const person = HONORS_PERSONS_BY_CODE[item.person];
+      const english = honorsEnglishTranslation(item.verb, item.tense, item.person);
+      q = { id: `honors-translation-${item.id}`, prompt: `Translate to English: <strong>${escapeHtml(form)}</strong><br><small>Regular ${item.tense} form of ${escapeHtml(item.verb)}</small>`, expectedDisplay: english[0], acceptable: english, explanation: 'Acceptable English depends on the past-tense meaning; natural wording is welcome.' };
+    } else if (section === 'choice') {
+      const item = chooseHonorsItem(app, 'honors_test1_review', HONORS_CHOICE_POOL, 3);
+      if (!item) return null;
+      const options = shuffle(['preterite', 'imperfect']);
+      q = { id: item.id, mode: 'mcq', prompt: `Choose the correct past tense:<br><strong>${escapeHtml(item.sentence)}</strong><br><small>Context: ${escapeHtml(item.clue)}</small>`, options, correctIndex: options.indexOf(item.tense), expectedDisplay: honorsRegularConjugate(item.verb, item.tense, item.person), explanation: `The expected form is <strong>${escapeHtml(honorsRegularConjugate(item.verb, item.tense, item.person))}</strong>.` };
+    } else {
+      const tense = section === 'preterite' ? 'preterite' : 'imperfect';
+      const pool = tense === 'preterite' ? HONORS_PRETERITE_POOL : HONORS_IMPERFECT_POOL;
+      const item = chooseHonorsItem(app, 'honors_test1_review', pool, 5);
+      if (!item) return null;
+      const form = honorsRegularConjugate(item.verb, tense, item.person);
+      const person = HONORS_PERSONS_BY_CODE[item.person];
+      const sentence = (item.person === '1s' && item.verb === 'hablar') ? 'Ayer, yo ___ con mi profesora.' : (item.person === '1p' && item.verb === 'comer') ? 'Después de clase, nosotros ___ juntos.' : null;
+      const identifyInfinitive = !sentence && Math.random() < 0.18;
+      q = { id: item.id, prompt: identifyInfinitive ? `Identify the infinitive: <strong>${escapeHtml(form)}</strong> (${tense})` : sentence ? `Complete the sentence (${tense}): <strong>${sentence}</strong>` : `Conjugate <strong>${escapeHtml(item.verb)}</strong> for <strong>${escapeHtml(person.display)}</strong> in the <strong>${tense}</strong>.`, expectedDisplay: identifyInfinitive ? item.verb : form, acceptable: [identifyInfinitive ? item.verb : form], explanation: identifyInfinitive ? 'Look past the ending to identify the regular infinitive.' : `${capitalize(tense)} regular ${verbType(item.verb).toUpperCase()} endings are the focus.` };
+    }
+    if (app.activeSession?.sectionCounts) app.activeSession.sectionCounts[section] = (app.activeSession.sectionCounts[section] || 0) + 1;
+    return { module: 'honors_test1_review', mode: q.mode || 'text', ...q, acceptable: q.acceptable instanceof Set ? q.acceptable : buildAcceptableAnswerSet(q.acceptable) };
   }
 
   // --------------------------------------------
@@ -3675,6 +3829,8 @@ mean/nice
         soloSerEstarBtn: $('soloSerEstarBtn'),
         soloGustarBtn: $('soloGustarBtn'),
         soloDatesBtn: $('soloDatesBtn'),
+        soloHonorsOrdinalBtn: $('soloHonorsOrdinalBtn'),
+        soloHonorsTest1Btn: $('soloHonorsTest1Btn'),
         soloOffBtn: $('soloOffBtn'),
         soloSelect: $('soloSelect'),
         soloOffMobileBtn: $('soloOffMobileBtn'),
@@ -3754,6 +3910,8 @@ mean/nice
         toggle_summer_irregular_imperfect: $('toggle_summer_irregular_imperfect'),
         toggle_summer_tense_choice: $('toggle_summer_tense_choice'),
         toggle_summer_translations: $('toggle_summer_translations'),
+        toggle_honors_ordinal_numbers: $('toggle_honors_ordinal_numbers'),
+        toggle_honors_test1_review: $('toggle_honors_test1_review'),
 
         tense_present: $('tense_present'),
         tense_preterite: $('tense_preterite'),
@@ -3964,7 +4122,9 @@ mean/nice
         this.$.soloPresentProgressiveBtn,
         this.$.soloSerEstarBtn,
         this.$.soloGustarBtn,
-        this.$.soloDatesBtn
+        this.$.soloDatesBtn,
+        this.$.soloHonorsOrdinalBtn,
+        this.$.soloHonorsTest1Btn
       ];
       for (const btn of soloButtons) {
         btn.addEventListener('click', () => {
@@ -4336,6 +4496,8 @@ mean/nice
       this.$.soloSerEstarBtn.disabled = !this.isModulePracticeEnabled('ser_estar');
       this.$.soloGustarBtn.disabled = !this.isModulePracticeEnabled('gustar');
       this.$.soloDatesBtn.disabled = !this.isModulePracticeEnabled('dates');
+      this.$.soloHonorsOrdinalBtn.disabled = !this.isModulePracticeEnabled('honors_ordinal_numbers');
+      this.$.soloHonorsTest1Btn.disabled = !this.isModulePracticeEnabled('honors_test1_review');
     },
 
     renderKeyHintStrip() {
@@ -4919,6 +5081,14 @@ mean/nice
         return { total, available: Math.max(0, total - hiddenCount) };
       }
 
+      if (moduleKey === 'honors_ordinal_numbers' || moduleKey === 'honors_test1_review') {
+        const pool = moduleKey === 'honors_ordinal_numbers'
+          ? ORDINAL_POOL
+          : HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL, HONORS_TIME_WORDS, HONORS_CHOICE_POOL);
+        const hiddenCount = pool.filter(item => hidden[item.id]).length;
+        return { total: pool.length, available: Math.max(0, pool.length - hiddenCount) };
+      }
+
       const summerPool = {
         summer_time_words: SUMMER_TIME_WORDS_POOL,
         summer_preterite: SUMMER_PRETERITE_POOL,
@@ -4978,20 +5148,20 @@ mean/nice
       document.body.classList.toggle('level-spanish2', spanish2);
       if (this.$.settingsIntro) {
         this.$.settingsIntro.textContent = spanish2
-          ? 'Spanish 2 · Summer Prep modules. Choose only the drills you want today.'
+          ? 'Spanish 2 Honors modules. Choose only the drills you want today.'
           : 'Spanish 1 modules. Choose only the topics you want today.';
       }
       this.$.enterPracticeBtn.disabled = spanish2 && enabledSummerModules.length === 0;
       this.$.enterPracticeBtn.textContent = spanish2
-        ? (enabledSummerModules.length ? 'Enter Summer Prep →' : 'Enable Summer Prep modules')
+        ? (enabledSummerModules.length ? 'Enter Spanish 2 Honors →' : 'Enable Spanish 2 Honors modules')
         : 'Enter practice session →';
       this.$.enterPracticeBtn.setAttribute('aria-label', spanish2
-        ? (enabledSummerModules.length ? 'Enter Summer Prep' : 'Enable Summer Prep modules')
+        ? (enabledSummerModules.length ? 'Enter Spanish 2 Honors' : 'Enable Spanish 2 Honors modules')
         : 'Enter practice session');
       if (this.$.spanish2ModuleSummary) {
         this.$.spanish2ModuleSummary.textContent = enabledSummerModules.length
           ? enabledSummerModules.map(m => m.name).join(', ')
-          : 'No Summer Prep modules enabled yet';
+          : 'No Spanish 2 Honors modules enabled yet';
       }
     },
 
@@ -5017,10 +5187,20 @@ mean/nice
         incorrect: 0,
         currentStreak: 0,
         bestStreak: 0,
-        modules: new Set()
+        modules: new Set(),
+        sectionCounts: { preterite: 0, imperfect: 0, vocabulary: 0, translation: 0, choice: 0 },
+        target: this.getSessionTarget()
       };
       this.sessionQuestionRecorded = false;
       this.updateSessionStatsUI();
+    },
+
+    getSessionTarget() {
+      const premium = this.hasPremiumAccess();
+      const enabled = this.getEnabledModules();
+      if (enabled.length === 1 && enabled[0] === 'honors_ordinal_numbers') return premium ? 14 : 8;
+      if (enabled.includes('honors_test1_review')) return premium ? 24 : 16;
+      return null;
     },
 
     recordSessionAnswer(correct) {
@@ -5144,7 +5324,7 @@ mean/nice
         row.className = 'session-history-row';
         const date = new Date(session.endedAt || session.startedAt);
         const dateLabel = Number.isNaN(date.getTime()) ? 'Practice session' : date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
-        const levelLabel = session.level === 'spanish2' ? 'Spanish 2 · Summer Prep' : 'Spanish 1';
+        const levelLabel = session.level === 'spanish2' ? 'Spanish 2 · Honors' : 'Spanish 1';
         const modules = session.modules?.length ? session.modules.join(', ') : 'All enabled modules';
         row.innerHTML = `<div class="session-history-main"><strong>${levelLabel}</strong><small>${dateLabel}</small><small>${modules}</small></div><div class="session-history-result"><strong>${this.formatPercent(session.correct, session.answered)}</strong><small>${session.correct} correct · ${session.incorrect} incorrect · ${session.answered} answered</small></div>`;
         list.appendChild(row);
@@ -5164,7 +5344,7 @@ mean/nice
     updateHomeSummary() {
       if (!this.$?.homeModuleSummary || !this.state) return;
       const names = MODULES
-        .filter(m => this.isModulePracticeEnabled(m.key))
+        .filter(m => this.isModuleInCurrentLevel(m) && this.isModulePracticeEnabled(m.key))
         .map(m => m.name);
       this.$.homeModuleSummary.textContent = names.length ? names.join(', ') : 'No modules selected yet';
     },
@@ -5319,6 +5499,8 @@ mean/nice
       else if (moduleKey === 'ser_estar') for (const x of SER_ESTAR_POOL) if (!hidden[x.id]) ids.push(x.id);
       else if (moduleKey === 'gustar') for (const x of GUSTAR_POOL) if (!hidden[x.id]) ids.push(x.id);
       else if (moduleKey === 'dates') for (const x of DATES_POOL) if (!hidden[x.id]) ids.push(x.id);
+      else if (moduleKey === 'honors_ordinal_numbers') for (const x of ORDINAL_POOL) if (!hidden[x.id]) ids.push(x.id);
+      else if (moduleKey === 'honors_test1_review') for (const x of HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL, HONORS_TIME_WORDS, HONORS_CHOICE_POOL)) if (!hidden[x.id]) ids.push(x.id);
       if (!ids.length) return 2.5;
       let total = 0;
       for (const id of ids) total += (scores[id] ?? 2);
@@ -5327,6 +5509,11 @@ mean/nice
 
     nextQuestion(opts = {}) {
       const { forceModule = null, keepFeedback = false } = opts;
+
+      if (!forceModule && this.activeSession?.target && this.activeSession.answered >= this.activeSession.target) {
+        this.requestEndSession();
+        return;
+      }
 
       if (this.currentQuestion && !forceModule && !this.canAdvanceFromCurrentQuestion()) {
         if (this.currentQuestion.module === 'numbers') {
@@ -6406,9 +6593,46 @@ mean/nice
     runAutomatedChecks(opts = {}) {
       const { startup = false } = opts;
       const results = [];
-      const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates'];
+      const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates', 'honors_ordinal_numbers', 'honors_test1_review'];
       const hasModules = requiredModules.every((key) => MODULES.some((m) => m.key === key) && modules[key]);
       results.push({ ok: hasModules, label: 'Expanded modules registered (including Mayo Madness parent submodules)' });
+      results.push({ ok: MODULES.find((m) => m.key === 'honors_ordinal_numbers')?.level === 2 && MODULES.find((m) => m.key === 'honors_test1_review')?.level === 2, label: 'Spanish 2 Honors modules are level 2 only' });
+      results.push({ ok: !PREMIUM_COMPLEX_MODULES.has('honors_ordinal_numbers') && !PREMIUM_COMPLEX_MODULES.has('honors_test1_review'), label: 'Spanish 2 Honors modules are not premium-locked' });
+      const ordinalAnswers = buildAcceptableAnswerSet(['tercera']);
+      results.push({ ok: ordinalAnswers.has(normalizeLoose('TERCERA')) && buildAcceptableAnswerSet(['tercer']).has(normalizeLoose('tercer')) && !buildAcceptableAnswerSet(['tercera']).has(normalizeLoose('tercero')), label: 'Ordinal gender agreement and contextual tercero/tercer forms are strict' });
+      results.push({ ok: honorsRegularConjugate('hablar', 'preterite', '1s') === 'hablé' && honorsRegularConjugate('comer', 'imperfect', '1p') === 'comíamos' && honorsRegularConjugate('vivir', 'imperfect', '2p') === 'vivíais', label: 'Honors regular preterite/imperfect endings cover all six persons' });
+      results.push({ ok: buildAcceptableAnswerSet(['suddenly', 'all of a sudden']).has(normalizeLoose('all of a sudden')) && buildAcceptableAnswerSet(['normally', 'generally']).has(normalizeLoose('generally')), label: 'Honors vocabulary accepts natural English synonyms' });
+      const priorPremiumForChecks = this.mayoPremiumUnlocked;
+      this.mayoPremiumUnlocked = false;
+      const freeOrdinal = modules.honors_ordinal_numbers.generateQuestion(this);
+      this.mayoPremiumUnlocked = true;
+      const premiumOrdinal = modules.honors_ordinal_numbers.generateQuestion(this);
+      this.mayoPremiumUnlocked = priorPremiumForChecks;
+      results.push({ ok: !!freeOrdinal && !!premiumOrdinal && ORDINAL_POOL.length > 12, label: 'Honors ordinal free/premium pools differ in depth' });
+      const priorCheckLevel = this.currentLevel;
+      const priorCheckSolo = this.soloMode;
+      const priorOrdinalOn = this.state.settings.modulesEnabled.honors_ordinal_numbers;
+      const priorTestOn = this.state.settings.modulesEnabled.honors_test1_review;
+      const priorPremiumTarget = this.mayoPremiumUnlocked;
+      this.currentLevel = 'spanish2';
+      this.soloMode = 'honors_ordinal_numbers';
+      this.state.settings.modulesEnabled.honors_ordinal_numbers = true;
+      this.state.settings.modulesEnabled.honors_test1_review = false;
+      this.mayoPremiumUnlocked = false;
+      const freeOrdinalTarget = this.getSessionTarget();
+      this.mayoPremiumUnlocked = true;
+      const premiumOrdinalTarget = this.getSessionTarget();
+      this.soloMode = 'honors_test1_review';
+      this.state.settings.modulesEnabled.honors_test1_review = true;
+      const premiumTestTarget = this.getSessionTarget();
+      this.mayoPremiumUnlocked = false;
+      const freeTestTarget = this.getSessionTarget();
+      this.currentLevel = priorCheckLevel;
+      this.soloMode = priorCheckSolo;
+      this.state.settings.modulesEnabled.honors_ordinal_numbers = priorOrdinalOn;
+      this.state.settings.modulesEnabled.honors_test1_review = priorTestOn;
+      this.mayoPremiumUnlocked = priorPremiumTarget;
+      results.push({ ok: freeOrdinalTarget === 8 && premiumOrdinalTarget === 14 && freeTestTarget === 16 && premiumTestTarget === 24, label: 'Honors free/premium session targets differ as intended' });
       results.push({ ok: MAYO_MADNESS_SUBMODULE_KEYS.length === 6 && MAYO_MADNESS_SUBMODULE_KEYS.every((key) => requiredModules.includes(key)), label: 'Mayo Madness parent tracks all submodules' });
       results.push({ ok: !MODULES.some((m) => m.key === 'ser_estar_gustar'), label: 'Deprecated ser_estar_gustar module removed from registry' });
       results.push({ ok: DAYS_POOL.length >= 7, label: 'Days pool has >= 7 items' });
