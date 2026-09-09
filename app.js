@@ -98,7 +98,7 @@
   ];
 
   const MAYO_MADNESS_KEY = 'mayo_madness';
-  const MAYO_MADNESS_PASSWORDS = new Set(['ibelikesheesh', 'patriotssuck', '0612jdbj']);
+  const MAYO_MADNESS_PASSWORDS = new Set(['ibelikesheesh', 'patriotssuck', '0612jdbj', 'fiske']);
   const PREMIUM_ACCESS_STORAGE_KEY = 'claro_premium_access_v1';
   const PREMIUM_ACCESS_COOKIE_KEY = 'claro_premium_access';
   const PREMIUM_ACCESS_DAY = 24 * 60 * 60 * 1000;
