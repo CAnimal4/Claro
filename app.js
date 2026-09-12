@@ -59,6 +59,10 @@
     window.open(url.toString(), '_blank', 'noopener,noreferrer');
   }
 
+  function tallyFeedbackType(value) {
+    return value === 'module_request' ? 'Feature Request' : value === 'feedback_system' ? 'Other' : 'Other';
+  }
+
   window.APP_DEBUG = false;
 
   const MODULES = [
@@ -3666,9 +3670,12 @@ mean/nice
       this.ensureProfileAndAnalytics();
       this.loadPremiumAccess();
       const lastView = readLastViewCookie() || {};
-      this.currentLevel = this.state.lastLevel || lastView.level || 'spanish1';
+      const requestedLevel = new URLSearchParams(window.location.search).get('class');
+      this.currentLevel = requestedLevel === 'spanish2' || requestedLevel === 'spanish1'
+        ? requestedLevel
+        : (this.state.lastLevel || lastView.level || 'spanish1');
       this.soloMode = this.state.lastModule || lastView.module || null;
-      this.setLevel(this.currentLevel);
+      this.setLevel(this.currentLevel, { historyMode: 'replace' });
 
       // Parse vocab
       this.vocab = parseQuizletBlock(QUIZLET_VOCAB_BLOCK);
@@ -3966,6 +3973,9 @@ mean/nice
         feedbackCloseBtn: $('feedbackCloseBtn'),
         feedbackCancelBtn: $('feedbackCancelBtn'),
         feedbackForm: $('feedbackForm'),
+        feedbackType: $('feedbackType'),
+        feedbackModuleRequestField: $('feedbackModuleRequestField'),
+        feedbackModuleRequest: $('feedbackModuleRequest'),
         feedbackMessage: $('feedbackMessage'),
         feedbackEmail: $('feedbackEmail'),
         feedbackWebsite: $('feedbackWebsite'),
@@ -4010,8 +4020,8 @@ mean/nice
       this.$.enterPracticeBtn.addEventListener('click', () => this.enterPractice());
       this.$.homeSettingsBtn.addEventListener('click', () => this.openSettings());
       this.$.backHomeBtn.addEventListener('click', () => this.requestEndSession());
-      this.$.spanish1Tab.addEventListener('click', () => this.setLevel('spanish1'));
-      this.$.spanish2Tab.addEventListener('click', () => this.setLevel('spanish2'));
+      this.$.spanish1Tab.addEventListener('click', () => this.setLevel('spanish1', { historyMode: 'push' }));
+      this.$.spanish2Tab.addEventListener('click', () => this.setLevel('spanish2', { historyMode: 'push' }));
       this.$.settingsCloseBtn.addEventListener('click', () => this.closeModal(this.$.settingsOverlay));
       this.$.settingsOverlay.addEventListener('click', (e) => {
         if (e.target === this.$.settingsOverlay) this.closeModal(this.$.settingsOverlay);
@@ -4044,6 +4054,11 @@ mean/nice
         if (e.target === this.$.feedbackOverlay) this.closeModal(this.$.feedbackOverlay);
       });
       this.$.feedbackForm.addEventListener('submit', (e) => this.submitFeedback(e));
+      this.$.feedbackType.addEventListener('change', () => this.updateFeedbackTypeUI());
+      window.addEventListener('popstate', () => {
+        const level = new URLSearchParams(window.location.search).get('class');
+        this.setLevel(level, { historyMode: 'none' });
+      });
 
       // Session lifecycle
       this.$.endSessionBtn.addEventListener('click', () => this.requestEndSession());
@@ -4772,8 +4787,18 @@ mean/nice
 
     openFeedback() {
       this.$.feedbackForm.reset();
+      this.updateFeedbackTypeUI();
       this.setFeedbackStatus('Your feedback will be sent securely.', 'neutral');
       this.openModal(this.$.feedbackOverlay, this.$.feedbackMessage);
+    },
+
+    updateFeedbackTypeUI() {
+      const requestingModule = this.$.feedbackType.value === 'module_request';
+      this.$.feedbackModuleRequestField.hidden = !requestingModule;
+      this.$.feedbackModuleRequest.required = requestingModule;
+      this.$.feedbackMessage.placeholder = requestingModule
+        ? 'What would you want to practice in this module, and what would make it useful?'
+        : 'What should be improved?';
     },
 
     setFeedbackStatus(message, tone = 'neutral') {
@@ -4785,19 +4810,31 @@ mean/nice
       event.preventDefault();
       const message = this.$.feedbackMessage.value.trim();
       const email = this.$.feedbackEmail.value.trim();
+      const feedbackType = this.$.feedbackType.value;
+      const requestedModule = this.$.feedbackModuleRequest.value.trim();
       if (!message) {
         this.setFeedbackStatus('Please write a little feedback first.', 'bad');
         this.$.feedbackMessage.focus();
+        return;
+      }
+      if (feedbackType === 'module_request' && !requestedModule) {
+        this.setFeedbackStatus('Please name the module you would like to request.', 'bad');
+        this.$.feedbackModuleRequest.focus();
         return;
       }
       if (!TALLY_FEEDBACK_URL) {
         this.setFeedbackStatus('Tally is not connected yet. Add the feedback form URL in app.js.', 'bad');
         return;
       }
+      const tallyMessage = feedbackType === 'module_request'
+        ? `Requested module: ${requestedModule}\n\n${message}`
+        : message;
       openTallyForm(TALLY_FEEDBACK_URL, {
         form_type: 'feedback',
         app_name: 'claro',
-        message,
+        feedback_type: tallyFeedbackType(feedbackType),
+        requested_module: requestedModule,
+        message: tallyMessage,
         email,
         level: this.currentLevel === 'spanish2' ? 'Spanish 2' : 'Spanish 1',
         module: this.currentQuestion?.module || 'dashboard',
@@ -5129,8 +5166,13 @@ mean/nice
       this.$.revealBtn?.focus?.();
     },
 
-    setLevel(level) {
+    setLevel(level, { historyMode = 'replace' } = {}) {
       this.currentLevel = level === 'spanish2' ? 'spanish2' : 'spanish1';
+      const url = new URL(window.location.href);
+      url.searchParams.set('class', this.currentLevel);
+      if (historyMode === 'push') window.history.pushState({ class: this.currentLevel }, '', url);
+      if (historyMode === 'replace') window.history.replaceState({ class: this.currentLevel }, '', url);
+      this.updateDocumentTitle();
       if (this.state) {
         this.state.lastLevel = this.currentLevel;
         persistLastView({ level: this.currentLevel, module: this.state.lastModule || this.soloMode || null });
@@ -5139,7 +5181,7 @@ mean/nice
       const spanish2 = this.currentLevel === 'spanish2';
       const summerModules = MODULES.filter(m => m.level === 2);
       const enabledSummerModules = summerModules.filter(m => this.state?.settings?.modulesEnabled?.[m.key]);
-      this.$.headerLevel.textContent = spanish2 ? 'Spanish 2' : 'Spanish 1';
+      this.$.headerLevel.textContent = spanish2 ? 'Spanish 2 Honors' : 'Spanish 1';
       this.$.spanish1Tab.classList.toggle('is-active', !spanish2);
       this.$.spanish2Tab.classList.toggle('is-active', spanish2);
       this.$.spanish1Tab.setAttribute('aria-selected', String(!spanish2));
@@ -5165,6 +5207,12 @@ mean/nice
           ? enabledSummerModules.map(m => m.name).join(', ')
           : 'No Spanish 2 Honors modules enabled yet';
       }
+    },
+
+    updateDocumentTitle() {
+      document.title = this.currentLevel === 'spanish2'
+        ? 'Claro — Spanish 2 Honors'
+        : 'Claro — Spanish 1';
     },
 
     ensureProfileAndAnalytics() {
@@ -6918,5 +6966,15 @@ mean/nice
   window.SpanishPracticeApp = App;
   window.runAutomatedChecks = () => App.runAutomatedChecks({ startup: false });
 
-  window.addEventListener('DOMContentLoaded', () => App.init());
+  window.addEventListener('DOMContentLoaded', () => {
+    App.init();
+    const switcher = document.querySelector('.brand-switcher');
+    const button = document.getElementById('appSwitcherButton');
+    const menu = document.getElementById('appSwitcherMenu');
+    if (switcher && button && menu) {
+      button.addEventListener('click', () => { menu.hidden = !menu.hidden; button.setAttribute('aria-expanded', String(!menu.hidden)); });
+      document.addEventListener('click', (event) => { if (!switcher.contains(event.target)) { menu.hidden = true; button.setAttribute('aria-expanded', 'false'); } });
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { menu.hidden = true; button.setAttribute('aria-expanded', 'false'); } });
+    }
+  });
 })();

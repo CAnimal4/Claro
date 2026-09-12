@@ -48,17 +48,27 @@ Developer note:
   <title>Claro — Spanish 1</title>
   <meta name="theme-color" content="#2563eb" />
   <meta name="application-name" content="Claro" />
-  <link rel="icon" href="assets/claro-mark.png?v=20260817-2" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/claro-mark.png?v=20260817-2" />
+  <link rel="icon" href="assets/claro-mark.png?v=20260912-1" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/claro-mark.png?v=20260912-1" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="style.css?v=20260804-4" />
+  <style>
+    .brand-switcher-button{min-height:48px;padding:0 2px;line-height:1.1}.brand-switcher-button .brand-mark{width:42px;height:42px}.brand-switcher-button #brandName{font-size:1.15rem}.brand-switcher-button #headerLevel{display:block;font-size:.77rem;color:var(--muted);font-weight:700}.brand-switcher-button .brand-separator{display:none}.brand-switcher-button>span:last-child{margin-left:3px;color:var(--muted);font-size:1.2rem;line-height:1;transform:translateY(-2px)}.modules-btn{width:auto!important;min-width:80px;padding:0 13px!important;font-size:.78rem!important;font-weight:900!important}.brand .subtitle[hidden]{display:none!important}
+  </style>
 </head>
 <body>
   <div class="app" id="appRoot">
     <header class="topbar">
       <div class="brand">
-        <div class="title"><img class="brand-mark" src="assets/claro-mark.png?v=20260817-2" alt="" aria-hidden="true" /> <span id="brandName">Claro</span><span class="brand-separator" aria-hidden="true">—</span><span id="headerLevel">Spanish 1</span></div>
-        <div class="subtitle" id="subtitle">Build a daily Spanish habit with short, focused drills.</div>
+        <div class="brand-switcher">
+          <button class="title brand-switcher-button" id="appSwitcherButton" type="button" aria-expanded="false" aria-controls="appSwitcherMenu"><img class="brand-mark" src="assets/claro-mark.png?v=20260912-1" alt="" aria-hidden="true" /> <span id="brandName">Claro</span><span class="brand-separator" aria-hidden="true">—</span><span id="headerLevel">Spanish 1</span><span aria-hidden="true">⌄</span></button>
+          <div class="app-switcher-menu" id="appSwitcherMenu" hidden>
+            <p>Learning apps</p>
+            <a href="https://clarospanish.vercel.app" class="is-current" aria-current="page"><img src="assets/claro-mark.png?v=20260912-1" alt="" /> <span>Claro<small>Spanish learning</small></span><em>Current</em></a>
+            <a href="https://vertexmath.vercel.app"><img src="https://vertexmath.vercel.app/assets/vertex-mark.png" alt="" /> <span>Vertex<small>Math learning</small></span></a>
+          </div>
+        </div>
+        <div class="subtitle" id="subtitle" hidden>Build a daily Spanish habit with short, focused drills.</div>
       </div>
       <div class="top-actions">
         <span class="chip" id="activeModuleChip" title="Active module">
@@ -67,7 +77,7 @@ Developer note:
           <span class="meta" id="activeModuleMeta"></span>
         </span>
         <button class="icon-btn premium-btn" id="premiumBtn" aria-label="Unlock Premium" title="Unlock Premium"><span aria-hidden="true">★</span><span class="premium-btn-label">Premium</span></button>
-        <button class="icon-btn" id="settingsBtn" aria-label="Open settings">⚙</button>
+        <button class="icon-btn modules-btn" id="settingsBtn" aria-label="Open modules and settings">Modules</button>
       </div>
     </header>
 
@@ -83,10 +93,10 @@ Developer note:
       <div class="home-hero">
         <div>
           <p class="eyebrow">Your practice space</p>
-          <h1>What do you want to practice?</h1>
-          <p class="home-intro">Set up your topics once, then start a focused session whenever you’re ready.</p>
+          <h1>Practice Spanish</h1>
+          <p class="home-intro">Choose a level, then jump into a focused session.</p>
         </div>
-        <img class="home-mark" src="assets/claro-mark.png?v=20260817-2" alt="" aria-hidden="true" />
+        <img class="home-mark" src="assets/claro-mark.png?v=20260912-1" alt="" aria-hidden="true" />
       </div>
       <div class="level-switch" role="tablist" aria-label="Spanish level">
         <button class="level-tab is-active" id="spanish1Tab" role="tab" aria-selected="true">Spanish 1</button>
@@ -666,6 +676,18 @@ Developer note:
         <button class="icon-btn" id="feedbackCloseBtn" aria-label="Close feedback">✕</button>
       </div>
       <form id="feedbackForm" class="feedback-form" action="#" method="post">
+        <label class="feedback-field" for="feedbackType">
+          <span>What kind of feedback is this?</span>
+          <select id="feedbackType" name="feedback_type">
+            <option value="general">General feedback or suggestion</option>
+            <option value="module_request">Request a new module</option>
+            <option value="feedback_system">Feedback about the feedback experience</option>
+          </select>
+        </label>
+        <label class="feedback-field" for="feedbackModuleRequest" id="feedbackModuleRequestField" hidden>
+          <span>Module you would like</span>
+          <input id="feedbackModuleRequest" name="requested_module" maxlength="160" placeholder="For example: travel vocabulary or imperfect tense review" />
+        </label>
         <label class="feedback-field" for="feedbackMessage">
           <span>Your feedback</span>
           <textarea id="feedbackMessage" name="message" maxlength="2000" required placeholder="What should be improved?"></textarea>

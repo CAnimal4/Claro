@@ -1,3 +1,12 @@
+    .brand-switcher{position:relative}
+    .brand-switcher-button{border:0; background:transparent; cursor:pointer; text-align:left; color:inherit; display:flex; align-items:center; gap:6px}
+    .app-switcher-menu{position:absolute; z-index:80; left:0; top:calc(100% + 10px); width:270px; padding:9px; border:1px solid var(--border); border-radius:14px; background:#fff; box-shadow:0 16px 36px rgba(15,23,42,.16)}
+    .app-switcher-menu[hidden]{display:none!important}
+    .app-switcher-menu>p{margin:4px 8px 8px; color:var(--muted); font-size:.7rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase}
+    .app-switcher-menu>a{display:flex; align-items:center; gap:9px; padding:9px; border-radius:10px; color:inherit; text-decoration:none}
+    .app-switcher-menu>a:hover,.app-switcher-menu>a.is-current{background:#eff6ff}
+    .app-switcher-menu img{width:32px; height:32px; object-fit:contain; border-radius:8px}
+    .app-switcher-menu span{display:grid; line-height:1.15; font-weight:800}.app-switcher-menu small{color:var(--muted); font-size:.72rem; font-weight:600}.app-switcher-menu em{margin-left:auto; color:#3730a3; font-size:.68rem; font-style:normal; font-weight:900}
     :root{
       --bg:#f5f7fb;
       --surface:#ffffff;
@@ -407,9 +416,9 @@
     .feedback-form{display:grid; gap:12px; margin-top:14px}
     .feedback-field{display:grid; gap:6px; color:#334155; font-size:.78rem; font-weight:900; letter-spacing:.04em; text-transform:uppercase}
     .feedback-field small{font-size:.72rem; font-weight:700; letter-spacing:0; text-transform:none; color:var(--muted)}
-    .feedback-field input,.feedback-field textarea{width:100%; border:1px solid #cbd5e1; border-radius:12px; padding:11px 12px; color:var(--text); background:#f8fafc; font:inherit; font-size:.95rem; letter-spacing:0; text-transform:none; outline:none; transition:border-color .18s ease, box-shadow .18s ease, background .18s ease}
+    .feedback-field input,.feedback-field textarea,.feedback-field select{width:100%; border:1px solid #cbd5e1; border-radius:12px; padding:11px 12px; color:var(--text); background:#f8fafc; font:inherit; font-size:.95rem; letter-spacing:0; text-transform:none; outline:none; transition:border-color .18s ease, box-shadow .18s ease, background .18s ease}
     .feedback-field textarea{min-height:120px; resize:vertical; line-height:1.45}
-    .feedback-field input:focus,.feedback-field textarea:focus{border-color:#60a5fa; background:#fff; box-shadow:0 0 0 4px rgba(37,99,235,.14)}
+    .feedback-field input:focus,.feedback-field textarea:focus,.feedback-field select:focus{border-color:#60a5fa; background:#fff; box-shadow:0 0 0 4px rgba(37,99,235,.14)}
     .feedback-form-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:2px}
     .feedback-trap{position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden}
     .modal-head{
