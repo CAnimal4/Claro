@@ -53,7 +53,7 @@ Developer note:
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="style.css?v=20260804-4" />
   <style>
-    .brand-switcher-button{min-height:48px;padding:0 2px;line-height:1.1}.brand-switcher-button .brand-mark{width:42px;height:42px}.brand-switcher-button #brandName{font-size:1.15rem}.brand-switcher-button #headerLevel{display:block;font-size:.77rem;color:var(--muted);font-weight:700}.brand-switcher-button .brand-separator{display:none}.brand-switcher-button>span:last-child{margin-left:3px;color:var(--muted);font-size:1.2rem;line-height:1;transform:translateY(-2px)}.modules-btn{width:auto!important;min-width:80px;padding:0 13px!important;font-size:.78rem!important;font-weight:900!important}.brand .subtitle[hidden]{display:none!important}
+    .brand-switcher-button{min-height:48px;padding:0 2px;line-height:1.1}.brand-switcher-button .brand-mark{width:42px;height:42px}.claro-brand-copy{display:grid;line-height:1.1;text-align:left}.brand-switcher-button #brandName{font-size:1.15rem}.brand-switcher-button #headerLevel{display:block;font-size:.77rem;color:var(--muted);font-weight:700}.brand-switcher-button .brand-separator{display:none}.claro-chevron{margin-left:3px;color:var(--muted);font-size:1.2rem;line-height:1;transform:translateY(-2px)}.modules-btn{width:auto!important;min-width:80px;padding:0 13px!important;font-size:.78rem!important;font-weight:900!important}.brand .subtitle[hidden]{display:none!important}
   </style>
 </head>
 <body>
@@ -61,7 +61,7 @@ Developer note:
     <header class="topbar">
       <div class="brand">
         <div class="brand-switcher">
-          <button class="title brand-switcher-button" id="appSwitcherButton" type="button" aria-expanded="false" aria-controls="appSwitcherMenu"><img class="brand-mark" src="assets/claro-mark.png?v=20260912-1" alt="" aria-hidden="true" /> <span id="brandName">Claro</span><span class="brand-separator" aria-hidden="true">—</span><span id="headerLevel">Spanish 1</span><span aria-hidden="true">⌄</span></button>
+          <button class="title brand-switcher-button" id="appSwitcherButton" type="button" aria-expanded="false" aria-controls="appSwitcherMenu"><img class="brand-mark" src="assets/claro-mark.png?v=20260912-1" alt="" aria-hidden="true" /> <span class="claro-brand-copy"><strong id="brandName">Claro</strong><span id="headerLevel">Spanish 1</span></span><span class="claro-chevron" aria-hidden="true">⌄</span></button>
           <div class="app-switcher-menu" id="appSwitcherMenu" hidden>
             <p>Learning apps</p>
             <a href="https://clarospanish.vercel.app" class="is-current" aria-current="page"><img src="assets/claro-mark.png?v=20260912-1" alt="" /> <span>Claro<small>Spanish learning</small></span><em>Current</em></a>
@@ -94,7 +94,7 @@ Developer note:
         <div>
           <p class="eyebrow">Your practice space</p>
           <h1>Practice Spanish</h1>
-          <p class="home-intro">Choose a level, then jump into a focused session.</p>
+          <p class="home-intro">Choose a level. Start practicing.</p>
         </div>
         <img class="home-mark" src="assets/claro-mark.png?v=20260912-1" alt="" aria-hidden="true" />
       </div>
@@ -136,7 +136,7 @@ Developer note:
         <div>
           <span class="home-overview-label">Spanish 2</span>
           <h2>Spanish 2 Honors is ready.</h2>
-          <p>Choose from Summer Prep and Honors modules in Settings to practice past-tense skills, ordinal numbers, tense choice, and translations.</p>
+          <p>Past-tense, ordinal, and translation practice.</p>
           <small class="summer-summary" id="spanish2ModuleSummary">No Summer Prep modules enabled yet</small>
           <div class="summer-resources">
             <a class="resource-link" href="https://quizlet.com/717244172/past-tense-times-flash-cards/?funnelUUID=5a5b427d-69c4-4a3b-a133-b0254b36035f" target="_blank" rel="noopener">Open the past-tense Quizlet ↗</a>
