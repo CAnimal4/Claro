@@ -52,12 +52,15 @@ Developer note:
   <link rel="apple-touch-icon" href="assets/claro-mark-clean.png?v=20260912-2" />
   <link rel="manifest" href="manifest.webmanifest?v=20260912-2" />
   <link rel="stylesheet" href="style.css?v=20260804-4" />
+  <link rel="stylesheet" href="shared-ui.css" />
+  <link rel="stylesheet" href="app-modifiers.css" />
+  <link rel="stylesheet" href="style-shared.css" />
   <style>
     .brand-switcher-button{min-height:48px;padding:0 2px;line-height:1.1}.brand-switcher-button .brand-mark{width:42px;height:42px}.claro-brand-copy{display:grid;line-height:1.1;text-align:left}.brand-switcher-button #brandName{font-size:1.15rem}.brand-switcher-button #headerLevel{display:block;font-size:.77rem;color:var(--muted);font-weight:700}.brand-switcher-button .brand-separator{display:none}.claro-chevron{margin-left:3px;color:var(--muted);font-size:1.2rem;line-height:1;transform:translateY(-2px)}.modules-btn{width:auto!important;min-width:80px;padding:0 13px!important;font-size:.78rem!important;font-weight:900!important}.premium-btn{min-width:100px!important;height:48px!important;border:1px solid #d7e7db!important;border-radius:14px!important;background:#fff!important;color:#14532d!important;box-shadow:none!important}.premium-btn:hover{background:#f1faf3!important;box-shadow:0 10px 20px rgba(20,83,45,.12)!important}.premium-btn span:first-child{color:#14532d!important}.brand .subtitle[hidden]{display:none!important}
   </style>
 </head>
 <body>
-  <div class="app" id="appRoot">
+  <div class="app learning-app-shell" id="appRoot">
     <header class="topbar">
       <div class="brand">
         <div class="brand-switcher">
@@ -107,7 +110,7 @@ Developer note:
       </div>
       <div class="level-switch" role="tablist" aria-label="Spanish level">
         <button class="level-tab is-active" id="spanish1Tab" role="tab" aria-selected="true">Spanish 1</button>
-        <button class="level-tab" id="spanish2Tab" role="tab" aria-selected="false">Spanish 2 <span>Honors</span></button>
+        <button class="level-tab" id="spanish2Tab" role="tab" aria-selected="false">Spanish 2 Honors</button>
       </div>
       <div class="home-actions">
         <button class="btn primary home-start-btn" id="enterPracticeBtn">Enter practice session <span aria-hidden="true">→</span></button>
@@ -679,19 +682,16 @@ Developer note:
   </button>
 
   <div class="modal-overlay" id="feedbackOverlay" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
-    <div class="modal feedback-modal">
-      <div class="modal-head">
-        <div>
-          <div style="font-weight:900; font-size:1.05rem" id="feedbackTitle">Send feedback</div>
-          <div class="muted small">Found something confusing or have an idea? Send it directly to the app owner.</div>
-        </div>
-        <button class="icon-btn" id="feedbackCloseBtn" aria-label="Close feedback">✕</button>
-      </div>
+    <section class="modal feedback-modal">
+      <div class="modal-heading"><div><h2 id="feedbackTitle">Send feedback</h2><p>Ideas and module requests help shape Claro.</p></div><button class="icon-button" id="feedbackCloseBtn" aria-label="Close feedback">×</button></div>
       <form id="feedbackForm" class="feedback-form" action="#" method="post">
         <label class="feedback-field" for="feedbackType">
           <span>What kind of feedback is this?</span>
           <select id="feedbackType" name="feedback_type">
             <option value="general">General feedback or suggestion</option>
+            <option value="bug">Report a bug</option>
+            <option value="ui_request">Request a UI change</option>
+            <option value="improvement">Suggest an improvement</option>
             <option value="module_request">Request a new module</option>
             <option value="feedback_system">Feedback about the feedback experience</option>
           </select>
@@ -709,13 +709,13 @@ Developer note:
           <input id="feedbackEmail" name="email" type="email" maxlength="160" autocomplete="email" placeholder="you@example.com" />
         </label>
         <label class="feedback-trap" aria-hidden="true">Leave this blank<input id="feedbackWebsite" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
-        <div class="feedback-form-actions">
+        <div class="modal-actions feedback-form-actions">
           <button class="btn ghost" type="button" id="feedbackCancelBtn">Cancel</button>
           <button class="btn primary" type="submit" id="feedbackSubmitBtn">Send feedback</button>
         </div>
         <div class="feedback neutral" id="feedbackStatus" aria-live="polite">This opens a secure Tally form.</div>
       </form>
-    </div>
+    </section>
   </div>
 
   <div class="modal-overlay" id="endSessionOverlay" role="dialog" aria-modal="true" aria-labelledby="endSessionTitle">
@@ -824,6 +824,7 @@ Developer note:
     <button id="undoResetBtn" aria-label="Undo reset action">Undo</button>
   </div>
 
+<script src="app-shared.js"></script>
 <script src="app.js?v=20260804-4"></script>
 </body>
 </html>

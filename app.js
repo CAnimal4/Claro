@@ -48,8 +48,8 @@
   const ANALYTICS_VERSION = 2;
   // Paste the public Tally form URLs here after creating the two forms.
   // Example: https://tally.so/r/xxxxxx
-  const TALLY_FEEDBACK_URL = 'https://tally.so/r/Pdq7AQ';
-  const TALLY_PREMIUM_URL = 'https://tally.so/r/Y5A1Oq';
+  const TALLY_FEEDBACK_URL = 'https://tally.so/r/68grLO';
+  const TALLY_PREMIUM_URL = 'https://tally.so/r/OD68ap';
 
   function openTallyForm(baseUrl, fields) {
     const url = new URL(baseUrl);
@@ -60,7 +60,7 @@
   }
 
   function tallyFeedbackType(value) {
-    return value === 'module_request' ? 'Feature Request' : value === 'feedback_system' ? 'Other' : 'Other';
+    return ({ bug: 'Bug report', ui_request: 'UI request', improvement: 'Improvement request', module_request: 'New module request', feedback_system: 'Feedback about feedback system', general: 'Other' })[value] || 'Other';
   }
 
   window.APP_DEBUG = false;

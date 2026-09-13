@@ -1,0 +1,2 @@
+/* Claro-only design/content modifiers. Shared geometry lives in shared-ui.css. */
+:root{--brand:#2563eb;--brand-strong:#1d4ed8;--brand-soft:#eff6ff;--surface-soft:#f8fafc;--keyhint-bg:#eff6ff;--keyhint-border:#bfdbfe}
