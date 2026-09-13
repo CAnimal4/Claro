@@ -48,9 +48,9 @@ Developer note:
   <title>Claro — Spanish 1</title>
   <meta name="theme-color" content="#2563eb" />
   <meta name="application-name" content="Claro" />
-  <link rel="icon" href="assets/claro-mark.png?v=20260912-1" type="image/png" />
-  <link rel="apple-touch-icon" href="assets/claro-mark.png?v=20260912-1" />
-  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/claro-mark-clean.png?v=20260912-2" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/claro-mark-clean.png?v=20260912-2" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260912-2" />
   <link rel="stylesheet" href="style.css?v=20260804-4" />
   <style>
     .brand-switcher-button{min-height:48px;padding:0 2px;line-height:1.1}.brand-switcher-button .brand-mark{width:42px;height:42px}.claro-brand-copy{display:grid;line-height:1.1;text-align:left}.brand-switcher-button #brandName{font-size:1.15rem}.brand-switcher-button #headerLevel{display:block;font-size:.77rem;color:var(--muted);font-weight:700}.brand-switcher-button .brand-separator{display:none}.claro-chevron{margin-left:3px;color:var(--muted);font-size:1.2rem;line-height:1;transform:translateY(-2px)}.modules-btn{width:auto!important;min-width:80px;padding:0 13px!important;font-size:.78rem!important;font-weight:900!important}.premium-btn{min-width:100px!important;height:48px!important;border:1px solid #d7e7db!important;border-radius:14px!important;background:#fff!important;color:#14532d!important;box-shadow:none!important}.premium-btn:hover{background:#f1faf3!important;box-shadow:0 10px 20px rgba(20,83,45,.12)!important}.premium-btn span:first-child{color:#14532d!important}.brand .subtitle[hidden]{display:none!important}
@@ -61,22 +61,29 @@ Developer note:
     <header class="topbar">
       <div class="brand">
         <div class="brand-switcher">
-          <button class="title brand-switcher-button" id="appSwitcherButton" type="button" aria-expanded="false" aria-controls="appSwitcherMenu"><img class="brand-mark" src="assets/claro-mark.png?v=20260912-1" alt="" aria-hidden="true" /> <span class="claro-brand-copy"><strong id="brandName">Claro</strong><span id="headerLevel">Spanish 1</span></span><span class="claro-chevron" aria-hidden="true">⌄</span></button>
+          <button class="title brand-switcher-button" id="appSwitcherButton" type="button" aria-expanded="false" aria-controls="appSwitcherMenu"><img class="brand-mark" src="assets/claro-mark-clean.png?v=20260912-2" alt="" aria-hidden="true" /> <span class="claro-brand-copy"><strong id="brandName">Claro</strong><span id="headerLevel">Spanish 1</span></span><span class="claro-chevron" aria-hidden="true">⌄</span></button>
           <div class="app-switcher-menu" id="appSwitcherMenu" hidden>
             <p>Learning apps</p>
-            <a href="https://clarospanish.vercel.app" class="is-current" aria-current="page"><img src="assets/claro-mark.png?v=20260912-1" alt="" /> <span>Claro<small>Spanish learning</small></span><em>Current</em></a>
+            <a href="https://clarospanish.vercel.app" class="is-current" aria-current="page"><img src="assets/claro-mark-clean.png?v=20260912-2" alt="" /> <span>Claro<small>Spanish learning</small></span><em>Current</em></a>
             <a href="https://vertexmath.vercel.app"><img src="https://vertexmath.vercel.app/assets/vertex-mark.png" alt="" /> <span>Vertex<small>Math learning</small></span></a>
           </div>
         </div>
         <div class="subtitle" id="subtitle" hidden>Build a daily Spanish habit with short, focused drills.</div>
       </div>
       <div class="top-actions">
+        <div class="dashboard-switcher">
+          <button class="dashboard-switcher-button" id="classSwitcherButton" type="button" aria-expanded="false" aria-controls="classSwitcherMenu"><span class="dashboard-dot" aria-hidden="true"></span><span id="classSwitcherLabel">Spanish 1</span><span aria-hidden="true">⌄</span></button>
+          <div class="dashboard-switcher-menu" id="classSwitcherMenu" hidden>
+            <button class="dashboard-switcher-option is-current" type="button" data-class="spanish1" aria-current="page">Spanish 1<small>Current dashboard</small></button>
+            <button class="dashboard-switcher-option" type="button" data-class="spanish2">Spanish 2 Honors<small>Advanced dashboard</small></button>
+          </div>
+        </div>
         <span class="chip" id="activeModuleChip" title="Active module">
           <span class="dot" aria-hidden="true"></span>
           <span id="activeModuleLabel">Numbers</span>
           <span class="meta" id="activeModuleMeta"></span>
         </span>
-        <button class="icon-btn premium-btn" id="premiumBtn" aria-label="Unlock Premium" title="Unlock Premium"><span aria-hidden="true">★</span><span class="premium-btn-label">Premium</span></button>
+        <button class="icon-btn premium-btn" id="premiumBtn" aria-label="Unlock Premium" title="Unlock Premium"><span class="premium-btn-label">Premium</span></button>
         <button class="icon-btn modules-btn" id="settingsBtn" aria-label="Open modules and settings">Modules</button>
       </div>
     </header>
@@ -96,7 +103,7 @@ Developer note:
           <h1>Practice Spanish</h1>
           <p class="home-intro">Choose a level. Start practicing.</p>
         </div>
-        <img class="home-mark" src="assets/claro-mark.png?v=20260912-1" alt="" aria-hidden="true" />
+        <img class="home-mark" src="assets/claro-mark-clean.png?v=20260912-2" alt="" aria-hidden="true" />
       </div>
       <div class="level-switch" role="tablist" aria-label="Spanish level">
         <button class="level-tab is-active" id="spanish1Tab" role="tab" aria-selected="true">Spanish 1</button>
@@ -171,6 +178,11 @@ Developer note:
         <div class="dashboard-section-heading"><div><span class="home-overview-label">History</span><h2 id="historyTitle">Practice sessions</h2></div><small>Most recent first</small></div>
         <div id="sessionHistory" class="session-history-list"></div>
         <p id="sessionHistoryEmpty" class="session-history-empty">Complete a session and it will appear here.</p>
+      </section>
+      <section class="admin-export-panel" id="adminExportPanel" hidden>
+        <div><span class="home-overview-label">Admin tools</span><h2>Question removal queue</h2><p id="adminQueueSummary">No questions selected.</p></div>
+        <button class="btn primary" id="adminExportBtn" type="button">Send selected questions</button>
+        <p class="feedback neutral" id="adminExportStatus" aria-live="polite"></p>
       </section>
     </main>
 
@@ -348,6 +360,7 @@ Developer note:
 
       <div class="never-row">
         <button class="btn small ghost" id="neverBtn" aria-label="Never show this question again">🙈 Hide this question</button>
+        <button class="btn small admin-question-btn" id="adminDeleteQuestionBtn" type="button" hidden>Remove this question from production</button>
       </div>
     </main>
 
@@ -628,6 +641,13 @@ Developer note:
           <div class="feedback neutral" id="checksOutput" aria-live="polite">Automated checks not run yet.</div>
         </div>
       </details>
+    </div>
+  </div>
+
+  <div class="modal-overlay admin-gate-overlay" id="adminGateOverlay" role="dialog" aria-modal="true" aria-labelledby="adminGateTitle" style="display:none">
+    <div class="modal compact admin-gate-modal">
+      <div class="modal-head"><div><div style="font-weight:900;font-size:1.05rem" id="adminGateTitle">Admin access</div><div class="muted small">Enter the administrator password to continue.</div></div></div>
+      <form id="adminGateForm"><label class="premium-field" for="adminPasswordInput"><span>Admin password</span><input id="adminPasswordInput" type="password" autocomplete="current-password" required /></label><button class="btn primary" type="submit">Enter admin</button><div class="feedback bad" id="adminGateStatus" aria-live="polite"></div></form>
     </div>
   </div>
 
