@@ -653,21 +653,13 @@ Developer note:
 
   <!-- PREMIUM ACCESS MODAL -->
   <div class="modal-overlay" id="premiumOverlay" role="dialog" aria-modal="true" aria-labelledby="premiumTitle">
-    <div class="modal">
-      <div class="modal-head">
-        <div>
-          <div style="font-weight:900; font-size:1.05rem" id="premiumTitle">Premium Access</div>
-          <div class="muted small">Unlock advanced materials and larger question pools.</div>
-        </div>
-        <button class="icon-btn" id="premiumCloseBtn" aria-label="Close premium access">✕</button>
-      </div>
+    <div class="modal compact claro-premium-modal">
+      <div class="modal-heading"><div><h2 id="premiumTitle">Premium access</h2><p>Use your existing access password.</p></div><button class="icon-button" id="premiumCloseBtn" aria-label="Close premium access">×</button></div>
       <div class="premium-form">
-        <label class="premium-field" for="premiumPasswordInput"><span>Access password</span><input id="premiumPasswordInput" type="password" autocomplete="off" placeholder="Enter password" aria-label="Premium password" /></label>
+        <label class="premium-field" for="premiumPasswordInput"><span>Access password</span><input id="premiumPasswordInput" type="password" autocomplete="current-password" required placeholder="Enter password" aria-label="Premium password" /></label>
+        <div class="modal-actions"><button class="btn primary" id="premiumSubmitBtn" aria-label="Unlock premium access">Unlock premium</button></div>
+        <div class="feedback neutral" id="premiumFeedback" aria-live="polite">Premium is verified securely when Claro is deployed with its server configuration.</div>
       </div>
-      <div class="actions">
-        <button class="btn primary" id="premiumSubmitBtn" aria-label="Unlock premium access">Unlock</button>
-      </div>
-      <div class="feedback neutral" id="premiumFeedback" aria-live="polite">Enter a password to unlock premium.</div>
       <div class="premium-request-divider"><span>Need access?</span></div>
       <button class="btn premium-request-toggle" id="premiumRequestToggle" type="button">Request premium access</button>
       <form class="premium-request-form" id="premiumRequestForm" action="#" method="post" hidden>
