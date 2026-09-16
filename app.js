@@ -102,14 +102,10 @@
   ];
 
   const MAYO_MADNESS_KEY = 'mayo_madness';
-  const ROLE_RANK = Object.freeze({ free: 0, premium: 1, mod: 2, admin: 3 });
-  const ROLE_LABEL = Object.freeze({ free: 'Free', premium: 'Premium', mod: 'Moderator', admin: 'Admin' });
-  const ROLE_DESCRIPTION = Object.freeze({
-    free: 'Core practice is available.',
-    premium: 'Premium modules and full question pools are available.',
-    mod: 'Premium access plus deletion-request and moderation history tools.',
-    admin: 'Full Premium and moderation access, including final review decisions.'
-  });
+  const MAYO_MADNESS_PASSWORDS = new Set(['ibelikesheesh', 'patriotssuck', '0612jdbj', 'fiske']);
+  const PREMIUM_ACCESS_STORAGE_KEY = 'claro_premium_access_v1';
+  const PREMIUM_ACCESS_COOKIE_KEY = 'claro_premium_access';
+  const PREMIUM_ACCESS_DAY = 24 * 60 * 60 * 1000;
   // Beginner recognition drills stay fully free. Premium adds advanced forms,
   // sentence work, and a larger question pool to these modules.
   const PREMIUM_COMPLEX_MODULES = new Set([
@@ -119,24 +115,34 @@
     'summer_irregular_imperfect', 'summer_tense_choice', 'summer_translations'
   ]);
 
-  function normalizeRole(value) {
-    return Object.prototype.hasOwnProperty.call(ROLE_RANK, value) ? value : 'free';
+  function readPremiumAccessRecord() {
+    let raw = '';
+    try { raw = localStorage.getItem(PREMIUM_ACCESS_STORAGE_KEY) || ''; } catch (_) {}
+    if (!raw) {
+      const cookie = document.cookie.split('; ').find((part) => part.startsWith(`${PREMIUM_ACCESS_COOKIE_KEY}=`));
+      if (cookie) raw = decodeURIComponent(cookie.slice(PREMIUM_ACCESS_COOKIE_KEY.length + 1));
+    }
+    try {
+      const record = JSON.parse(raw);
+      if (!record || !['permanent', 'temporary'].includes(record.mode)) return null;
+      if (record.mode === 'temporary' && Number(record.expiresAt) <= Date.now()) return null;
+      return { mode: record.mode, expiresAt: Number(record.expiresAt) || 0 };
+    } catch (_) {
+      return null;
+    }
   }
 
-  function roleAtLeast(role, requiredRole) {
-    return ROLE_RANK[normalizeRole(role)] >= ROLE_RANK[normalizeRole(requiredRole)];
+  function writePremiumAccessRecord(record) {
+    const raw = JSON.stringify(record);
+    try { localStorage.setItem(PREMIUM_ACCESS_STORAGE_KEY, raw); } catch (_) {}
+    try {
+      document.cookie = `${PREMIUM_ACCESS_COOKIE_KEY}=${encodeURIComponent(raw)}; max-age=31536000; path=/; SameSite=Lax`;
+    } catch (_) {}
   }
 
-  async function apiJson(url, options = {}) {
-    const response = await fetch(url, {
-      credentials: 'same-origin',
-      ...options,
-      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
-    });
-    let body = {};
-    try { body = await response.json(); } catch (_) {}
-    if (!response.ok || body.ok === false) throw new Error('Request failed');
-    return body;
+  function clearPremiumAccessRecord() {
+    try { localStorage.removeItem(PREMIUM_ACCESS_STORAGE_KEY); } catch (_) {}
+    try { document.cookie = `${PREMIUM_ACCESS_COOKIE_KEY}=; max-age=0; path=/; SameSite=Lax`; } catch (_) {}
   }
 
   function premiumQuestionHash(id) {
@@ -3592,12 +3598,9 @@ mean/nice
 
     currentQuestion: null,
     answered: false,
-    accessRole: 'free',
-    accessActorId: '',
-    accessPermissions: {},
-    accessReady: false,
-    moderationRequests: [],
-    moderationSuppressions: [],
+    mayoPremiumUnlocked: false,
+    premiumAccessMode: null,
+    premiumAccessExpiresAt: 0,
     activeSession: null,
     sessionQuestionRecorded: false,
 
@@ -3665,7 +3668,7 @@ mean/nice
       this.state.answerHistory = this.state.answerHistory || {};
       Object.defineProperty(this.state.itemScores, '__practiceApp', { value: this, enumerable: false, configurable: true });
       this.ensureProfileAndAnalytics();
-      this.refreshAccessSession();
+      this.loadPremiumAccess();
       const lastView = readLastViewCookie() || {};
       const requestedLevel = new URLSearchParams(window.location.search).get('class');
       this.currentLevel = requestedLevel === 'spanish2' || requestedLevel === 'spanish1'
@@ -3954,10 +3957,6 @@ mean/nice
         // premium modal
         premiumOverlay: $('premiumOverlay'),
         premiumCloseBtn: $('premiumCloseBtn'),
-        accessLoginForm: $('accessLoginForm'),
-        accessRoleName: $('accessRoleName'),
-        accessRoleDescription: $('accessRoleDescription'),
-        accessLogoutBtn: $('accessLogoutBtn'),
         premiumPasswordInput: $('premiumPasswordInput'),
         premiumSubmitBtn: $('premiumSubmitBtn'),
         premiumFeedback: $('premiumFeedback'),
@@ -3967,21 +3966,6 @@ mean/nice
         premiumRequestEmail: $('premiumRequestEmail'),
         premiumRequestSubmit: $('premiumRequestSubmit'),
         premiumRequestFeedback: $('premiumRequestFeedback'),
-        premiumRequestDivider: $('premiumRequestDivider'),
-        moderationPanel: $('moderationPanel'),
-        moderationPanelTitle: $('moderationPanelTitle'),
-        moderationHistory: $('moderationHistory'),
-        moderationHistoryEmpty: $('moderationHistoryEmpty'),
-        moderationStatus: $('moderationStatus'),
-        moderationRequestBtn: $('moderationRequestBtn'),
-        moderationRequestOverlay: $('moderationRequestOverlay'),
-        moderationRequestCloseBtn: $('moderationRequestCloseBtn'),
-        moderationRequestCancelBtn: $('moderationRequestCancelBtn'),
-        moderationRequestForm: $('moderationRequestForm'),
-        moderationRequestItem: $('moderationRequestItem'),
-        moderationItemType: $('moderationItemType'),
-        moderationReason: $('moderationReason'),
-        moderationRequestStatus: $('moderationRequestStatus'),
 
         // feedback
         feedbackBtn: $('feedbackBtn'),
@@ -4048,25 +4032,19 @@ mean/nice
       this.$.premiumOverlay.addEventListener('click', (e) => {
         if (e.target === this.$.premiumOverlay) this.closeModal(this.$.premiumOverlay);
       });
-      this.$.accessLoginForm.addEventListener('submit', (e) => this.submitAccessPassword(e));
-      this.$.accessLogoutBtn.addEventListener('click', () => this.logoutAccess());
+      this.$.premiumSubmitBtn.addEventListener('click', () => this.submitPremiumPassword());
+      this.$.premiumPasswordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.submitPremiumPassword();
+        }
+      });
       this.$.premiumRequestToggle.addEventListener('click', () => {
         const form = this.$.premiumRequestForm;
         form.hidden = !form.hidden;
         if (!form.hidden) this.$.premiumRequestName.focus();
       });
       this.$.premiumRequestForm.addEventListener('submit', (e) => this.submitPremiumRequest(e));
-      this.$.moderationRequestBtn.addEventListener('click', () => this.openModerationRequest());
-      this.$.moderationRequestCloseBtn.addEventListener('click', () => this.closeModal(this.$.moderationRequestOverlay));
-      this.$.moderationRequestCancelBtn.addEventListener('click', () => this.closeModal(this.$.moderationRequestOverlay));
-      this.$.moderationRequestOverlay.addEventListener('click', (e) => {
-        if (e.target === this.$.moderationRequestOverlay) this.closeModal(this.$.moderationRequestOverlay);
-      });
-      this.$.moderationRequestForm.addEventListener('submit', (e) => this.submitModerationRequest(e));
-      this.$.moderationHistory.addEventListener('click', (e) => {
-        const button = e.target.closest('[data-moderation-decision]');
-        if (button) this.reviewModerationRequest(button.dataset.requestId, button.dataset.moderationDecision);
-      });
 
       // Feedback
       this.$.feedbackBtn.addEventListener('click', () => this.openFeedback());
@@ -4627,7 +4605,6 @@ mean/nice
     closeTopModal() {
       // Close in priority order
       const modals = [
-        this.$.moderationRequestOverlay,
         this.$.hiddenOverlay,
         this.$.endSessionOverlay,
         this.$.feedbackOverlay,
@@ -4662,10 +4639,9 @@ mean/nice
       const parentOn = !!this.state.settings.mayoMadnessEnabled;
       if (this.$.premiumBtn) {
         this.$.premiumBtn.classList.toggle('unlocked', unlocked);
-        this.$.premiumBtn.title = `${ROLE_LABEL[this.accessRole]} access`;
-        this.$.premiumBtn.setAttribute('aria-label', `Open ${ROLE_LABEL[this.accessRole]} access controls`);
-        const label = this.$.premiumBtn.querySelector('.premium-btn-label');
-        if (label) label.textContent = roleAtLeast(this.accessRole, 'mod') ? ROLE_LABEL[this.accessRole] : 'Premium';
+        const temporary = this.premiumAccessMode === 'temporary';
+        this.$.premiumBtn.title = unlocked ? (temporary ? 'Premium active for one day' : 'Premium active') : 'Unlock Premium';
+        this.$.premiumBtn.setAttribute('aria-label', unlocked ? (temporary ? 'Premium active for one day' : 'Premium active') : 'Unlock Premium');
       }
       if (this.$.toggle_mayo_madness) {
         this.$.toggle_mayo_madness.checked = unlocked && parentOn;
@@ -4695,130 +4671,32 @@ mean/nice
         const el = this.$['toggle_' + key];
         if (el) el.disabled = !unlocked;
       }
-      this.renderAccessUI();
+    },
+
+    loadPremiumAccess() {
+      const record = readPremiumAccessRecord();
+      if (!record) {
+        clearPremiumAccessRecord();
+        this.mayoPremiumUnlocked = false;
+        this.premiumAccessMode = null;
+        this.premiumAccessExpiresAt = 0;
+        return;
+      }
+      this.mayoPremiumUnlocked = true;
+      this.premiumAccessMode = record.mode;
+      this.premiumAccessExpiresAt = record.expiresAt;
     },
 
     hasPremiumAccess() {
-      return this.hasAccessPermission('premium', 'premium');
-    },
-
-    canRequestDeletion() {
-      return this.hasAccessPermission('requestDeletion', 'mod');
-    },
-
-    canReviewDeletion() {
-      return this.hasAccessPermission('reviewDeletion', 'admin');
-    },
-
-    hasAccessPermission(permission, fallbackRole = 'free') {
-      if (Object.prototype.hasOwnProperty.call(this.accessPermissions, permission)) return this.accessPermissions[permission] === true;
-      return roleAtLeast(this.accessRole, fallbackRole);
-    },
-
-    applyAccessSession(payload = {}) {
-      const previouslyPremium = this.hasPremiumAccess();
-      this.accessRole = normalizeRole(payload.role);
-      this.accessActorId = typeof payload.actorId === 'string' ? payload.actorId : '';
-      this.accessPermissions = payload.permissions && typeof payload.permissions === 'object' && !Array.isArray(payload.permissions)
-        ? { ...payload.permissions }
-        : {};
-      this.accessReady = true;
-      this.refreshPremiumAccessUI();
-      this.refreshSettingsUI();
-      this.updateCountsRow();
-      this.loadModerationData();
-      if (previouslyPremium && !this.hasPremiumAccess() && this.currentQuestion && !this.isQuestionAvailableWithoutPremium(this.currentQuestion)) {
-        this.nextQuestion({ forceModule: this.currentQuestion.module, keepFeedback: false });
+      if (!this.mayoPremiumUnlocked) return false;
+      if (this.premiumAccessMode === 'temporary' && this.premiumAccessExpiresAt <= Date.now()) {
+        this.mayoPremiumUnlocked = false;
+        this.premiumAccessMode = null;
+        this.premiumAccessExpiresAt = 0;
+        clearPremiumAccessRecord();
+        return false;
       }
-    },
-
-    async refreshAccessSession() {
-      try {
-        this.applyAccessSession(await apiJson('/api/access/session'));
-      } catch (_) {
-        this.applyAccessSession({ role: 'free', permissions: [] });
-      }
-    },
-
-    renderAccessUI() {
-      if (!this.$?.accessRoleName) return;
-      const role = normalizeRole(this.accessRole);
-      this.$.accessRoleName.textContent = ROLE_LABEL[role];
-      this.$.accessRoleDescription.textContent = ROLE_DESCRIPTION[role];
-      this.$.accessLogoutBtn.hidden = role === 'free';
-      this.$.accessLoginForm.hidden = role !== 'free';
-      this.$.moderationPanel.hidden = !this.canRequestDeletion();
-      this.$.moderationPanelTitle.textContent = this.canReviewDeletion() ? 'Admin moderation' : 'Moderator tools';
-      this.$.premiumRequestToggle.hidden = role !== 'free';
-      this.$.premiumRequestDivider.hidden = role !== 'free';
-      if (role !== 'free') this.$.premiumRequestForm.hidden = true;
-      this.$.moderationRequestBtn.hidden = !this.canRequestDeletion() || !this.currentQuestion;
-    },
-
-    async loadModerationData() {
-      try {
-        const payload = await apiJson('/api/moderation');
-        this.moderationRequests = this.canRequestDeletion() && Array.isArray(payload.requests) ? payload.requests : [];
-        this.moderationSuppressions = Array.isArray(payload.suppressions) ? payload.suppressions : [];
-        this.renderModerationHistory();
-        if (this.currentQuestion && this.isQuestionSuppressed(this.currentQuestion)) {
-          this.nextQuestion({ forceModule: this.currentQuestion.module, keepFeedback: false });
-        }
-      } catch (_) {
-        if (this.$?.moderationStatus) {
-          this.$.moderationStatus.className = 'feedback bad';
-          this.$.moderationStatus.textContent = 'Moderation history could not be loaded.';
-        }
-      }
-    },
-
-    renderModerationHistory() {
-      if (!this.$?.moderationHistory) return;
-      const requests = this.moderationRequests.slice().sort((a, b) => String(b.requestedAt || '').localeCompare(String(a.requestedAt || '')));
-      this.$.moderationHistoryEmpty.hidden = requests.length > 0;
-      this.$.moderationHistory.innerHTML = requests.map((request) => {
-        const status = ['pending', 'approved', 'rejected'].includes(request.status) ? request.status : 'pending';
-        const label = request.item?.label || request.prompt || request.questionId || request.itemKey || 'Learning-session item';
-        const review = this.canReviewDeletion() && status === 'pending'
-          ? `<div class="moderation-actions"><button class="btn small primary" type="button" data-request-id="${escapeHtml(request.id || request.requestId || '')}" data-moderation-decision="approved">Approve</button><button class="btn small ghost" type="button" data-request-id="${escapeHtml(request.id || request.requestId || '')}" data-moderation-decision="rejected">Reject</button></div>`
-          : '';
-        const reviewMeta = request.reviewedAt
-          ? `<small>Reviewed by ${escapeHtml(request.reviewedBy || 'admin')} · ${escapeHtml(request.reviewedAt)}${request.deletionResult ? ` · ${escapeHtml(request.deletionResult)}` : ''}</small>`
-          : '';
-        return `<article class="moderation-request"><div><strong>${escapeHtml(label)}</strong><span class="moderation-status is-${status}">${status}</span></div><p>${escapeHtml(request.reason || 'No reason provided.')}</p><small>${escapeHtml(request.requesterRole || 'moderator')} · ${escapeHtml(request.requestedAt || '')}</small>${reviewMeta}${review}</article>`;
-      }).join('');
-    },
-
-    questionModerationRecord(question = this.currentQuestion, itemType = 'question') {
-      if (!question) return null;
-      const questionId = String(question.id || '');
-      const module = String(question.module || 'unknown');
-      const questionType = String(question.questionType || question.type || `${module}:${question.mode || 'question'}`);
-      return {
-        itemType: itemType === 'questionType' ? 'questionType' : 'question',
-        itemKey: itemType === 'questionType' ? `claro:type:${questionType}` : `claro:${this.currentLevel}:${module}:${questionId}`,
-        id: itemType === 'questionType' ? `claro:type:${questionType}` : `claro:${this.currentLevel}:${module}:${questionId}`,
-        type: itemType === 'questionType' ? 'questionType' : 'question',
-        label: String(question.prompt || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 500),
-        moduleId: module,
-        module,
-        questionId,
-        questionType,
-        prompt: String(question.prompt || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 500)
-      };
-    },
-
-    isQuestionSuppressed(question) {
-      const record = this.questionModerationRecord(question);
-      if (!record) return false;
-      return this.moderationSuppressions.some((entry) => {
-        if (typeof entry === 'string') return entry === record.itemKey || entry === record.questionId || entry === record.questionType;
-        if (!entry || typeof entry !== 'object') return false;
-        const item = entry.item && typeof entry.item === 'object' ? entry.item : entry;
-        return item.id === record.itemKey || item.itemKey === record.itemKey
-          || (entry.itemType === 'question' && entry.questionId === record.questionId)
-          || (entry.itemType === 'questionType' && entry.questionType === record.questionType);
-      });
+      return true;
     },
 
     isQuestionAvailableWithoutPremium(question) {
@@ -4830,15 +4708,16 @@ mean/nice
       this.$.premiumRequestForm.reset();
       this.$.premiumRequestForm.hidden = true;
       this.$.premiumRequestFeedback.textContent = '';
-      this.setPremiumFeedback(this.accessRole === 'free' ? 'Enter an access password to unlock the role assigned to it.' : `${ROLE_LABEL[this.accessRole]} access is active.`, this.accessRole === 'free' ? 'neutral' : 'good');
-      this.renderAccessUI();
-      if (this.canRequestDeletion()) this.loadModerationData();
-      this.openModal(this.$.premiumOverlay, this.accessRole === 'free' ? this.$.premiumPasswordInput : this.$.accessLogoutBtn);
+      const unlocked = this.hasPremiumAccess();
+      const status = this.premiumAccessMode === 'temporary' ? ' for today' : '';
+      this.setPremiumFeedback(unlocked ? `Premium is already active${status}.` : 'Unlock advanced materials and the full question pools.', unlocked ? 'good' : 'neutral');
+      this.openModal(this.$.premiumOverlay, this.$.premiumPasswordInput);
     },
 
     async submitPremiumRequest(event) {
       event.preventDefault();
       const form = this.$.premiumRequestForm;
+      const submit = this.$.premiumRequestSubmit;
       const status = this.$.premiumRequestFeedback;
       if (!form.reportValidity()) return;
       if (!TALLY_PREMIUM_URL) {
@@ -4858,6 +4737,28 @@ mean/nice
       });
       status.className = 'feedback good';
       status.textContent = 'Tally opened in a new tab. Submit your request there.';
+      return;
+      /* legacy provider path retained below for easy rollback */
+      submit.disabled = true;
+      status.className = 'feedback neutral';
+      status.textContent = 'Sending your request…';
+      try {
+        const formData = new FormData(form);
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: { Accept: 'application/json' }
+        });
+        if (!response.ok) throw new Error('Request failed');
+        status.className = 'feedback good';
+        status.textContent = 'Request sent. We’ll discuss access by email.';
+        form.reset();
+      } catch (error) {
+        status.className = 'feedback bad';
+        status.textContent = 'Could not send the request. Please try again.';
+      } finally {
+        submit.disabled = false;
+      }
     },
 
     setPremiumFeedback(html, tone) {
@@ -4865,86 +4766,23 @@ mean/nice
       this.$.premiumFeedback.innerHTML = html;
     },
 
-    async submitAccessPassword(event) {
-      event.preventDefault();
+    submitPremiumPassword() {
       const password = this.$.premiumPasswordInput.value.trim();
-      if (!password) return;
-      this.$.premiumSubmitBtn.disabled = true;
-      this.setPremiumFeedback('Verifying access…', 'neutral');
-      try {
-        const payload = await apiJson('/api/access/login', { method: 'POST', body: JSON.stringify({ password }) });
-        this.$.premiumPasswordInput.value = '';
-        this.applyAccessSession(payload);
-        this.setPremiumFeedback(`${ROLE_LABEL[this.accessRole]} access unlocked.`, 'good');
-        this.showBanner(`<strong>${ROLE_LABEL[this.accessRole]}</strong> access is now active.`);
-      } catch (_) {
-        this.setPremiumFeedback('That password could not be verified.', 'bad');
-        this.$.premiumPasswordInput.select();
-      } finally {
-        this.$.premiumSubmitBtn.disabled = false;
+      const temporary = password === 'temporary';
+      if (MAYO_MADNESS_PASSWORDS.has(password) || temporary) {
+        this.mayoPremiumUnlocked = true;
+        this.premiumAccessMode = temporary ? 'temporary' : 'permanent';
+        this.premiumAccessExpiresAt = temporary ? Date.now() + PREMIUM_ACCESS_DAY : 0;
+        writePremiumAccessRecord({ mode: this.premiumAccessMode, expiresAt: this.premiumAccessExpiresAt });
+        this.setPremiumFeedback(temporary ? 'Premium unlocked for 1 day.' : 'Premium unlocked and saved on this device.', 'good');
+        this.closeModal(this.$.premiumOverlay);
+        this.refreshSettingsUI();
+        this.updateCountsRow();
+        this.showBanner(temporary ? 'Premium unlocked for <strong>1 day</strong>.' : 'Premium unlocked: advanced materials are now available.');
+        return;
       }
-    },
-
-    async logoutAccess() {
-      this.$.accessLogoutBtn.disabled = true;
-      try {
-        await apiJson('/api/access/logout', { method: 'POST', body: '{}' });
-        this.applyAccessSession({ role: 'free', permissions: [] });
-        this.setPremiumFeedback('Elevated access has been locked.', 'good');
-      } catch (_) {
-        this.setPremiumFeedback('Access could not be locked. Please try again.', 'bad');
-      } finally {
-        this.$.accessLogoutBtn.disabled = false;
-      }
-    },
-
-    openModerationRequest() {
-      if (!this.canRequestDeletion() || !this.currentQuestion) return;
-      const record = this.questionModerationRecord();
-      this.$.moderationRequestItem.textContent = record.prompt || record.questionId;
-      this.$.moderationItemType.value = 'question';
-      this.$.moderationReason.value = '';
-      this.$.moderationRequestStatus.textContent = '';
-      this.openModal(this.$.moderationRequestOverlay, this.$.moderationReason);
-    },
-
-    async submitModerationRequest(event) {
-      event.preventDefault();
-      if (!this.canRequestDeletion()) return;
-      const record = this.questionModerationRecord(this.currentQuestion, this.$.moderationItemType.value);
-      const reason = this.$.moderationReason.value.trim();
-      if (!record || !reason) return;
-      const submit = this.$.moderationRequestForm.querySelector('[type="submit"]');
-      submit.disabled = true;
-      try {
-        await apiJson('/api/moderation', { method: 'POST', body: JSON.stringify({ action: 'request', ...record, reason }) });
-        this.$.moderationRequestStatus.className = 'feedback good';
-        this.$.moderationRequestStatus.textContent = 'Deletion request submitted for Admin review.';
-        await this.loadModerationData();
-        setTimeout(() => this.closeModal(this.$.moderationRequestOverlay), 500);
-      } catch (_) {
-        this.$.moderationRequestStatus.className = 'feedback bad';
-        this.$.moderationRequestStatus.textContent = 'The deletion request could not be submitted.';
-      } finally {
-        submit.disabled = false;
-      }
-    },
-
-    async reviewModerationRequest(requestId, decision) {
-      if (!this.canReviewDeletion() || !requestId || !['approved', 'rejected'].includes(decision)) return;
-      this.$.moderationStatus.className = 'feedback neutral';
-      this.$.moderationStatus.textContent = `${decision === 'approved' ? 'Approving' : 'Rejecting'} request…`;
-      try {
-        const action = decision === 'approved' ? 'approve' : 'reject';
-        await apiJson('/api/moderation', { method: 'PATCH', body: JSON.stringify({ requestId, action }) });
-        this.$.moderationStatus.className = 'feedback good';
-        this.$.moderationStatus.textContent = `Request ${decision}.`;
-        await this.loadModerationData();
-        if (decision === 'approved' && this.currentQuestion && this.isQuestionSuppressed(this.currentQuestion)) this.nextQuestion({ keepFeedback: false });
-      } catch (_) {
-        this.$.moderationStatus.className = 'feedback bad';
-        this.$.moderationStatus.textContent = 'The review decision could not be saved.';
-      }
+      this.setPremiumFeedback('Incorrect password. Try again.', 'bad');
+      this.$.premiumPasswordInput.select();
     },
 
     openFeedback() {
@@ -5767,7 +5605,7 @@ mean/nice
       let premiumSkipped = 0;
       for (let tries = 0; tries < 8; tries++) {
         q = this.generateQuestion(moduleKey);
-        if (q && (!this.isQuestionAvailableWithoutPremium(q) || this.isQuestionSuppressed(q))) {
+        if (q && !this.isQuestionAvailableWithoutPremium(q)) {
           premiumSkipped++;
           q = null;
           continue;
@@ -5790,7 +5628,7 @@ mean/nice
       if (!q && premiumSkipped) {
         for (let tries = 0; tries < 20 && !q; tries++) {
           const candidate = this.generateQuestion(moduleKey);
-          if (candidate && this.isQuestionAvailableWithoutPremium(candidate) && !this.isQuestionSuppressed(candidate)) q = candidate;
+          if (candidate && this.isQuestionAvailableWithoutPremium(candidate)) q = candidate;
         }
       }
 
@@ -5800,7 +5638,6 @@ mean/nice
       }
 
       this.currentQuestion = q;
-      this.renderAccessUI();
       this.answered = false;
       this.sessionQuestionRecorded = false;
       this.prepareAnswerTarget(q);
@@ -6225,7 +6062,7 @@ mean/nice
 
         // Numbers hint: show range/order/typing behavior reminder
         this.$.numbersHint.style.display = '';
-        this.renderAccessUI();
+        window.syncAdminQuestionControl?.();
 
         if (!keepFeedback) {
           // feedback area is in qa section only; no-op here
@@ -6257,7 +6094,7 @@ mean/nice
         this.$.answerInput.value = '';
         setTimeout(() => this.$.answerInput.focus(), 0);
       }
-      this.renderAccessUI();
+      window.syncAdminQuestionControl?.();
     },
 
     renderMcq(q) {
@@ -6824,38 +6661,36 @@ mean/nice
       results.push({ ok: ordinalAnswers.has(normalizeLoose('TERCERA')) && buildAcceptableAnswerSet(['tercer']).has(normalizeLoose('tercer')) && !buildAcceptableAnswerSet(['tercera']).has(normalizeLoose('tercero')), label: 'Ordinal gender agreement and contextual tercero/tercer forms are strict' });
       results.push({ ok: honorsRegularConjugate('hablar', 'preterite', '1s') === 'hablé' && honorsRegularConjugate('comer', 'imperfect', '1p') === 'comíamos' && honorsRegularConjugate('vivir', 'imperfect', '2p') === 'vivíais', label: 'Honors regular preterite/imperfect endings cover all six persons' });
       results.push({ ok: buildAcceptableAnswerSet(['suddenly', 'all of a sudden']).has(normalizeLoose('all of a sudden')) && buildAcceptableAnswerSet(['normally', 'generally']).has(normalizeLoose('generally')), label: 'Honors vocabulary accepts natural English synonyms' });
-      const priorRoleForChecks = this.accessRole;
-      const priorPermissionsForChecks = this.accessPermissions;
-      this.accessPermissions = {};
-      this.accessRole = 'free';
+      const priorPremiumForChecks = this.mayoPremiumUnlocked;
+      this.mayoPremiumUnlocked = false;
       const freeOrdinal = modules.honors_ordinal_numbers.generateQuestion(this);
-      this.accessRole = 'premium';
+      this.mayoPremiumUnlocked = true;
       const premiumOrdinal = modules.honors_ordinal_numbers.generateQuestion(this);
-      this.accessRole = priorRoleForChecks;
+      this.mayoPremiumUnlocked = priorPremiumForChecks;
       results.push({ ok: !!freeOrdinal && !!premiumOrdinal && ORDINAL_POOL.length > 12, label: 'Honors ordinal free/premium pools differ in depth' });
       const priorCheckLevel = this.currentLevel;
       const priorCheckSolo = this.soloMode;
       const priorOrdinalOn = this.state.settings.modulesEnabled.honors_ordinal_numbers;
       const priorTestOn = this.state.settings.modulesEnabled.honors_test1_review;
-      const priorPremiumTarget = this.accessRole;
+      const priorPremiumTarget = this.mayoPremiumUnlocked;
       this.currentLevel = 'spanish2';
       this.soloMode = 'honors_ordinal_numbers';
       this.state.settings.modulesEnabled.honors_ordinal_numbers = true;
       this.state.settings.modulesEnabled.honors_test1_review = false;
-      this.accessRole = 'free';
+      this.mayoPremiumUnlocked = false;
       const freeOrdinalTarget = this.getSessionTarget();
-      this.accessRole = 'premium';
+      this.mayoPremiumUnlocked = true;
       const premiumOrdinalTarget = this.getSessionTarget();
       this.soloMode = 'honors_test1_review';
       this.state.settings.modulesEnabled.honors_test1_review = true;
       const premiumTestTarget = this.getSessionTarget();
-      this.accessRole = 'free';
+      this.mayoPremiumUnlocked = false;
       const freeTestTarget = this.getSessionTarget();
       this.currentLevel = priorCheckLevel;
       this.soloMode = priorCheckSolo;
       this.state.settings.modulesEnabled.honors_ordinal_numbers = priorOrdinalOn;
       this.state.settings.modulesEnabled.honors_test1_review = priorTestOn;
-      this.accessRole = priorPremiumTarget;
+      this.mayoPremiumUnlocked = priorPremiumTarget;
       results.push({ ok: freeOrdinalTarget === 8 && premiumOrdinalTarget === 14 && freeTestTarget === 16 && premiumTestTarget === 24, label: 'Honors free/premium session targets differ as intended' });
       results.push({ ok: MAYO_MADNESS_SUBMODULE_KEYS.length === 6 && MAYO_MADNESS_SUBMODULE_KEYS.every((key) => requiredModules.includes(key)), label: 'Mayo Madness parent tracks all submodules' });
       results.push({ ok: !MODULES.some((m) => m.key === 'ser_estar_gustar'), label: 'Deprecated ser_estar_gustar module removed from registry' });
@@ -6908,33 +6743,24 @@ mean/nice
       results.push({ ok: hurryAnswers.has(normalizeLoose('nosotras estamos con prisa y tenemos hambre')), label: 'Mayo Madness Level 3 accepts subject and regional sentence variants' });
       const knewAnswers = buildAcceptableAnswerSet(MAYO_MADNESS_LEVEL_3_RAPID_TRANSLATIONS_POOL.find((x) => x.id === 'mayo3-i-knew').acceptable);
       results.push({ ok: knewAnswers.has(normalizeLoose('yo supe')) && knewAnswers.has(normalizeLoose('yo sabia')), label: 'Mayo Madness Level 3 accepts past-tense variation pairs' });
-      const priorPremiumUnlocked = this.accessRole;
+      const priorPremiumUnlocked = this.mayoPremiumUnlocked;
       const priorParentEnabled = this.state.settings.mayoMadnessEnabled;
       const priorLevel1Enabled = this.state.settings.modulesEnabled.mayo_madness_1;
       const priorMayoHidden = this.state.hiddenItems['mayo1-lapiz'];
       delete this.state.hiddenItems['mayo1-lapiz'];
       this.state.settings.mayoMadnessEnabled = true;
       this.state.settings.modulesEnabled.mayo_madness_1 = true;
-      this.accessRole = 'free';
+      this.mayoPremiumUnlocked = false;
       const lockedBlocksMayo = !this.isModulePracticeEnabled('mayo_madness_1') && this.getEnabledMayoMadnessModules().length === 0;
-      this.accessRole = 'premium';
+      this.mayoPremiumUnlocked = true;
       const unlockedAllowsMayo = this.isModulePracticeEnabled('mayo_madness_1') && this.getEnabledMayoMadnessModules().includes('mayo_madness_1');
-      this.accessRole = priorPremiumUnlocked;
-      this.accessPermissions = priorPermissionsForChecks;
+      this.mayoPremiumUnlocked = priorPremiumUnlocked;
       this.state.settings.mayoMadnessEnabled = priorParentEnabled;
       this.state.settings.modulesEnabled.mayo_madness_1 = priorLevel1Enabled;
       if (priorMayoHidden) this.state.hiddenItems['mayo1-lapiz'] = priorMayoHidden;
       else delete this.state.hiddenItems['mayo1-lapiz'];
       results.push({ ok: lockedBlocksMayo && unlockedAllowsMayo, label: 'Premium gate blocks Mayo Madness until unlock' });
       results.push({ ok: this.$.premiumPasswordInput?.type === 'password', label: 'Premium password input hides typed characters' });
-      results.push({ ok: !roleAtLeast('free', 'premium') && roleAtLeast('premium', 'premium') && roleAtLeast('mod', 'premium') && roleAtLeast('admin', 'mod'), label: 'Role hierarchy grants Premium inheritance to Moderator and Admin' });
-      const priorSuppressions = this.moderationSuppressions;
-      this.moderationSuppressions = [{ itemType: 'question', questionId: 'check-suppressed' }, { itemType: 'questionType', questionType: 'proof-reason' }];
-      const suppressesItem = this.isQuestionSuppressed({ id: 'check-suppressed', module: 'checks', mode: 'text' });
-      const suppressesType = this.isQuestionSuppressed({ id: 'check-other', module: 'checks', questionType: 'proof-reason' });
-      const keepsAllowed = !this.isQuestionSuppressed({ id: 'check-allowed', module: 'checks', mode: 'text' });
-      this.moderationSuppressions = priorSuppressions;
-      results.push({ ok: suppressesItem && suppressesType && keepsAllowed, label: 'Moderation suppressions filter question IDs and question types' });
       const priorNumbersMin = this.state.settings.numbersMin;
       const priorNumbersMax = this.state.settings.numbersMax;
       const priorNumbersSequential = this.state.settings.numbersSequential;
@@ -7146,8 +6972,37 @@ mean/nice
   window.SpanishPracticeApp = App;
   window.runAutomatedChecks = () => App.runAutomatedChecks({ startup: false });
 
+  // Admin question-removal queue. This is a convenience gate for the static app;
+  // production enforcement still happens when the selected IDs are removed from source.
+  const ADMIN_PASSWORD_HASH = '95f756a4e50df1f4530386f40dc6f160e717f4420cc315ad36cfc94dd0d4ae14';
+  const ADMIN_COOKIE = 'claro_admin_session_v1';
+  const ADMIN_QUEUE_COOKIE = 'claro_admin_question_queue_v1';
+const ADMIN_EXPORT_TALLY_URL = 'https://tally.so/r/WOLPQQ';
+  const isAdminRoute = /\/admin\/?$/.test(window.location.pathname) || new URLSearchParams(window.location.search).get('admin') === '1';
+  let adminUnlocked = false;
+  const readCookie = (name) => { const part = document.cookie.split('; ').find((item) => item.startsWith(`${name}=`)); return part ? decodeURIComponent(part.slice(name.length + 1)) : ''; };
+  const writeCookie = (name, value, maxAge = 60 * 60 * 8) => { document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; SameSite=Lax`; };
+  const readAdminQueue = () => { try { const parsed = JSON.parse(readCookie(ADMIN_QUEUE_COOKIE) || '[]'); return Array.isArray(parsed) ? parsed : []; } catch (_) { return []; } };
+  const writeAdminQueue = (queue) => { const raw = JSON.stringify(queue.slice(-24)); if (encodeURIComponent(raw).length > 3900) return false; writeCookie(ADMIN_QUEUE_COOKIE, raw, 60 * 60 * 24 * 365); return true; };
+  const hashAdminPassword = async (value) => { const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)); return Array.from(new Uint8Array(bytes)).map((byte) => byte.toString(16).padStart(2, '0')).join(''); };
+  const questionRecord = () => { const q = App.currentQuestion; if (!q) return null; const text = (value) => String(value || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); return { app: 'claro', dashboard: App.currentLevel, module: q.module || 'unknown', questionId: String(q.id || ''), prompt: text(q.prompt), expected: text(q.expectedDisplay), options: Array.isArray(q.options) ? q.options.map(text) : [], selectedAt: new Date().toISOString() }; };
+  const syncAdminControls = () => { const queue = readAdminQueue(); const panel = document.getElementById('adminExportPanel'); const remove = document.getElementById('adminDeleteQuestionBtn'); const summary = document.getElementById('adminQueueSummary'); if (panel) panel.hidden = !adminUnlocked; if (remove) remove.hidden = !adminUnlocked || !App.currentQuestion; if (summary) summary.textContent = queue.length ? `${queue.length} question${queue.length === 1 ? '' : 's'} queued for removal.` : 'No questions selected.'; };
+  window.syncAdminQuestionControl = syncAdminControls;
+  const initAdminTools = () => {
+    const gate = document.getElementById('adminGateOverlay'); const form = document.getElementById('adminGateForm'); const password = document.getElementById('adminPasswordInput'); const gateStatus = document.getElementById('adminGateStatus');
+    if (!isAdminRoute) { if (gate) gate.style.display = 'none'; return; }
+    document.body.classList.add('admin-route');
+    const unlock = () => { adminUnlocked = true; writeCookie(ADMIN_COOKIE, '1'); if (gate) gate.style.display = 'none'; syncAdminControls(); };
+    if (readCookie(ADMIN_COOKIE) === '1') unlock(); else if (gate) gate.style.display = 'flex';
+    form?.addEventListener('submit', async (event) => { event.preventDefault(); const digest = await hashAdminPassword(password.value); if (digest === ADMIN_PASSWORD_HASH) { unlock(); gateStatus.textContent = ''; } else { gateStatus.textContent = 'That password is not valid.'; password.select(); } });
+    document.getElementById('adminDeleteQuestionBtn')?.addEventListener('click', () => { const record = questionRecord(); if (!record) return; const queue = readAdminQueue(); const key = `${record.app}:${record.dashboard}:${record.module}:${record.questionId}`; if (!queue.some((item) => `${item.app}:${item.dashboard}:${item.module}:${item.questionId}` === key)) { if (!writeAdminQueue([...queue, record])) { document.getElementById('adminExportStatus').textContent = 'The queue is full; export it before selecting more questions.'; return; } } document.getElementById('adminExportStatus').textContent = 'Question added to the removal queue.'; syncAdminControls(); });
+    document.getElementById('adminExportBtn')?.addEventListener('click', () => { const queue = readAdminQueue(); const status = document.getElementById('adminExportStatus'); if (!queue.length) { status.textContent = 'Select at least one question first.'; return; } if (!ADMIN_EXPORT_TALLY_URL) { status.textContent = 'Admin export is ready, but the new Tally export-form URL still needs to be configured.'; return; } const url = new URL(ADMIN_EXPORT_TALLY_URL); Object.entries({ form_type: 'admin_question_removal', app_name: 'claro', dashboard: App.currentLevel, selected_questions: JSON.stringify(queue), source: 'admin_question_queue', page_url: window.location.href, email: 'clark.alden@lbusd.org' }).forEach(([key, value]) => url.searchParams.set(key, value)); window.open(url.toString(), '_blank', 'noopener,noreferrer'); status.textContent = 'Tally opened in a new tab. Submit the export there.'; });
+    syncAdminControls();
+  };
+
   window.addEventListener('DOMContentLoaded', () => {
     App.init();
+    initAdminTools();
     const switcher = document.querySelector('.brand-switcher');
     const button = document.getElementById('appSwitcherButton');
     const menu = document.getElementById('appSwitcherMenu');

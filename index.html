@@ -53,7 +53,7 @@ Developer note:
   <link rel="manifest" href="manifest.webmanifest?v=20260912-2" />
   <link rel="stylesheet" href="style.css?v=20260804-4" />
   <link rel="stylesheet" href="shared-ui.css" />
-  <link rel="stylesheet" href="app-modifiers.css?v=20260915-roles" />
+  <link rel="stylesheet" href="app-modifiers.css" />
   <link rel="stylesheet" href="style-shared.css" />
   <style>
     .brand-switcher-button{min-height:48px;padding:0 2px;line-height:1.1}.brand-switcher-button .brand-mark{width:42px;height:42px}.claro-brand-copy{display:grid;line-height:1.1;text-align:left}.brand-switcher-button #brandName{font-size:1.15rem}.brand-switcher-button #headerLevel{display:block;font-size:.77rem;color:var(--muted);font-weight:700}.brand-switcher-button .brand-separator{display:none}.claro-chevron{margin-left:3px;color:var(--muted);font-size:1.2rem;line-height:1;transform:translateY(-2px)}.modules-btn{width:auto!important;min-width:80px;padding:0 13px!important;font-size:.78rem!important;font-weight:900!important}.premium-btn{min-width:100px!important;height:48px!important;border:1px solid #d7e7db!important;border-radius:14px!important;background:#fff!important;color:#14532d!important;box-shadow:none!important}.premium-btn:hover{background:#f1faf3!important;box-shadow:0 10px 20px rgba(20,83,45,.12)!important}.premium-btn span:first-child{color:#14532d!important}.brand .subtitle[hidden]{display:none!important}
@@ -181,6 +181,11 @@ Developer note:
         <div class="dashboard-section-heading"><div><span class="home-overview-label">History</span><h2 id="historyTitle">Practice sessions</h2></div><small>Most recent first</small></div>
         <div id="sessionHistory" class="session-history-list"></div>
         <p id="sessionHistoryEmpty" class="session-history-empty">Complete a session and it will appear here.</p>
+      </section>
+      <section class="admin-export-panel" id="adminExportPanel" hidden>
+        <div><span class="home-overview-label">Admin tools</span><h2>Question removal queue</h2><p id="adminQueueSummary">No questions selected.</p></div>
+        <button class="btn primary" id="adminExportBtn" type="button">Send selected questions</button>
+        <p class="feedback neutral" id="adminExportStatus" aria-live="polite"></p>
       </section>
     </main>
 
@@ -358,7 +363,7 @@ Developer note:
 
       <div class="never-row">
         <button class="btn small ghost" id="neverBtn" aria-label="Never show this question again">🙈 Hide this question</button>
-        <button class="btn small admin-question-btn" id="moderationRequestBtn" type="button" hidden>Request permanent removal</button>
+        <button class="btn small admin-question-btn" id="adminDeleteQuestionBtn" type="button" hidden>Remove this question from production</button>
       </div>
     </main>
 
@@ -642,27 +647,23 @@ Developer note:
     </div>
   </div>
 
+  <div class="modal-overlay admin-gate-overlay" id="adminGateOverlay" role="dialog" aria-modal="true" aria-labelledby="adminGateTitle" style="display:none">
+    <div class="modal compact admin-gate-modal">
+      <div class="modal-head"><div><div style="font-weight:900;font-size:1.05rem" id="adminGateTitle">Admin access</div><div class="muted small">Enter the administrator password to continue.</div></div></div>
+      <form id="adminGateForm"><label class="premium-field" for="adminPasswordInput"><span>Admin password</span><input id="adminPasswordInput" type="password" autocomplete="current-password" required /></label><button class="btn primary" type="submit">Enter admin</button><div class="feedback bad" id="adminGateStatus" aria-live="polite"></div></form>
+    </div>
+  </div>
+
   <!-- PREMIUM ACCESS MODAL -->
   <div class="modal-overlay" id="premiumOverlay" role="dialog" aria-modal="true" aria-labelledby="premiumTitle">
     <div class="modal compact claro-premium-modal">
-      <div class="modal-heading"><div><h2 id="premiumTitle">Access</h2><p>Premium, Moderator, and Admin use the same secure access point.</p></div><button class="icon-button" id="premiumCloseBtn" aria-label="Close access">×</button></div>
-      <section class="access-status" aria-live="polite">
-        <div><span class="access-role-label">Current access</span><strong id="accessRoleName">Free</strong><small id="accessRoleDescription">Core practice is available.</small></div>
-        <button class="btn small ghost" id="accessLogoutBtn" type="button" hidden>Lock access</button>
-      </section>
-      <form class="premium-form" id="accessLoginForm">
-        <label class="premium-field" for="premiumPasswordInput"><span>Access password</span><input id="premiumPasswordInput" type="password" autocomplete="current-password" required placeholder="Enter password" aria-label="Access password" /></label>
-        <div class="modal-actions"><button class="btn primary" id="premiumSubmitBtn" type="submit" aria-label="Unlock access">Unlock access</button></div>
-        <div class="feedback neutral" id="premiumFeedback" aria-live="polite">Passwords are verified by Claro and are never stored in this browser.</div>
-      </form>
-      <section class="moderation-panel" id="moderationPanel" hidden>
-        <div class="premium-request-divider"><span id="moderationPanelTitle">Moderation</span></div>
-        <p class="small muted">Request permanent removal while practicing. Admin approval is required before content is suppressed.</p>
-        <div class="moderation-history" id="moderationHistory"></div>
-        <p class="small muted" id="moderationHistoryEmpty">No deletion requests yet.</p>
-        <div class="feedback neutral" id="moderationStatus" aria-live="polite"></div>
-      </section>
-      <div class="premium-request-divider" id="premiumRequestDivider"><span>Need Premium?</span></div>
+      <div class="modal-heading"><div><h2 id="premiumTitle">Premium access</h2><p>Use your existing access password.</p></div><button class="icon-button" id="premiumCloseBtn" aria-label="Close premium access">×</button></div>
+      <div class="premium-form">
+        <label class="premium-field" for="premiumPasswordInput"><span>Access password</span><input id="premiumPasswordInput" type="password" autocomplete="current-password" required placeholder="Enter password" aria-label="Premium password" /></label>
+        <div class="modal-actions"><button class="btn primary" id="premiumSubmitBtn" aria-label="Unlock premium access">Unlock premium</button></div>
+        <div class="feedback neutral" id="premiumFeedback" aria-live="polite">Premium is verified securely when Claro is deployed with its server configuration.</div>
+      </div>
+      <div class="premium-request-divider"><span>Need access?</span></div>
       <button class="btn premium-request-toggle" id="premiumRequestToggle" type="button">Request premium access</button>
       <form class="premium-request-form" id="premiumRequestForm" action="#" method="post" hidden>
         <input type="hidden" name="form_type" value="premium access request" />
@@ -672,18 +673,6 @@ Developer note:
         <input type="hidden" name="_subject" value="Claro premium access request" />
         <button class="btn primary" id="premiumRequestSubmit" type="submit">Send request</button>
         <div class="feedback neutral" id="premiumRequestFeedback" aria-live="polite"></div>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="moderationRequestOverlay" role="dialog" aria-modal="true" aria-labelledby="moderationRequestTitle" style="display:none">
-    <div class="modal compact">
-      <div class="modal-heading"><div><h2 id="moderationRequestTitle">Request permanent removal</h2><p id="moderationRequestItem">Current question</p></div><button class="icon-button" id="moderationRequestCloseBtn" type="button" aria-label="Close removal request">×</button></div>
-      <form id="moderationRequestForm">
-        <label class="premium-field" for="moderationItemType"><span>Remove</span><select id="moderationItemType"><option value="question">Only this question</option><option value="questionType">This question type</option></select></label>
-        <label class="premium-field" for="moderationReason"><span>Reason</span><textarea id="moderationReason" maxlength="500" required placeholder="Briefly explain what is wrong with this question."></textarea></label>
-        <div class="modal-actions"><button class="btn ghost" id="moderationRequestCancelBtn" type="button">Cancel</button><button class="btn primary" type="submit">Submit request</button></div>
-        <div class="feedback neutral" id="moderationRequestStatus" aria-live="polite"></div>
       </form>
     </div>
   </div>
@@ -836,6 +825,6 @@ Developer note:
   </div>
 
 <script src="app-shared.js"></script>
-<script src="app.js?v=20260915-roles"></script>
+<script src="app.js?v=20260913-forms"></script>
 </body>
 </html>
