@@ -102,7 +102,7 @@
   ];
 
   const MAYO_MADNESS_KEY = 'mayo_madness';
-  const MAYO_MADNESS_PASSWORDS = new Set(['ibelikesheesh', 'patriotssuck', '0612jdbj', 'fiske']);
+  const MAYO_MADNESS_PASSWORDS = new Set();
   const PREMIUM_ACCESS_STORAGE_KEY = 'claro_premium_access_v1';
   const PREMIUM_ACCESS_COOKIE_KEY = 'claro_premium_access';
   const PREMIUM_ACCESS_DAY = 24 * 60 * 60 * 1000;
@@ -4768,7 +4768,7 @@ mean/nice
 
     submitPremiumPassword() {
       const password = this.$.premiumPasswordInput.value.trim();
-      const temporary = password === 'temporary';
+      const temporary = false;
       if (MAYO_MADNESS_PASSWORDS.has(password) || temporary) {
         this.mayoPremiumUnlocked = true;
         this.premiumAccessMode = temporary ? 'temporary' : 'permanent';
@@ -6972,37 +6972,8 @@ mean/nice
   window.SpanishPracticeApp = App;
   window.runAutomatedChecks = () => App.runAutomatedChecks({ startup: false });
 
-  // Admin question-removal queue. This is a convenience gate for the static app;
-  // production enforcement still happens when the selected IDs are removed from source.
-  const ADMIN_PASSWORD_HASH = '95f756a4e50df1f4530386f40dc6f160e717f4420cc315ad36cfc94dd0d4ae14';
-  const ADMIN_COOKIE = 'claro_admin_session_v1';
-  const ADMIN_QUEUE_COOKIE = 'claro_admin_question_queue_v1';
-const ADMIN_EXPORT_TALLY_URL = 'https://tally.so/r/WOLPQQ';
-  const isAdminRoute = /\/admin\/?$/.test(window.location.pathname) || new URLSearchParams(window.location.search).get('admin') === '1';
-  let adminUnlocked = false;
-  const readCookie = (name) => { const part = document.cookie.split('; ').find((item) => item.startsWith(`${name}=`)); return part ? decodeURIComponent(part.slice(name.length + 1)) : ''; };
-  const writeCookie = (name, value, maxAge = 60 * 60 * 8) => { document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; SameSite=Lax`; };
-  const readAdminQueue = () => { try { const parsed = JSON.parse(readCookie(ADMIN_QUEUE_COOKIE) || '[]'); return Array.isArray(parsed) ? parsed : []; } catch (_) { return []; } };
-  const writeAdminQueue = (queue) => { const raw = JSON.stringify(queue.slice(-24)); if (encodeURIComponent(raw).length > 3900) return false; writeCookie(ADMIN_QUEUE_COOKIE, raw, 60 * 60 * 24 * 365); return true; };
-  const hashAdminPassword = async (value) => { const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)); return Array.from(new Uint8Array(bytes)).map((byte) => byte.toString(16).padStart(2, '0')).join(''); };
-  const questionRecord = () => { const q = App.currentQuestion; if (!q) return null; const text = (value) => String(value || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); return { app: 'claro', dashboard: App.currentLevel, module: q.module || 'unknown', questionId: String(q.id || ''), prompt: text(q.prompt), expected: text(q.expectedDisplay), options: Array.isArray(q.options) ? q.options.map(text) : [], selectedAt: new Date().toISOString() }; };
-  const syncAdminControls = () => { const queue = readAdminQueue(); const panel = document.getElementById('adminExportPanel'); const remove = document.getElementById('adminDeleteQuestionBtn'); const summary = document.getElementById('adminQueueSummary'); if (panel) panel.hidden = !adminUnlocked; if (remove) remove.hidden = !adminUnlocked || !App.currentQuestion; if (summary) summary.textContent = queue.length ? `${queue.length} question${queue.length === 1 ? '' : 's'} queued for removal.` : 'No questions selected.'; };
-  window.syncAdminQuestionControl = syncAdminControls;
-  const initAdminTools = () => {
-    const gate = document.getElementById('adminGateOverlay'); const form = document.getElementById('adminGateForm'); const password = document.getElementById('adminPasswordInput'); const gateStatus = document.getElementById('adminGateStatus');
-    if (!isAdminRoute) { if (gate) gate.style.display = 'none'; return; }
-    document.body.classList.add('admin-route');
-    const unlock = () => { adminUnlocked = true; writeCookie(ADMIN_COOKIE, '1'); if (gate) gate.style.display = 'none'; syncAdminControls(); };
-    if (readCookie(ADMIN_COOKIE) === '1') unlock(); else if (gate) gate.style.display = 'flex';
-    form?.addEventListener('submit', async (event) => { event.preventDefault(); const digest = await hashAdminPassword(password.value); if (digest === ADMIN_PASSWORD_HASH) { unlock(); gateStatus.textContent = ''; } else { gateStatus.textContent = 'That password is not valid.'; password.select(); } });
-    document.getElementById('adminDeleteQuestionBtn')?.addEventListener('click', () => { const record = questionRecord(); if (!record) return; const queue = readAdminQueue(); const key = `${record.app}:${record.dashboard}:${record.module}:${record.questionId}`; if (!queue.some((item) => `${item.app}:${item.dashboard}:${item.module}:${item.questionId}` === key)) { if (!writeAdminQueue([...queue, record])) { document.getElementById('adminExportStatus').textContent = 'The queue is full; export it before selecting more questions.'; return; } } document.getElementById('adminExportStatus').textContent = 'Question added to the removal queue.'; syncAdminControls(); });
-    document.getElementById('adminExportBtn')?.addEventListener('click', () => { const queue = readAdminQueue(); const status = document.getElementById('adminExportStatus'); if (!queue.length) { status.textContent = 'Select at least one question first.'; return; } if (!ADMIN_EXPORT_TALLY_URL) { status.textContent = 'Admin export is ready, but the new Tally export-form URL still needs to be configured.'; return; } const url = new URL(ADMIN_EXPORT_TALLY_URL); Object.entries({ form_type: 'admin_question_removal', app_name: 'claro', dashboard: App.currentLevel, selected_questions: JSON.stringify(queue), source: 'admin_question_queue', page_url: window.location.href, email: 'clark.alden@lbusd.org' }).forEach(([key, value]) => url.searchParams.set(key, value)); window.open(url.toString(), '_blank', 'noopener,noreferrer'); status.textContent = 'Tally opened in a new tab. Submit the export there.'; });
-    syncAdminControls();
-  };
-
   window.addEventListener('DOMContentLoaded', () => {
     App.init();
-    initAdminTools();
     const switcher = document.querySelector('.brand-switcher');
     const button = document.getElementById('appSwitcherButton');
     const menu = document.getElementById('appSwitcherMenu');
