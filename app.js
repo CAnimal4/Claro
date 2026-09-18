@@ -46,6 +46,7 @@
   const PROFILE_COOKIE_KEY = 'claro_profile_id';
   const APP_VERSION = 2;
   const ANALYTICS_VERSION = 2;
+  const APP_ID = 'claro';
   // Paste the public Tally form URLs here after creating the two forms.
   // Example: https://tally.so/r/xxxxxx
   const TALLY_FEEDBACK_URL = 'https://tally.so/r/68grLO';
@@ -98,7 +99,8 @@
     { key: 'summer_tense_choice', name: 'Preterite or imperfect?', level: 2, category: 'Summer Prep' },
     { key: 'summer_translations', name: 'Summer translation challenge', level: 2, category: 'Summer Prep' },
     { key: 'honors_ordinal_numbers', name: 'Ordinal Numbers', description: 'First, second, third, and beyond — ordinal numbers, gender agreement, and real sentence practice.', level: 2, category: 'Spanish 2 Honors' },
-    { key: 'honors_test1_review', name: 'Test 1 Review', description: 'Preterite, imperfect, past-tense vocabulary, tense choice, and verb translation.', level: 2, category: 'Spanish 2 Honors' }
+    { key: 'honors_test1_review', name: 'Test 1 Review', description: 'Preterite, imperfect, past-tense vocabulary, tense choice, and verb translation.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'guadalupe_vocab', name: 'Guadalupe Vocab', description: 'Vocabulary and meaning distinctions from the Guadalupe story.', level: 2, category: 'Spanish 2 Honors' }
   ];
 
   const MAYO_MADNESS_KEY = 'mayo_madness';
@@ -2573,7 +2575,8 @@ mean/nice
           summer_tense_choice: false,
           summer_translations: false,
           honors_ordinal_numbers: false,
-          honors_test1_review: false
+          honors_test1_review: false,
+          guadalupe_vocab: false
         },
         mayoMadnessEnabled: true,
         tensesEnabled: { present: true, preterite: false, imperfect: false },
@@ -2927,6 +2930,37 @@ mean/nice
     ['El verano pasado ___ en México.', 'vivir', '1p', 'preterite', 'completed time period'],
     ['Normalmente ___ a las siete.', 'trabajar', '1s', 'imperfect', 'habitual action']
   ].map(([sentence, verb, person, tense, clue], index) => ({ id: `honors-choice-${index + 1}`, sentence, verb, person, tense, clue }));
+
+  // Guadalupe story vocabulary. Every row is intentionally its own card,
+  // including pairs whose English meanings overlap but whose Spanish form or
+  // word order carries a different meaning.
+  const GUADALUPE_VOCAB_POOL = [
+    ['a plena vista', 'in plain sight'], ['por encima', 'above; on top of'],
+    ['una capilla', 'a chapel'], ['el mismo sitio', 'the same place; the same site', 'Same = the identical place.'],
+    ['el sitio mismo', 'the place itself', 'Mismo follows the noun to emphasize the place itself.'],
+    ['le traigo', 'I bring him/her; I bring you (formal)'], ['la prueba', 'evidence; proof; test'],
+    ['su tilma', 'his/her tilma; his/her traditional cloak'], ['un ramo (de flores)', 'a bouquet (of flowers)'],
+    ['nopales, cactos', 'prickly pears; cacti'], ['sólo, solamente', 'only'],
+    ['la sorpresa', 'surprise; astonishment'], ['cuidar', 'to take care of'], ['los pies', 'feet'],
+    ['crecer', 'to grow; to grow up'], ['coger', 'to pick; to take'], ['la bendición', 'blessing'],
+    ['siguiente', 'next; following'], ['morirse', 'to die', 'Infinitive/reflexive form: to die.'],
+    ['se murió', 'he/she died', 'Completed past event: he/she died.'], ['el cura', 'priest'],
+    ['supo', 'he/she found out; learned'], ['confundido', 'confused'],
+    ['gran', 'great (before a singular noun)', 'Gran is the shortened form before a singular noun.'],
+    ['grande', 'big; large', 'Grande means big/large; before a singular noun it is not shortened here.'],
+    ['un gran hombre', 'a great man', 'Gran describes the man as great.'],
+    ['un hombre grande', 'a big/large man', 'Grande describes the man as big/large.'],
+    ['mal hombre', 'a bad man', 'Mal comes before the noun: a bad man.'],
+    ['hombre malo', 'bad/evil man', 'Malo follows the noun and emphasizes bad/evil character.'],
+    ['un día', 'one day'], ['un buen hombre', 'a good man'], ['le contó', 'he/she told him/her'],
+    ['edificar', 'to build; to construct'], ['el obispo', 'bishop'], ['dile', 'tell him/her'],
+    ['ve', 'go!', 'The command ve means go!'], ['que vayas', 'that you go / go', 'Subjunctive form in a phrase: that you go.'],
+    ['humilde', 'humble'], ['pedir', 'to ask for; to order'], ['no tengas miedo', "don't be afraid"],
+    ['ni que decir', 'even what to say'], ['el sendero', 'trail; path'], ['una parada', 'a stop'],
+    ['una nube', 'a cloud'], ['pobre indio', 'poor/unfortunate Indigenous man', 'Pobre before the noun means unfortunate/poor in a sympathetic sense.'],
+    ['indio pobre', 'Indigenous man who is poor', 'Pobre after the noun describes economic condition.'],
+    ['desde', 'from; since'], ['una basílica', 'a basilica'], ['la gente', 'people'], ['la santa patrona', 'patron saint']
+  ].map(([sp, en, explanation], index) => ({ id: `guadalupe-${index + 1}`, sp, en, explanation }));
 
   function honorsRegularConjugate(verb, tense, code) {
     const type = verbType(verb);
@@ -3457,6 +3491,28 @@ mean/nice
 
     honors_test1_review: {
       generateQuestion(app) { return generateHonorsTest1Question(app); }
+    },
+
+    guadalupe_vocab: {
+      generateQuestion(app) {
+        const hidden = app.state.hiddenItems;
+        const recent = new Set(app.recentByModule.guadalupe_vocab.slice(-4));
+        const candidates = GUADALUPE_VOCAB_POOL.filter(item => !hidden[item.id] && !recent.has(item.id));
+        const pool = candidates.length ? candidates : GUADALUPE_VOCAB_POOL.filter(item => !hidden[item.id]);
+        const item = pickByWeakScore(pool, app.state.itemScores, recent);
+        if (!item) return null;
+        return {
+          module: 'guadalupe_vocab',
+          id: item.id,
+          mode: 'text',
+          prompt: `Translate to Spanish: <strong>${escapeHtml(item.en)}</strong>`,
+          expectedDisplay: item.sp,
+          acceptable: buildAcceptableAnswerSet([item.sp]),
+          answerVariants: [item.sp],
+          hasAccent: /[áéíóúñüÁÉÍÓÚÑÜ]/.test(item.sp),
+          explanation: item.explanation || 'Keep this card distinct from similar-looking words in the story.'
+        };
+      }
     }
   };
 
@@ -3642,7 +3698,8 @@ mean/nice
       summer_irregular_preterite: [],
       summer_irregular_imperfect: [],
       summer_tense_choice: [],
-      summer_translations: []
+      summer_translations: [],
+      guadalupe_vocab: []
     },
 
     saveTimer: null,
@@ -3836,6 +3893,7 @@ mean/nice
         soloDatesBtn: $('soloDatesBtn'),
         soloHonorsOrdinalBtn: $('soloHonorsOrdinalBtn'),
         soloHonorsTest1Btn: $('soloHonorsTest1Btn'),
+        soloGuadalupeVocabBtn: $('soloGuadalupeVocabBtn'),
         soloOffBtn: $('soloOffBtn'),
         soloSelect: $('soloSelect'),
         soloOffMobileBtn: $('soloOffMobileBtn'),
@@ -3917,6 +3975,7 @@ mean/nice
         toggle_summer_translations: $('toggle_summer_translations'),
         toggle_honors_ordinal_numbers: $('toggle_honors_ordinal_numbers'),
         toggle_honors_test1_review: $('toggle_honors_test1_review'),
+        toggle_guadalupe_vocab: $('toggle_guadalupe_vocab'),
 
         tense_present: $('tense_present'),
         tense_preterite: $('tense_preterite'),
@@ -4141,7 +4200,8 @@ mean/nice
         this.$.soloGustarBtn,
         this.$.soloDatesBtn,
         this.$.soloHonorsOrdinalBtn,
-        this.$.soloHonorsTest1Btn
+        this.$.soloHonorsTest1Btn,
+        this.$.soloGuadalupeVocabBtn
       ];
       for (const btn of soloButtons) {
         btn.addEventListener('click', () => {
@@ -4515,6 +4575,7 @@ mean/nice
       this.$.soloDatesBtn.disabled = !this.isModulePracticeEnabled('dates');
       this.$.soloHonorsOrdinalBtn.disabled = !this.isModulePracticeEnabled('honors_ordinal_numbers');
       this.$.soloHonorsTest1Btn.disabled = !this.isModulePracticeEnabled('honors_test1_review');
+      this.$.soloGuadalupeVocabBtn.disabled = !this.isModulePracticeEnabled('guadalupe_vocab');
     },
 
     renderKeyHintStrip() {
@@ -4727,12 +4788,12 @@ mean/nice
       }
       openTallyForm(TALLY_PREMIUM_URL, {
         form_type: 'premium_access_request',
-        app_name: 'claro',
+        app_name: APP_ID,
         name: this.$.premiumRequestName.value.trim(),
         email: this.$.premiumRequestEmail.value.trim(),
         source: 'premium_modal',
-        current_level: this.currentLevel === 'spanish2' ? 'Spanish 2' : 'Spanish 1',
-        current_module: this.currentQuestion?.module || 'dashboard',
+        level: this.currentLevel === 'spanish2' ? 'Spanish 2' : 'Spanish 1',
+        module: this.currentQuestion?.module || 'dashboard',
         page_url: window.location.href
       });
       status.className = 'feedback good';
@@ -4831,7 +4892,7 @@ mean/nice
         : message;
       openTallyForm(TALLY_FEEDBACK_URL, {
         form_type: 'feedback',
-        app_name: 'claro',
+        app_name: APP_ID,
         feedback_type: tallyFeedbackType(feedbackType),
         requested_module: requestedModule,
         message: tallyMessage,
@@ -5118,6 +5179,12 @@ mean/nice
         const total = DATES_POOL.length;
         let hiddenCount = 0;
         for (const q of DATES_POOL) if (hidden[q.id]) hiddenCount++;
+        return { total, available: Math.max(0, total - hiddenCount) };
+      }
+
+      if (moduleKey === 'guadalupe_vocab') {
+        const total = GUADALUPE_VOCAB_POOL.length;
+        const hiddenCount = GUADALUPE_VOCAB_POOL.filter(item => hidden[item.id]).length;
         return { total, available: Math.max(0, total - hiddenCount) };
       }
 
@@ -5563,6 +5630,7 @@ mean/nice
       else if (moduleKey === 'dates') for (const x of DATES_POOL) if (!hidden[x.id]) ids.push(x.id);
       else if (moduleKey === 'honors_ordinal_numbers') for (const x of ORDINAL_POOL) if (!hidden[x.id]) ids.push(x.id);
       else if (moduleKey === 'honors_test1_review') for (const x of HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL, HONORS_TIME_WORDS, HONORS_CHOICE_POOL)) if (!hidden[x.id]) ids.push(x.id);
+      else if (moduleKey === 'guadalupe_vocab') for (const x of GUADALUPE_VOCAB_POOL) if (!hidden[x.id]) ids.push(x.id);
       if (!ids.length) return 2.5;
       let total = 0;
       for (const id of ids) total += (scores[id] ?? 2);
@@ -6652,9 +6720,11 @@ mean/nice
     runAutomatedChecks(opts = {}) {
       const { startup = false } = opts;
       const results = [];
-      const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates', 'honors_ordinal_numbers', 'honors_test1_review'];
+      const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates', 'honors_ordinal_numbers', 'honors_test1_review', 'guadalupe_vocab'];
       const hasModules = requiredModules.every((key) => MODULES.some((m) => m.key === key) && modules[key]);
       results.push({ ok: hasModules, label: 'Expanded modules registered (including Mayo Madness parent submodules)' });
+      results.push({ ok: GUADALUPE_VOCAB_POOL.length === 50 && new Set(GUADALUPE_VOCAB_POOL.map((item) => item.id)).size === 50, label: 'Guadalupe Vocab has 50 distinct stable cards' });
+      results.push({ ok: !PREMIUM_COMPLEX_MODULES.has('guadalupe_vocab') && !!modules.guadalupe_vocab.generateQuestion(this), label: 'Guadalupe Vocab is available through the normal free study path' });
       results.push({ ok: MODULES.find((m) => m.key === 'honors_ordinal_numbers')?.level === 2 && MODULES.find((m) => m.key === 'honors_test1_review')?.level === 2, label: 'Spanish 2 Honors modules are level 2 only' });
       results.push({ ok: !PREMIUM_COMPLEX_MODULES.has('honors_ordinal_numbers') && !PREMIUM_COMPLEX_MODULES.has('honors_test1_review'), label: 'Spanish 2 Honors modules are not premium-locked' });
       const ordinalAnswers = buildAcceptableAnswerSet(['tercera']);
