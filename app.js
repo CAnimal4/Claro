@@ -4672,6 +4672,7 @@ mean/nice
 
     openModal(overlay, focusEl) {
       this.lastFocus = document.activeElement;
+      overlay.hidden = false;
       overlay.style.display = 'flex';
       // Basic focus management
       setTimeout(() => {
@@ -4680,6 +4681,7 @@ mean/nice
     },
 
     closeModal(overlay) {
+      overlay.hidden = true;
       overlay.style.display = 'none';
       // Return focus
       if (this.lastFocus && this.lastFocus.focus) {
