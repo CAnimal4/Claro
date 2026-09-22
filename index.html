@@ -59,7 +59,7 @@ Developer note:
     .brand-switcher-button{min-height:48px;padding:0 2px;line-height:1.1}.brand-switcher-button .brand-mark{width:42px;height:42px}.claro-brand-copy{display:grid;line-height:1.1;text-align:left}.brand-switcher-button #brandName{font-size:1.15rem}.brand-switcher-button #headerLevel{display:block;font-size:.77rem;color:var(--muted);font-weight:700}.brand-switcher-button .brand-separator{display:none}.claro-chevron{margin-left:3px;color:var(--muted);font-size:1.2rem;line-height:1;transform:translateY(-2px)}.modules-btn{width:auto!important;min-width:80px;padding:0 13px!important;font-size:.78rem!important;font-weight:900!important}.premium-btn{min-width:100px!important;height:48px!important;border:1px solid #d7e7db!important;border-radius:14px!important;background:#fff!important;color:#14532d!important;box-shadow:none!important}.premium-btn:hover{background:#f1faf3!important;box-shadow:0 10px 20px rgba(20,83,45,.12)!important}.premium-btn span:first-child{color:#14532d!important}.brand .subtitle[hidden]{display:none!important}
   </style>
 </head>
-<body>
+<body data-app-id="claro">
   <div class="app learning-app-shell" id="appRoot">
     <header class="topbar">
       <div class="brand">
@@ -150,31 +150,13 @@ Developer note:
           <h2>Spanish 2 Honors is ready.</h2>
           <p>Past-tense, ordinal, and translation practice.</p>
           <small class="summer-summary" id="spanish2ModuleSummary">No Summer Prep modules enabled yet</small>
-          <div class="summer-resources">
-            <a class="resource-link" href="https://quizlet.com/717244172/past-tense-times-flash-cards/?funnelUUID=5a5b427d-69c4-4a3b-a133-b0254b36035f" target="_blank" rel="noopener">Open the past-tense Quizlet ↗</a>
-            <a class="resource-link" href="https://studyspanish.com/" target="_blank" rel="noopener">Practice quizzes at StudySpanish ↗</a>
-            <a class="resource-link" href="assets/summer-prep/Spanish-2H-Summer-Assignment.pdf" target="_blank" rel="noopener">Open the full summer packet ↗</a>
-          </div>
-          <details class="summer-visuals">
-            <summary>Study sheets from the packet</summary>
-            <div class="summer-image-grid">
-              <img src="assets/summer-prep/packet-page-02.png" alt="Past-tense time expressions, packet page 2" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-03.png" alt="More past-tense time expressions, packet page 3" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-04.png" alt="Past-tense time expressions, packet page 4" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-05.png" alt="Irregular preterite verb table, packet page 5" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-06.png" alt="More irregular preterite verbs, packet page 6" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-07.png" alt="Dirty Dozen irregular past tense conjugations, packet page 7" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-08.png" alt="Preterite and imperfect conjugation endings, packet page 8" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-09.png" alt="Past tense comparison chart, packet page 9" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-10.png" alt="Irregular preterite rules, packet page 10" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-11.png" alt="Uses of the preterite, packet page 11" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-12.png" alt="Uses of the imperfect, packet page 12" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-13.png" alt="Common expressions with the preterite, packet page 13" loading="lazy" />
-              <img src="assets/summer-prep/packet-page-14.png" alt="Translation practice sentences, packet page 14" loading="lazy" />
-            </div>
-          </details>
         </div>
       </div>
+      <section class="library-launch-card" aria-labelledby="libraryLaunchTitle">
+        <div class="library-launch-mark" aria-hidden="true">▦</div>
+        <div><span class="home-overview-label">Shared resources</span><h2 id="libraryLaunchTitle">Library</h2><p>Keep Claro resources close: browse public files or upload files that stay private to this browser.</p></div>
+        <button class="btn primary" id="openLibraryBtn" type="button">Open Library <span aria-hidden="true">→</span></button>
+      </section>
       <details class="home-help">
         <summary>How it works</summary>
         <p>Choose your modules in Settings, enter a session, answer at your pace, and use Next whenever you’re ready. You can change settings at any time.</p>
@@ -805,6 +787,15 @@ Developer note:
     </div>
   </div>
 
+  <div class="modal-overlay library-overlay" id="libraryOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="libraryTitle" data-tally-url="https://tally.so/r/GxMyoj" data-public-files='[{"name":"Spanish 2 Honors Summer Assignment","description":"Complete 14-page summer assignment packet for Spanish 2 Honors.","url":"assets/canvas-spanish-pdfs/spanish-2h-summer-assignment-complete.pdf","type":"pdf"}]'>
+    <section class="modal library-modal">
+      <div class="modal-head"><div><span class="home-overview-label">Claro resources</span><h2 id="libraryTitle">Library</h2><p>Public class resources for everyone, plus a private shelf for files you upload.</p></div><button class="icon-btn" id="libraryCloseBtn" type="button" aria-label="Close Library">✕</button></div>
+      <p class="library-count" id="libraryCount"></p>
+      <section class="library-section"><div class="library-section-heading"><div><span class="home-overview-label">Everyone can open these</span><h3>Public Library</h3></div></div><div class="library-file-list" id="libraryPublicList"></div></section>
+      <section class="library-section library-your-section"><div class="library-section-heading"><div><span class="home-overview-label">Private to this browser</span><h3>Your Library</h3><p>Uploaded files stay on this device until you choose to request public sharing.</p></div><button class="btn primary" id="libraryUploadBtn" type="button">Upload files</button><input id="libraryFileInput" type="file" multiple hidden /></div><div class="library-file-list" id="libraryYourList"></div></section>
+    </section>
+  </div>
+
   <!-- FIRST RUN OVERLAY -->
   <div class="modal-overlay" id="firstRunOverlay" role="dialog" aria-modal="true" aria-labelledby="firstRunTitle">
     <div class="modal">
@@ -834,6 +825,7 @@ Developer note:
   </div>
 
 <script src="app-shared.js"></script>
+<script src="library.js"></script>
 <!-- moderationPanel moderationHistory moderationRequestOverlay are rendered by access-ui.js -->
 <script src="app.js?v=20260918-access-fix-1"></script>
   <script src="access-ui.js?v=20260918-access-fix-2"></script>
