@@ -97,7 +97,8 @@
   }
 
   function publicCard(file) {
-    return `<article class="library-file-card"><div class="library-file-icon" aria-hidden="true">${file.type === 'pdf' ? 'PDF' : 'FILE'}</div><div class="library-file-copy"><strong>${escapeHtml(file.name)}</strong><small>${escapeHtml(file.description || 'Shared learning resource')}</small></div><a class="btn small library-open" href="${encodeURI(file.url)}" target="_blank" rel="noopener">Open ↗</a></article>`;
+    const icon = file.type === 'pdf' ? 'PDF' : file.type === 'link' ? 'LINK' : 'FILE';
+    return `<article class="library-file-card"><div class="library-file-icon" aria-hidden="true">${icon}</div><div class="library-file-copy"><strong>${escapeHtml(file.name)}</strong><small>${escapeHtml(file.description || 'Shared learning resource')}</small></div><a class="btn small library-open" href="${encodeURI(file.url)}" target="_blank" rel="noopener">Open ↗</a></article>`;
   }
 
   function userCard(file) {
