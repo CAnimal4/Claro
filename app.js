@@ -39,6 +39,7 @@
 */
 
 (() => {
+  window.LearningAppShared?.registerUpdate({id:'claro-test2-review-2026-09',app:'claro',title:'New: Test 2 Review',copy:'A Premium study set for past tense forms, time words, irregular verbs, and Rogelio scenes.',tourSteps:[{title:'Find Test 2 Review',copy:'Open Spanish 2 Honors Modules and choose Test 2 Review. Premium access is required.',target:'test2'},{title:'Choose a focused set',copy:'Practice regular preterite and imperfect forms, irregular preterites, and past-time vocabulary.',target:'modules'},{title:'Reason through each scene',copy:'Work through two or three Rogelio boxes at a time and use the explanation to compare the choices.',target:'practice'}]});
   'use strict';
 
   const STORAGE_KEY = 'spanish_app_v2_state';
@@ -126,6 +127,7 @@
     { key: 'summer_translations', name: 'Summer translation challenge', level: 2, category: 'Summer Prep' },
     { key: 'honors_ordinal_numbers', name: 'Ordinal Numbers', description: 'First, second, third, and beyond — ordinal numbers, gender agreement, and real sentence practice.', level: 2, category: 'Spanish 2 Honors' },
     { key: 'honors_test1_review', name: 'Test 1 Review', description: 'Preterite, imperfect, past-tense vocabulary, tense choice, and verb translation.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'test2_review', name: 'Test 2 Review', description: 'Regular past-tense forms, key irregular preterites, and Rogelio scene practice.', level: 2, category: 'Spanish 2 Honors' },
     { key: 'guadalupe_vocab', name: 'Guadalupe Vocab', description: 'Vocabulary and meaning distinctions from the Guadalupe story.', level: 2, category: 'Spanish 2 Honors' }
   ];
 
@@ -140,7 +142,7 @@
     'commands', 'vocab', 'reflexive', 'tenses', 'prices', 'weather', 'clothing',
     'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates',
     'summer_preterite', 'summer_imperfect', 'summer_irregular_preterite',
-    'summer_irregular_imperfect', 'summer_tense_choice', 'summer_translations'
+    'summer_irregular_imperfect', 'summer_tense_choice', 'summer_translations', 'test2_review'
   ]);
 
   function readPremiumAccessRecord() {
@@ -1937,6 +1939,13 @@ mean/nice
     return noDia.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
+  function matchesGenderSlashAnswer(expected, response) {
+    const match = String(expected || '').trim().match(/^(.*?)([oa])\/([oa])([.!?]*)$/i);
+    if (!match) return null;
+    const exact = (value) => cleanText(value).toLocaleLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+    return [match[1] + match[2] + match[4], match[1] + match[3] + match[4]].some((form) => exact(form) === exact(response));
+  }
+
   function normalizeLooseWithTime(str) {
     return normalizeLoose(String(str || '').replace(/\bhrs?\b/g, '').replace(/\bh\b/g, ':'));
   }
@@ -2602,6 +2611,7 @@ mean/nice
           summer_translations: false,
           honors_ordinal_numbers: false,
           honors_test1_review: false,
+          test2_review: false,
           guadalupe_vocab: false
         },
         mayoMadnessEnabled: true,
@@ -3049,7 +3059,65 @@ mean/nice
     ['What did you say? I was saying…', '¿Qué dijiste? Estaba diciendo…', ['¿Qué dijiste? Yo estaba diciendo…']]
   ].map(([en, sp, acceptable], index) => ({ id:`summer-translation-${index + 1}`, en, sp, acceptable:[sp, ...acceptable] }));
 
+  const TEST2_IRREGULARS = {
+    saber: { yo:'supe', tú:'supiste', él:'supo', nosotros:'supimos', ellos:'supieron' },
+    poder: { yo:'pude', tú:'pudiste', él:'pudo', nosotros:'pudimos', ellos:'pudieron' },
+    ser: { yo:'fui', tú:'fuiste', él:'fue', nosotros:'fuimos', ellos:'fueron' },
+    ir: { yo:'fui', tú:'fuiste', él:'fue', nosotros:'fuimos', ellos:'fueron' },
+    decir: { yo:'dije', tú:'dijiste', él:'dijo', nosotros:'dijimos', ellos:'dijeron' },
+    hacer: { yo:'hice', tú:'hiciste', él:'hizo', nosotros:'hicimos', ellos:'hicieron' }
+  };
+  const TEST2_PERSONS = ['yo','tú','él','nosotros','ellos'];
+  const TEST2_REGULAR = ['preterite','imperfect'].flatMap((tense) => {
+    const verbs = tense === 'preterite' ? SUMMER_PRETERITE_VERBS : SUMMER_IMPERFECT_VERBS;
+    return verbs.flatMap((verb) => HONORS_PERSONS.map((person) => ({ id:`test2-${verb}-${person.code}-${tense}`, verb, person:person.label, personCode:person.code, tense, answer:honorsRegularConjugate(verb, tense, person.code) })));
+  });
+  const TEST2_SCENE_CUES = [
+    { id:'rogelio-scene-sleep', cue:'Dormir', context:'Use the action shown in the sleep scenes as the background activity.', answer:'estaba haciendo', why:'The imperfect progressive describes an action underway in the scene.' },
+    { id:'rogelio-scene-breakfast', cue:'Desayunando', context:'Use the breakfast activity shown in the sequence.', answer:'estaba haciendo', why:'The imperfect progressive describes an activity in progress.' },
+    { id:'rogelio-scene-work', cue:'Trabajo', context:'Use the work-related scene where the narration presents a completed event.', answer:'hizo', why:'The preterite presents a completed action that moves the narration forward.' },
+    { id:'rogelio-scene-library', cue:'Biblioteca', context:'Use the library scene when the narration describes movement toward that place.', answer:'hacia', why:'Hacia indicates direction or movement toward a destination.' }
+  ];
+  const TEST2_SCENES = Array.from({length:16},(_,index)=>{
+    const group=TEST2_SCENE_CUES[index%TEST2_SCENE_CUES.length];
+    return {id:`rogelio-box-${String(index+1).padStart(2,'0')}`,cue:`Box ${index+1} · ${group.cue}`,context:group.context,answer:group.answer,why:group.why};
+  });
+  const TEST2_SCENE_BATCHES = [];
+  for(let start=0;start<TEST2_SCENES.length;start++) for(let size=2;size<=3;size++) if(start+size<=TEST2_SCENES.length){const items=TEST2_SCENES.slice(start,start+size);TEST2_SCENE_BATCHES.push({id:items.map((item)=>item.id).join('+'),items});}
+  const TEST2_IRREGULAR_ITEMS = Object.entries(TEST2_IRREGULARS).flatMap(([verb, forms]) => Object.entries(forms).map(([person, answer]) => ({ id:`test2-irregular-${verb}-${person}`, verb, person, answer })));
+
   const modules = {
+    test2_review: {
+      generateQuestion(app) {
+        const roll = Math.random();
+        const timeItems=SUMMER_TIME_WORDS_POOL.map((item)=>({...item,id:`test2-${item.id}`}));
+        const hidden=app.state.hiddenItems||{};
+        const recent=new Set((app.recentByModule.test2_review||[]).slice(-5));
+        const choose=(pool)=>{const available=pool.filter((item)=>!hidden[item.id]);const fresh=available.filter((item)=>!recent.has(item.id));return (fresh.length?fresh:available)[Math.floor(Math.random()*(fresh.length?fresh:available).length)]||null;};
+        if (roll < 0.18) {
+          const item=choose(timeItems); if(!item)return null;
+          return { module:'test2_review', id:`test2-${item.id}`, mode:'text', prompt:`Past-tense time words: translate <strong>${escapeHtml(item.en)}</strong>.`, expectedDisplay:item.sp, acceptable:buildAcceptableAnswerSet([item.sp]), explanation:'Time words provide clues: a single completed event often uses the preterite; habits and background often use the imperfect.', requireAccentExact:true };
+        }
+        if (roll < 0.38) {
+          const size=2+(Math.random()<0.4?1:0);
+          const available=TEST2_SCENE_BATCHES.filter((batch)=>batch.items.length===size&&!hidden[batch.id]&&batch.items.every((item)=>!hidden[item.id]));
+          const batch=choose(available); if(!batch)return null; const selected=batch.items;
+          const answer=selected.map(item=>item.answer).join(' → ');
+          let patterns=['']; for(let i=0;i<selected.length;i++) patterns=patterns.flatMap(prefix=>['hacia','hizo','estaba haciendo'].map(form=>prefix?`${prefix} → ${form}`:form));
+          const options=shuffle([answer,...shuffle([...new Set(patterns.filter(pattern=>pattern!==answer))]).slice(0,2)]);
+          return { module:'test2_review', id:batch.id, mode:'mcq', prompt:`Rogelio narration · choose the form for each box in order:<br>${selected.map((item)=>`<strong>${item.cue}:</strong> ${item.context}`).join('<br>')}<br><small>Practice 2–3 boxes at a time. <a href="assets/test2-rogelio-source.pdf" target="_blank" rel="noopener">Open the original 16-box sheet</a>.</small>`, options, correctIndex:options.indexOf(answer), expectedDisplay:answer, explanation:selected.map(item=>`${item.cue}: ${item.why}`).join(' ') };
+        }
+        let item, prompt, answer, id, explanation;
+        if (roll < 0.58) {
+          item=choose(TEST2_REGULAR); if(!item)return null;
+          ({verb:prompt,answer,id,explanation}= {verb:item.verb,answer:item.answer,id:`test2-${item.verb}-${item.personCode}-${item.tense}`,explanation:`${item.tense==='preterite'?'Preterite: a completed event.':'Imperfect: an ongoing or habitual past action.'} Use the ${item.person} form of ${item.verb}.`});
+          prompt=`Conjugate ${item.verb} (${item.person}) in the ${item.tense}.`;
+        } else {
+          const item=choose(TEST2_IRREGULAR_ITEMS); if(!item)return null; const {verb,person}=item; answer=item.answer; id=item.id; prompt=`Conjugate ${verb} (${person}) in the preterite.`; explanation=`${verb} has an irregular preterite stem/form; learn ${answer} as a complete form.`;
+        }
+        return { module:'test2_review', id, mode:'text', prompt, expectedDisplay:answer, acceptable:new Set([normalizeLoose(answer)]), explanation, requireAccentExact:true };
+      }
+    },
     // === MODULE: DAYS ===
     days: {
       generateQuestion(app) {
@@ -3621,7 +3689,7 @@ mean/nice
 
   function honorsQuota(app, section) {
     const premium = app.hasPremiumAccess();
-    const quotas = premium ? { preterite: 6, imperfect: 6, vocabulary: 5, translation: 4, choice: 3 } : { preterite: 4, imperfect: 4, vocabulary: 3, translation: 2, choice: 3 };
+    const quotas = premium ? { preterite: 6, imperfect: 6, vocabulary: 5, translation: 4, choice: 3 } : { preterite: 3, imperfect: 3, vocabulary: 2, translation: 2, choice: 2 };
     return { target: Object.values(quotas).reduce((sum, value) => sum + value, 0), used: app.activeSession?.sectionCounts?.[section] || 0, max: quotas[section] };
   }
 
@@ -4001,6 +4069,7 @@ mean/nice
         toggle_summer_translations: $('toggle_summer_translations'),
         toggle_honors_ordinal_numbers: $('toggle_honors_ordinal_numbers'),
         toggle_honors_test1_review: $('toggle_honors_test1_review'),
+        toggle_test2_review: $('toggle_test2_review'),
         toggle_guadalupe_vocab: $('toggle_guadalupe_vocab'),
 
         tense_present: $('tense_present'),
@@ -4528,6 +4597,10 @@ mean/nice
     },
 
     refreshSettingsUI() {
+      const honorsSection = document.getElementById('summerPrepSettings');
+      const generalSection = document.getElementById('moduleSettingsSection');
+      if (honorsSection) honorsSection.open = this.currentLevel === 'spanish2';
+      if (generalSection && this.currentLevel !== 'spanish2') generalSection.open = true;
       // Module toggles
       for (const m of MODULES) {
         const el = this.$['toggle_' + m.key];
@@ -4601,6 +4674,7 @@ mean/nice
       this.$.soloDatesBtn.disabled = !this.isModulePracticeEnabled('dates');
       this.$.soloHonorsOrdinalBtn.disabled = !this.isModulePracticeEnabled('honors_ordinal_numbers');
       this.$.soloHonorsTest1Btn.disabled = !this.isModulePracticeEnabled('honors_test1_review');
+      if(this.$.soloHonorsTest1Btn){const badge=this.$.soloHonorsTest1Btn.dataset.freeCount||'';this.$.soloHonorsTest1Btn.setAttribute('aria-label',`Practice Test 1 Review${badge?`, free session ${badge} questions`:''}`);}
       this.$.soloGuadalupeVocabBtn.disabled = !this.isModulePracticeEnabled('guadalupe_vocab');
     },
 
@@ -4714,7 +4788,7 @@ mean/nice
     isModulePracticeEnabled(moduleKey) {
       if (moduleKey === MAYO_MADNESS_KEY) return this.getEnabledMayoMadnessModules().length > 0;
       if (!this.state.settings.modulesEnabled[moduleKey]) return false;
-      if (moduleKey === 'honors_test1_review' && !this.hasPremiumAccess()) return false;
+      if (moduleKey === 'test2_review' && !this.hasPremiumAccess()) return false;
       if (!isMayoMadnessKey(moduleKey)) return true;
       return !!(this.hasPremiumAccess() && this.state.settings.mayoMadnessEnabled);
     },
@@ -4733,6 +4807,8 @@ mean/nice
         this.$.premiumBtn.title = unlocked ? (temporary ? 'Premium active for one day' : 'Premium active') : 'Unlock Premium';
         this.$.premiumBtn.setAttribute('aria-label', unlocked ? (temporary ? 'Premium active for one day' : 'Premium active') : 'Unlock Premium');
       }
+      const test2Toggle=this.$.toggle_test2_review;
+      if(test2Toggle){test2Toggle.disabled=!unlocked;if(!unlocked)test2Toggle.checked=false;const row=test2Toggle.closest('.toggle');row?.classList.toggle('is-premium-locked',!unlocked);}
       if (this.$.toggle_mayo_madness) {
         this.$.toggle_mayo_madness.checked = unlocked && parentOn;
         this.$.toggle_mayo_madness.disabled = !unlocked;
@@ -5216,6 +5292,11 @@ mean/nice
         return { total, available: Math.max(0, total - hiddenCount) };
       }
 
+      if (moduleKey === 'test2_review') {
+        const pool = [...TEST2_REGULAR, ...TEST2_SCENES, ...TEST2_SCENE_BATCHES, ...TEST2_IRREGULAR_ITEMS, ...SUMMER_TIME_WORDS_POOL.map((item)=>({id:`test2-${item.id}`}))];
+        const hiddenCount = pool.filter(item => hidden[item.id]).length;
+        return { total: pool.length, available: Math.max(0, pool.length - hiddenCount) };
+      }
       if (moduleKey === 'honors_ordinal_numbers' || moduleKey === 'honors_test1_review') {
         const pool = moduleKey === 'honors_ordinal_numbers'
           ? ORDINAL_POOL
@@ -5348,9 +5429,12 @@ mean/nice
       const premium = this.hasPremiumAccess();
       const enabled = this.getEnabledModules();
       if (enabled.length === 1 && enabled[0] === 'honors_ordinal_numbers') return premium ? 14 : 8;
-      if (enabled.includes('honors_test1_review')) return premium ? 24 : 16;
+      if (enabled.includes('honors_test1_review')) return this.getHonorsTest1SessionLimit();
+      if (enabled.includes('test2_review')) return premium ? 24 : null;
       return null;
     },
+
+    getHonorsTest1SessionLimit() { return this.hasPremiumAccess() ? 24 : 12; },
 
     recordSessionAnswer(correct) {
       if (!this.activeSession || this.sessionQuestionRecorded) return;
@@ -5683,7 +5767,12 @@ mean/nice
 
       this.ensureModuleAvailability();
 
-      const enabled = this.getEnabledModules();
+      let enabled = this.getEnabledModules();
+      if (this.activeSession && enabled.includes('honors_test1_review')) {
+        const used = Object.values(this.activeSession.sectionCounts || {}).reduce((sum, count) => sum + count, 0);
+        if (used >= this.getHonorsTest1SessionLimit()) enabled = enabled.filter((key) => key !== 'honors_test1_review');
+        if (!enabled.length) { this.finishPracticeSession(); return; }
+      }
       if (!enabled.length) {
         this.renderEmptyState();
         return;
@@ -6335,11 +6424,16 @@ mean/nice
           return;
         }
 
-        if (q.module === 'time' && q.acceptableTime) {
+        if (q.requireAccentExact) {
+          const exact = (value) => cleanText(value).toLocaleLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+          correct = exact(user) === exact(q.expectedDisplay);
+        } else if (q.expectedDisplay && /\b[^\s/]+[oa]\/([oa])\b/i.test(q.expectedDisplay)) {
+          correct = matchesGenderSlashAnswer(q.expectedDisplay, user) === true;
+        } else if (q.module === 'time' && q.acceptableTime) {
           const parsed = normalizeTimeToCanonical(user);
           correct = !!parsed && q.acceptableTime.has(parsed);
         } else {
-          correct = q.acceptable && q.acceptable.has(userNorm);
+          correct = !!(q.acceptable && q.acceptable.has(userNorm));
         }
 
         const validAnswer = correct && q.acceptable && q.acceptable.has(userNorm);
@@ -6748,9 +6842,13 @@ mean/nice
     runAutomatedChecks(opts = {}) {
       const { startup = false } = opts;
       const results = [];
-      const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates', 'honors_ordinal_numbers', 'honors_test1_review', 'guadalupe_vocab'];
+      const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates', 'honors_ordinal_numbers', 'honors_test1_review', 'test2_review', 'guadalupe_vocab'];
       const hasModules = requiredModules.every((key) => MODULES.some((m) => m.key === key) && modules[key]);
       results.push({ ok: hasModules, label: 'Expanded modules registered (including Mayo Madness parent submodules)' });
+      results.push({ ok: PREMIUM_COMPLEX_MODULES.has('test2_review'), label: 'Test 2 Review is marked as a premium module' });
+      results.push({ ok: matchesGenderSlashAnswer('cansado/a','cansado') && matchesGenderSlashAnswer('cansado/a','cansada') && matchesGenderSlashAnswer('rápido/a','rápido') && matchesGenderSlashAnswer('rápido/a','rápida') && !matchesGenderSlashAnswer('rápido/a','rapido') && matchesGenderSlashAnswer('contenta/o','contento'), label: 'Gender slash answers accept either exact accented form only' });
+      const test2Sample = modules.test2_review.generateQuestion(this);
+      results.push({ ok: !!test2Sample && TEST2_REGULAR.some((item) => item.answer === 'hablé') && TEST2_REGULAR.some((item) => item.answer === 'hablabais') && TEST2_REGULAR.some((item) => item.answer === 'comíamos') && TEST2_IRREGULARS.ser.yo === 'fui' && TEST2_IRREGULARS.hacer.él === 'hizo' && SUMMER_TIME_WORDS_POOL.some((item) => item.id === 'summer-time-1') && TEST2_SCENES.length === 16 && TEST2_SCENE_BATCHES.length === 29 && TEST2_SCENE_BATCHES.every((batch)=>batch.items.length===2||batch.items.length===3), label: 'Test 2 Review combines regular tenses, requested irregulars, time words, and 2–3-box Rogelio scenes' });
       results.push({ ok: GUADALUPE_VOCAB_POOL.length === 50 && new Set(GUADALUPE_VOCAB_POOL.map((item) => item.id)).size === 50, label: 'Guadalupe Vocab has 50 distinct stable cards' });
       results.push({ ok: !PREMIUM_COMPLEX_MODULES.has('guadalupe_vocab') && !!modules.guadalupe_vocab.generateQuestion(this), label: 'Guadalupe Vocab is available through the normal free study path' });
       results.push({ ok: MODULES.find((m) => m.key === 'honors_ordinal_numbers')?.level === 2 && MODULES.find((m) => m.key === 'honors_test1_review')?.level === 2, label: 'Spanish 2 Honors modules are level 2 only' });
@@ -6760,6 +6858,8 @@ mean/nice
       results.push({ ok: honorsRegularConjugate('hablar', 'preterite', '1s') === 'hablé' && honorsRegularConjugate('comer', 'imperfect', '1p') === 'comíamos' && honorsRegularConjugate('vivir', 'imperfect', '2p') === 'vivíais', label: 'Honors regular preterite/imperfect endings cover all six persons' });
       results.push({ ok: buildAcceptableAnswerSet(['suddenly', 'all of a sudden']).has(normalizeLoose('all of a sudden')) && buildAcceptableAnswerSet(['normally', 'generally']).has(normalizeLoose('generally')), label: 'Honors vocabulary accepts natural English synonyms' });
       const priorPremiumForChecks = this.mayoPremiumUnlocked;
+      const priorHasPremiumForChecks = this.hasPremiumAccess;
+      this.hasPremiumAccess = () => !!this.mayoPremiumUnlocked;
       this.mayoPremiumUnlocked = false;
       const freeOrdinal = modules.honors_ordinal_numbers.generateQuestion(this);
       this.mayoPremiumUnlocked = true;
@@ -6770,15 +6870,23 @@ mean/nice
       const priorCheckSolo = this.soloMode;
       const priorOrdinalOn = this.state.settings.modulesEnabled.honors_ordinal_numbers;
       const priorTestOn = this.state.settings.modulesEnabled.honors_test1_review;
+      const priorTest2On = this.state.settings.modulesEnabled.test2_review;
       const priorPremiumTarget = this.mayoPremiumUnlocked;
       this.currentLevel = 'spanish2';
       this.soloMode = 'honors_ordinal_numbers';
       this.state.settings.modulesEnabled.honors_ordinal_numbers = true;
       this.state.settings.modulesEnabled.honors_test1_review = false;
+      this.state.settings.modulesEnabled.test2_review = true;
       this.mayoPremiumUnlocked = false;
       const freeOrdinalTarget = this.getSessionTarget();
+      this.state.settings.modulesEnabled.honors_test1_review = true;
+      const freeTest1Enabled = this.isModulePracticeEnabled('honors_test1_review');
+      const freeTest1Limit = this.getHonorsTest1SessionLimit();
+      this.state.settings.modulesEnabled.honors_test1_review = false;
+      const freeTest2Enabled = this.isModulePracticeEnabled('test2_review');
       this.mayoPremiumUnlocked = true;
       const premiumOrdinalTarget = this.getSessionTarget();
+      const premiumTest2Enabled = this.isModulePracticeEnabled('test2_review');
       this.soloMode = 'honors_test1_review';
       this.state.settings.modulesEnabled.honors_test1_review = true;
       const premiumTestTarget = this.getSessionTarget();
@@ -6788,8 +6896,12 @@ mean/nice
       this.soloMode = priorCheckSolo;
       this.state.settings.modulesEnabled.honors_ordinal_numbers = priorOrdinalOn;
       this.state.settings.modulesEnabled.honors_test1_review = priorTestOn;
+      this.state.settings.modulesEnabled.test2_review = priorTest2On;
       this.mayoPremiumUnlocked = priorPremiumTarget;
-      results.push({ ok: freeOrdinalTarget === 8 && premiumOrdinalTarget === 14 && freeTestTarget === 16 && premiumTestTarget === 24, label: 'Honors free/premium session targets differ as intended' });
+      this.hasPremiumAccess = priorHasPremiumForChecks;
+      results.push({ ok: freeOrdinalTarget === 8 && premiumOrdinalTarget === 14 && freeTestTarget === 12 && premiumTestTarget === 24, label: 'Honors free/premium session targets differ as intended' });
+      results.push({ ok: freeTest1Enabled && freeTest1Limit === 12, label: 'Test 1 Review stays available to free learners with a half-length session' });
+      results.push({ ok: !freeTest2Enabled && premiumTest2Enabled, label: 'Test 2 Review is locked for free and enabled for premium' });
       results.push({ ok: MAYO_MADNESS_SUBMODULE_KEYS.length === 6 && MAYO_MADNESS_SUBMODULE_KEYS.every((key) => requiredModules.includes(key)), label: 'Mayo Madness parent tracks all submodules' });
       results.push({ ok: !MODULES.some((m) => m.key === 'ser_estar_gustar'), label: 'Deprecated ser_estar_gustar module removed from registry' });
       results.push({ ok: DAYS_POOL.length >= 7, label: 'Days pool has >= 7 items' });
@@ -6889,8 +7001,10 @@ mean/nice
         document.querySelector('details.settings-accordion .accordion-inner')?.textContent || ''
       ].join(' ');
       results.push({ ok: /range/i.test(visibleHelpText) && /order mode|go in order/i.test(visibleHelpText) && /typed Numbers|type and spell/i.test(visibleHelpText), label: 'Visible help text covers Numbers range, typed mode, and order mode' });
-      results.push({ ok: /Mayo Madness Level 1\/2|Mayo Madness Level 2/i.test(visibleHelpText), label: 'Visible help text covers Mayo Madness Level 1/2 modules' });
-      results.push({ ok: /Rapid Fire/i.test(visibleHelpText), label: 'Visible help text covers Rapid Fire modules' });
+      const hasMayoSettings = !!document.getElementById('mayoMadnessDetails') && ['mayo_madness_1', 'mayo_madness_2'].every((key) => !!this.$[`toggle_${key}`]);
+      const hasRapidSettings = ['rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs'].every((key) => !!this.$[`toggle_${key}`]);
+      results.push({ ok: hasMayoSettings, label: 'Settings provides the Mayo Madness module controls' });
+      results.push({ ok: hasRapidSettings, label: 'Settings provides the Rapid Fire module controls' });
       results.push({ ok: this.$.countsRow?.closest('.top-row')?.getAttribute('aria-hidden') === 'true', label: 'Main counts/data row stays hidden while counts logic remains available' });
       const missingToggles = MODULES
         .map((m) => m.key)

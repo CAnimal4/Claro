@@ -32,8 +32,9 @@
     ser_estar: { kind: 'reduced', label: 'Free includes a smaller rotation; Premium adds more Ser/Estar practice.' },
     gustar: { kind: 'reduced', label: 'Free includes a smaller rotation; Premium adds more Gustar practice.' },
     dates: { kind: 'reduced', label: 'Free includes a smaller rotation; Premium adds more date questions.' }
-    ,honors_test1_review: { kind: 'locked', label: 'Premium only: unlock the complete test review.' }
+    ,honors_test1_review: { kind: 'reduced', label: 'Free includes a 12-question Test 1 Review session; Premium includes up to 24 questions.' }
     ,honors_ordinal_numbers: { kind: 'reduced', label: 'Free includes a smaller rotation; Premium adds the complete ordinal-number pool.' }
+    ,test2_review: { kind: 'locked', label: 'Premium only: unlock the complete Test 2 Review module.' }
   };
 
   function applyPremiumBadges() {
