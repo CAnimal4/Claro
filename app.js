@@ -131,6 +131,42 @@
     { key: 'guadalupe_vocab', name: 'Guadalupe Vocab', description: 'Vocabulary and meaning distinctions from the Guadalupe story.', level: 2, category: 'Spanish 2 Honors' }
   ];
 
+  // A shared module URL is an explicit selection snapshot; ordinary visits
+  // continue to use the learner's saved settings.
+  function installModuleSharing(app) {
+    const section = document.getElementById('moduleSettingsSection');
+    if (!section || section.querySelector('#shareModulesBtn')) return;
+    const bar = document.createElement('div');
+    bar.className = 'module-share-tools';
+    bar.innerHTML = '<button type="button" class="btn small" id="shareModulesBtn">🔗 Share selected modules</button><span class="module-share-status" id="moduleShareStatus" role="status" aria-live="polite"></span>';
+    section.append(bar);
+    const keys = new Set(MODULES.map((m) => m.key));
+    const applyUrl = () => {
+      const params = new URLSearchParams(location.search);
+      const encoded = params.get('modules');
+      if (encoded === null) return;
+      const chosen = new Set(encoded.split(',').filter((key) => keys.has(key)));
+      for (const module of MODULES) app.state.settings.modulesEnabled[module.key] = chosen.has(module.key);
+      if (!chosen.size && MODULES.length) app.state.settings.modulesEnabled[MODULES[0].key] = true;
+      app.saveSoon(); app.refreshSettingsUI();
+    };
+    applyUrl();
+    document.getElementById('shareModulesBtn').addEventListener('click', async () => {
+      const selected = MODULES.filter((m) => app.state.settings.modulesEnabled[m.key]).map((m) => m.key);
+      const params = new URLSearchParams(location.search); params.set('modules', selected.join(','));
+      const url = `${location.origin}${location.pathname}?${params.toString()}${location.hash}`;
+      history.replaceState(null, '', url);
+      try { await navigator.clipboard.writeText(url); document.getElementById('moduleShareStatus').textContent = 'Link copied. Selected modules update the URL.'; }
+      catch (_) { window.prompt('Copy this module link:', url); }
+    });
+    section.addEventListener('change', (event) => {
+      if (event.target.matches('input[type="checkbox"]')) {
+        const params = new URLSearchParams(location.search); params.delete('modules');
+        const query = params.toString(); history.replaceState(null, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`);
+      }
+    });
+  }
+
   const MAYO_MADNESS_KEY = 'mayo_madness';
   const MAYO_MADNESS_PASSWORDS = new Set();
   const PREMIUM_ACCESS_STORAGE_KEY = 'claro_premium_access_v1';
@@ -3843,6 +3879,7 @@ mean/nice
 
       this.buildPools();
       this.refreshSettingsUI();
+      installModuleSharing(this);
       this.renderKeyHintStrip();
 
       // Auto-disable empty modules (edge case handling)
