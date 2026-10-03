@@ -1,2 +1,3 @@
 /* Claro-only design/content modifiers. Shared geometry lives in shared-ui.css. */
 :root{--brand:#2563eb;--brand-strong:#1d4ed8;--brand-soft:#eff6ff;--surface-soft:#f8fafc;--keyhint-bg:#eff6ff;--keyhint-border:#bfdbfe}
+.premium-module-tag{display:inline-flex;align-items:center;gap:4px;margin-left:7px;padding:3px 8px;border:1px solid #bfdbfe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:.68rem;font-weight:800;line-height:1.25;vertical-align:middle}.module-access-summary{margin-top:3px;color:var(--muted,#64748b);font-size:.76rem;line-height:1.35}

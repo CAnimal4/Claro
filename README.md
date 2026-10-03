@@ -134,3 +134,7 @@ Before publishing a meaningful change:
 3. Test the changed flow locally in a browser.
 4. Confirm that unrelated levels and modules still work.
 5. Verify the deployed result at the Vercel URL.
+
+## Premium question tiers
+
+Module settings show every Premium tier, not a rotating sample of badges. A half-circle row reports the exact Premium count and the remaining free questions; the question bank is split in a stable alternating order, so the free/Premium assignment does not shift when learners hide questions. Whole-Premium collections use a star label and retain their existing access requirement.

@@ -178,7 +178,8 @@
     'commands', 'vocab', 'reflexive', 'tenses', 'prices', 'weather', 'clothing',
     'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates',
     'summer_preterite', 'summer_imperfect', 'summer_irregular_preterite',
-    'summer_irregular_imperfect', 'summer_tense_choice', 'summer_translations', 'test2_review'
+    'summer_irregular_imperfect', 'summer_tense_choice', 'summer_translations',
+    'honors_ordinal_numbers', 'honors_test1_review', 'test2_review'
   ]);
 
   function readPremiumAccessRecord() {
@@ -211,13 +212,7 @@
     try { document.cookie = `${PREMIUM_ACCESS_COOKIE_KEY}=; max-age=0; path=/; SameSite=Lax`; } catch (_) {}
   }
 
-  function premiumQuestionHash(id) {
-    return String(id || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  }
-
-  function isPremiumQuestion(moduleKey, questionId) {
-    return PREMIUM_COMPLEX_MODULES.has(moduleKey) && premiumQuestionHash(questionId) % 4 === 0;
-  }
+  const PREMIUM_QUESTION_IDS = new Map();
   const MAYO_MADNESS_SUBMODULE_KEYS = [
     'mayo_madness_1',
     'mayo_madness_2',
@@ -4644,6 +4639,7 @@ mean/nice
         if (!el) continue;
         el.checked = !!this.state.settings.modulesEnabled[m.key];
       }
+      this.updatePremiumModuleLabels();
       if (this.$.toggle_mayo_madness) this.$.toggle_mayo_madness.checked = !!(this.hasPremiumAccess() && this.state.settings.mayoMadnessEnabled);
 
       // Tense toggles
@@ -4825,7 +4821,6 @@ mean/nice
     isModulePracticeEnabled(moduleKey) {
       if (moduleKey === MAYO_MADNESS_KEY) return this.getEnabledMayoMadnessModules().length > 0;
       if (!this.state.settings.modulesEnabled[moduleKey]) return false;
-      if (moduleKey === 'test2_review' && !this.hasPremiumAccess()) return false;
       if (!isMayoMadnessKey(moduleKey)) return true;
       return !!(this.hasPremiumAccess() && this.state.settings.mayoMadnessEnabled);
     },
@@ -4844,8 +4839,6 @@ mean/nice
         this.$.premiumBtn.title = unlocked ? (temporary ? 'Premium active for one day' : 'Premium active') : 'Unlock Premium';
         this.$.premiumBtn.setAttribute('aria-label', unlocked ? (temporary ? 'Premium active for one day' : 'Premium active') : 'Unlock Premium');
       }
-      const test2Toggle=this.$.toggle_test2_review;
-      if(test2Toggle){test2Toggle.disabled=!unlocked;if(!unlocked)test2Toggle.checked=false;const row=test2Toggle.closest('.toggle');row?.classList.toggle('is-premium-locked',!unlocked);}
       if (this.$.toggle_mayo_madness) {
         this.$.toggle_mayo_madness.checked = unlocked && parentOn;
         this.$.toggle_mayo_madness.disabled = !unlocked;
@@ -4903,7 +4896,58 @@ mean/nice
     },
 
     isQuestionAvailableWithoutPremium(question) {
-      return !question || !isPremiumQuestion(question.module, question.id) || this.hasPremiumAccess();
+      if (!question || !PREMIUM_COMPLEX_MODULES.has(question.module)) return true;
+      return this.hasPremiumAccess() || !this.getPremiumQuestionIds(question.module).has(String(question.id));
+    },
+
+    getPremiumQuestionPool(moduleKey) {
+      const pools = {
+        commands: this.commandPool, vocab: this.vocab, reflexive: this.reflexivePool, tenses: this.tensesPool,
+        days: DAYS_POOL, months: MONTHS_POOL, seasons: SEASONS_POOL, time: TIME_POOL, colors: COLORS_POOL,
+        prices: PRICES_POOL, weather: WEATHER_POOL, clothing: CLOTHING_POOL, foods: FOODS_POOL,
+        present_progressive: PRESENT_PROGRESSIVE_POOL, ser_estar: SER_ESTAR_POOL, gustar: GUSTAR_POOL, dates: DATES_POOL,
+        summer_preterite: SUMMER_PRETERITE_POOL, summer_imperfect: SUMMER_IMPERFECT_POOL,
+        summer_irregular_preterite: SUMMER_IRREGULAR_PRETERITE_POOL, summer_irregular_imperfect: SUMMER_IRREGULAR_IMPERFECT_POOL,
+        summer_tense_choice: SUMMER_TENSE_CHOICE_POOL, summer_translations: SUMMER_TRANSLATIONS_POOL,
+        honors_ordinal_numbers: ORDINAL_POOL,
+        honors_test1_review: HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL, HONORS_TIME_WORDS, HONORS_CHOICE_POOL,
+          HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL).map((item) => ({ id: `honors-translation-${item.id}` }))),
+        test2_review: [...TEST2_REGULAR, ...TEST2_SCENES, ...TEST2_SCENE_BATCHES, ...TEST2_IRREGULAR_ITEMS, ...SUMMER_TIME_WORDS_POOL.map((item) => ({ id: `test2-${item.id}` }))]
+      };
+      const pool = pools[moduleKey] || [];
+      return [...new Map(pool.filter((item) => item?.id != null).map((item) => [String(item.id), item])).values()];
+    },
+
+    getPremiumQuestionIds(moduleKey) {
+      if (!PREMIUM_QUESTION_IDS.has(moduleKey)) {
+        const ids = [...new Set(this.getPremiumQuestionPool(moduleKey).map((item) => String(item.id)).filter(Boolean))];
+        PREMIUM_QUESTION_IDS.set(moduleKey, new Set(ids.filter((_, index) => index % 2 === 1)));
+      }
+      return PREMIUM_QUESTION_IDS.get(moduleKey);
+    },
+
+    getPremiumQuestionCount(moduleKey) {
+      return this.getPremiumQuestionIds(moduleKey).size;
+    },
+
+    updatePremiumModuleLabels() {
+      for (const module of MODULES) {
+        if (!PREMIUM_COMPLEX_MODULES.has(module.key)) continue;
+        const toggle = this.$['toggle_' + module.key];
+        const row = toggle?.closest('.toggle');
+        const label = row?.querySelector('.label');
+        if (!row || !label) continue;
+        const total = this.getPremiumQuestionPool(module.key).length;
+        const premium = this.getPremiumQuestionCount(module.key);
+        if (!premium) continue;
+        let badge = label.querySelector('.premium-module-tag');
+        if (!badge) { badge = document.createElement('span'); badge.className = 'premium-module-tag'; label.append(' ', badge); }
+        badge.textContent = `◐ ${premium} Premium questions`;
+        badge.setAttribute('aria-label', `Half-premium module. ${premium} Premium questions.`);
+        let summary = row.querySelector('.module-access-summary');
+        if (!summary) { summary = document.createElement('div'); summary.className = 'module-access-summary'; row.querySelector('.desc')?.after(summary); }
+        if (summary) summary.textContent = `${total} questions · ${total - premium} free + ${premium} Premium`;
+      }
     },
 
     openPremiumAccess() {
@@ -5471,7 +5515,7 @@ mean/nice
       const enabled = this.getEnabledModules();
       if (enabled.length === 1 && enabled[0] === 'honors_ordinal_numbers') return premium ? 14 : 8;
       if (enabled.includes('honors_test1_review')) return this.getHonorsTest1SessionLimit();
-      if (enabled.includes('test2_review')) return premium ? 24 : null;
+      if (enabled.includes('test2_review')) return premium ? 24 : 12;
       return null;
     },
 
@@ -6892,14 +6936,23 @@ mean/nice
       const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates', 'honors_ordinal_numbers', 'honors_test1_review', 'test2_review', 'guadalupe_vocab'];
       const hasModules = requiredModules.every((key) => MODULES.some((m) => m.key === key) && modules[key]);
       results.push({ ok: hasModules, label: 'Expanded modules registered (including Mayo Madness parent submodules)' });
-      results.push({ ok: PREMIUM_COMPLEX_MODULES.has('test2_review'), label: 'Test 2 Review is marked as a premium module' });
+      results.push({ ok: [...PREMIUM_COMPLEX_MODULES].every((key) => this.getPremiumQuestionPool(key).length >= 2 && this.getPremiumQuestionCount(key) === Math.floor(this.getPremiumQuestionPool(key).length / 2)), label: 'Every partially Premium module has an exact stable half-pool split' });
+      const premiumTest2Id = this.getPremiumQuestionIds('test2_review').values().next().value;
+      const priorPremiumCheck = this.hasPremiumAccess;
+      this.hasPremiumAccess = () => false;
+      const test2QuestionBlocked = !this.isQuestionAvailableWithoutPremium({ module: 'test2_review', id: premiumTest2Id });
+      this.hasPremiumAccess = () => true;
+      const test2QuestionUnlocked = this.isQuestionAvailableWithoutPremium({ module: 'test2_review', id: premiumTest2Id });
+      this.hasPremiumAccess = priorPremiumCheck;
+      results.push({ ok: test2QuestionBlocked && test2QuestionUnlocked, label: 'A Premium question is blocked for free access and enabled after unlock' });
+      results.push({ ok: PREMIUM_COMPLEX_MODULES.has('test2_review') && this.getPremiumQuestionCount('test2_review') === Math.floor(this.getPremiumQuestionPool('test2_review').length / 2), label: 'Test 2 Review exposes a balanced Premium question half' });
       results.push({ ok: matchesGenderSlashAnswer('cansado/a','cansado') && matchesGenderSlashAnswer('cansado/a','cansada') && matchesGenderSlashAnswer('rápido/a','rápido') && matchesGenderSlashAnswer('rápido/a','rápida') && !matchesGenderSlashAnswer('rápido/a','rapido') && matchesGenderSlashAnswer('contenta/o','contento'), label: 'Gender slash answers accept either exact accented form only' });
       const test2Sample = modules.test2_review.generateQuestion(this);
       results.push({ ok: !!test2Sample && TEST2_REGULAR.some((item) => item.answer === 'hablé') && TEST2_REGULAR.some((item) => item.answer === 'hablabais') && TEST2_REGULAR.some((item) => item.answer === 'comíamos') && TEST2_IRREGULARS.ser.yo === 'fui' && TEST2_IRREGULARS.hacer.él === 'hizo' && SUMMER_TIME_WORDS_POOL.some((item) => item.id === 'summer-time-1') && TEST2_SCENES.length === 16 && TEST2_SCENE_BATCHES.length === 29 && TEST2_SCENE_BATCHES.every((batch)=>batch.items.length===2||batch.items.length===3), label: 'Test 2 Review combines regular tenses, requested irregulars, time words, and 2–3-box Rogelio scenes' });
       results.push({ ok: GUADALUPE_VOCAB_POOL.length === 50 && new Set(GUADALUPE_VOCAB_POOL.map((item) => item.id)).size === 50, label: 'Guadalupe Vocab has 50 distinct stable cards' });
       results.push({ ok: !PREMIUM_COMPLEX_MODULES.has('guadalupe_vocab') && !!modules.guadalupe_vocab.generateQuestion(this), label: 'Guadalupe Vocab is available through the normal free study path' });
       results.push({ ok: MODULES.find((m) => m.key === 'honors_ordinal_numbers')?.level === 2 && MODULES.find((m) => m.key === 'honors_test1_review')?.level === 2, label: 'Spanish 2 Honors modules are level 2 only' });
-      results.push({ ok: !PREMIUM_COMPLEX_MODULES.has('honors_ordinal_numbers') && !PREMIUM_COMPLEX_MODULES.has('honors_test1_review'), label: 'Spanish 2 Honors modules are not premium-locked' });
+      results.push({ ok: PREMIUM_COMPLEX_MODULES.has('honors_ordinal_numbers') && PREMIUM_COMPLEX_MODULES.has('honors_test1_review') && this.getPremiumQuestionCount('honors_ordinal_numbers') > 0 && this.getPremiumQuestionCount('honors_test1_review') > 0, label: 'Spanish 2 Honors modules have free and Premium question tiers' });
       const ordinalAnswers = buildAcceptableAnswerSet(['tercera']);
       results.push({ ok: ordinalAnswers.has(normalizeLoose('TERCERA')) && buildAcceptableAnswerSet(['tercer']).has(normalizeLoose('tercer')) && !buildAcceptableAnswerSet(['tercera']).has(normalizeLoose('tercero')), label: 'Ordinal gender agreement and contextual tercero/tercer forms are strict' });
       results.push({ ok: honorsRegularConjugate('hablar', 'preterite', '1s') === 'hablé' && honorsRegularConjugate('comer', 'imperfect', '1p') === 'comíamos' && honorsRegularConjugate('vivir', 'imperfect', '2p') === 'vivíais', label: 'Honors regular preterite/imperfect endings cover all six persons' });
@@ -6948,7 +7001,7 @@ mean/nice
       this.hasPremiumAccess = priorHasPremiumForChecks;
       results.push({ ok: freeOrdinalTarget === 8 && premiumOrdinalTarget === 14 && freeTestTarget === 12 && premiumTestTarget === 24, label: 'Honors free/premium session targets differ as intended' });
       results.push({ ok: freeTest1Enabled && freeTest1Limit === 12, label: 'Test 1 Review stays available to free learners with a half-length session' });
-      results.push({ ok: !freeTest2Enabled && premiumTest2Enabled, label: 'Test 2 Review is locked for free and enabled for premium' });
+      results.push({ ok: freeTest2Enabled && premiumTest2Enabled, label: 'Test 2 Review stays available with a Premium question half' });
       results.push({ ok: MAYO_MADNESS_SUBMODULE_KEYS.length === 6 && MAYO_MADNESS_SUBMODULE_KEYS.every((key) => requiredModules.includes(key)), label: 'Mayo Madness parent tracks all submodules' });
       results.push({ ok: !MODULES.some((m) => m.key === 'ser_estar_gustar'), label: 'Deprecated ser_estar_gustar module removed from registry' });
       results.push({ ok: DAYS_POOL.length >= 7, label: 'Days pool has >= 7 items' });
