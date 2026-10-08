@@ -126,14 +126,14 @@ window.LearningAppShared?.registerUpdate({id:'claro-test2-review-2026-09',app:'c
     { key: 'summer_irregular_imperfect', name: 'Irregular imperfect', level: 2, category: 'Summer Prep' },
     { key: 'summer_tense_choice', name: 'Preterite or imperfect?', level: 2, category: 'Summer Prep' },
     { key: 'summer_translations', name: 'Summer translation challenge', level: 2, category: 'Summer Prep' },
-    { key: 'honors_ordinal_numbers', name: 'Ordinal Numbers', description: 'First, second, third, and beyond — ordinal numbers, gender agreement, and real sentence practice.', level: 2, category: 'Spanish 2 Honors' },
-    { key: 'honors_test1_review', name: 'Test 1 Review', description: 'Preterite, imperfect, past-tense vocabulary, tense choice, and verb translation.', level: 2, category: 'Spanish 2 Honors' },
-    { key: 'test2_review', name: 'Test 2 Review', description: 'Regular past-tense forms, key irregular preterites, and Rogelio scene practice.', level: 2, category: 'Spanish 2 Honors' },
-    { key: 'guadalupe_vocab', name: 'Guadalupe Vocab', description: 'Vocabulary and meaning distinctions from the Guadalupe story.', level: 2, category: 'Spanish 2 Honors' },
-    { key: 'guadalupe_story_easy', name: 'Guadalupe Story · Fácil', description: 'Comprensión lectora: preguntas directas sobre el cuento.', level: 2, category: 'Spanish 2 Honors' },
-    { key: 'guadalupe_story_hard', name: 'Guadalupe Story · Difícil', description: 'Comprensión lectora: inferencias y detalles del cuento.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'test3_review', name: 'Test 3 Review', description: 'Cuento de Guadalupe, vocabulario y pretérito irregular.', level: 2, category: 'Spanish 2 Honors' },
     { key: 'irregular_preterite_group2', name: 'Irregular Preterite · Group 2', description: 'Tener, estar, dar, ver, poner y querer en el pretérito.', level: 2, category: 'Spanish 2 Honors' },
-    { key: 'test3_review', name: 'Test 3 Review', description: 'Cuento de Guadalupe, vocabulario y pretérito irregular.', level: 2, category: 'Spanish 2 Honors' }
+    { key: 'guadalupe_story_hard', name: 'Guadalupe Story · Difícil', description: 'Comprensión lectora: inferencias y detalles del cuento.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'guadalupe_story_easy', name: 'Guadalupe Story · Fácil', description: 'Comprensión lectora: preguntas directas sobre el cuento.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'guadalupe_vocab', name: 'Guadalupe Vocab', description: 'Vocabulary and meaning distinctions from the Guadalupe story.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'test2_review', name: 'Test 2 Review', description: 'Regular past-tense forms, key irregular preterites, and Rogelio scene practice.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'honors_test1_review', name: 'Test 1 Review', description: 'Preterite, imperfect, past-tense vocabulary, tense choice, and verb translation.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'honors_ordinal_numbers', name: 'Ordinal Numbers', description: 'First, second, third, and beyond — ordinal numbers, gender agreement, and real sentence practice.', level: 2, category: 'Spanish 2 Honors' }
   ];
 
   // A shared module URL is an explicit selection snapshot; ordinary visits
