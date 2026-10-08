@@ -39,7 +39,8 @@
 */
 
 (() => {
-  window.LearningAppShared?.registerUpdate({id:'claro-test2-review-2026-09',app:'claro',title:'New: Test 2 Review',copy:'A Premium study set for past tense forms, time words, irregular verbs, and Rogelio scenes.',tourSteps:[{title:'Find Test 2 Review',copy:'Open Spanish 2 Honors Modules and choose Test 2 Review. Premium access is required.',target:'test2'},{title:'Choose a focused set',copy:'Practice regular preterite and imperfect forms, irregular preterites, and past-time vocabulary.',target:'modules'},{title:'Reason through each scene',copy:'Work through two or three Rogelio boxes at a time and use the explanation to compare the choices.',target:'practice'}]});
+window.LearningAppShared?.registerUpdate({id:'claro-test2-review-2026-09',app:'claro',title:'New: Test 2 Review',copy:'A Premium study set for past tense forms, time words, irregular verbs, and Rogelio scenes.',tourSteps:[{title:'Find Test 2 Review',copy:'Open Spanish 2 Honors Modules and choose Test 2 Review. Premium access is required.',target:'test2'},{title:'Choose a focused set',copy:'Practice regular preterite and imperfect forms, irregular preterites, and past-time vocabulary.',target:'modules'},{title:'Reason through each scene',copy:'Work through two or three Rogelio boxes at a time and use the explanation to compare the choices.',target:'practice'}]});
+  window.LearningAppShared?.registerUpdate({id:'claro-guadalupe-test3-2026-10',app:'claro',title:'New: Guadalupe & Test 3 Practice',copy:'Study the Guadalupe cuento, its vocabulary, and irregular preterite verbs.',tourSteps:[{title:'Choose a Guadalupe module',copy:'Open Spanish 2 Honors Modules for vocabulary, easier or harder story questions, or Test 3 Review.',target:'modules'},{title:'Practice the story',copy:'Answer Spanish multiple-choice questions about Juan Diego and the Virgen de Guadalupe.',target:'practice'},{title:'Review Test 3 topics',copy:'Mix story comprehension, vocabulary, Group 1 and Group 2 preterite forms, and tense meanings.',target:'practice'}]});
   'use strict';
 
   const STORAGE_KEY = 'spanish_app_v2_state';
@@ -128,7 +129,11 @@
     { key: 'honors_ordinal_numbers', name: 'Ordinal Numbers', description: 'First, second, third, and beyond — ordinal numbers, gender agreement, and real sentence practice.', level: 2, category: 'Spanish 2 Honors' },
     { key: 'honors_test1_review', name: 'Test 1 Review', description: 'Preterite, imperfect, past-tense vocabulary, tense choice, and verb translation.', level: 2, category: 'Spanish 2 Honors' },
     { key: 'test2_review', name: 'Test 2 Review', description: 'Regular past-tense forms, key irregular preterites, and Rogelio scene practice.', level: 2, category: 'Spanish 2 Honors' },
-    { key: 'guadalupe_vocab', name: 'Guadalupe Vocab', description: 'Vocabulary and meaning distinctions from the Guadalupe story.', level: 2, category: 'Spanish 2 Honors' }
+    { key: 'guadalupe_vocab', name: 'Guadalupe Vocab', description: 'Vocabulary and meaning distinctions from the Guadalupe story.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'guadalupe_story_easy', name: 'Guadalupe Story · Fácil', description: 'Comprensión lectora: preguntas directas sobre el cuento.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'guadalupe_story_hard', name: 'Guadalupe Story · Difícil', description: 'Comprensión lectora: inferencias y detalles del cuento.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'irregular_preterite_group2', name: 'Irregular Preterite · Group 2', description: 'Tener, estar, dar, ver, poner y querer en el pretérito.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'test3_review', name: 'Test 3 Review', description: 'Cuento de Guadalupe, vocabulario y pretérito irregular.', level: 2, category: 'Spanish 2 Honors' }
   ];
 
   // A shared module URL is an explicit selection snapshot; ordinary visits
@@ -2643,7 +2648,11 @@ mean/nice
           honors_ordinal_numbers: false,
           honors_test1_review: false,
           test2_review: false,
-          guadalupe_vocab: false
+          guadalupe_vocab: false,
+          guadalupe_story_easy: false,
+          guadalupe_story_hard: false,
+          irregular_preterite_group2: false,
+          test3_review: false
         },
         mayoMadnessEnabled: true,
         tensesEnabled: { present: true, preterite: false, imperfect: false },
@@ -3002,32 +3011,100 @@ mean/nice
   // including pairs whose English meanings overlap but whose Spanish form or
   // word order carries a different meaning.
   const GUADALUPE_VOCAB_POOL = [
-    ['a plena vista', 'in plain sight'], ['por encima', 'above; on top of'],
-    ['una capilla', 'a chapel'], ['el mismo sitio', 'the same place; the same site', 'Same = the identical place.'],
+    ['a plena vista', 'in plain sight'], ['por encima', 'above; on top of', null, ['encima de', 'sobre']],
+    ['una capilla', 'a shrine; an altar; a chapel', null, ['un santuario', 'un altar']], ['el mismo sitio', 'the same place; the same site', 'Same = the identical place.'],
     ['el sitio mismo', 'the place itself', 'Mismo follows the noun to emphasize the place itself.'],
-    ['le traigo', 'I bring him/her; I bring you (formal)'], ['la prueba', 'evidence; proof; test'],
-    ['su tilma', 'his/her tilma; his/her traditional cloak'], ['un ramo (de flores)', 'a bouquet (of flowers)'],
-    ['nopales, cactos', 'prickly pears; cacti'], ['sólo, solamente', 'only'],
+    ['le traigo', 'I will bring you; I will bring him/her', null, ['te lo traeré', 'se lo traeré', 'voy a traerte', 'voy a traerle']], ['la prueba', 'evidence; proof; test; quiz', null, ['la evidencia', 'el examen', 'el cuestionario']],
+    ['su tilma', 'his/her blanket; his/her poncho', null, ['su manta', 'su poncho']], ['un ramo (de flores)', 'a bouquet (of flowers)', null, ['un ramo', 'un ramo de flores']],
+    ['nopales, cactos', 'cactus; cacti', null, ['nopal', 'nopales', 'cacto', 'cactos', 'cactus']], ['sólo, solamente', 'only', null, ['sólo', 'solo', 'solamente']],
     ['la sorpresa', 'surprise; astonishment'], ['cuidar', 'to take care of'], ['los pies', 'feet'],
-    ['crecer', 'to grow; to grow up'], ['coger', 'to pick; to take'], ['la bendición', 'blessing'],
+    ['crecer', 'to grow; to grow up'], ['coger', 'to pick; to take', null, ['recoger', 'tomar']], ['la bendición', 'blessing; benediction; closing prayer', null, ['la bendición', 'la oración final']],
     ['siguiente', 'next; following'], ['morirse', 'to die', 'Infinitive/reflexive form: to die.'],
     ['se murió', 'he/she died', 'Completed past event: he/she died.'], ['el cura', 'priest'],
-    ['supo', 'he/she found out; learned'], ['confundido', 'confused'],
+    ['supo', 'he/she found out; learned', null, ['se enteró', 'descubrió']], ['confundido', 'confused'],
     ['gran', 'great (before a singular noun)', 'Gran is the shortened form before a singular noun.'],
     ['grande', 'big; large', 'Grande means big/large; before a singular noun it is not shortened here.'],
     ['un gran hombre', 'a great man', 'Gran describes the man as great.'],
-    ['un hombre grande', 'a big/large man', 'Grande describes the man as big/large.'],
-    ['mal hombre', 'a bad man', 'Mal comes before the noun: a bad man.'],
-    ['hombre malo', 'bad/evil man', 'Malo follows the noun and emphasizes bad/evil character.'],
+    ['un hombre grande', 'a big man', 'Grande describes the man as big/large.'],
+    ['mal hombre', 'bad man', 'Mal comes before the noun: a bad man.'],
+    ['hombre malo', 'bad man', 'Malo follows the noun and emphasizes bad character.'],
     ['un día', 'one day'], ['un buen hombre', 'a good man'], ['le contó', 'he/she told him/her'],
-    ['edificar', 'to build; to construct'], ['el obispo', 'bishop'], ['dile', 'tell him/her'],
-    ['ve', 'go!', 'The command ve means go!'], ['que vayas', 'that you go / go', 'Subjunctive form in a phrase: that you go.'],
-    ['humilde', 'humble'], ['pedir', 'to ask for; to order'], ['no tengas miedo', "don't be afraid"],
-    ['ni que decir', 'even what to say'], ['el sendero', 'trail; path'], ['una parada', 'a stop'],
-    ['una nube', 'a cloud'], ['pobre indio', 'poor/unfortunate Indigenous man', 'Pobre before the noun means unfortunate/poor in a sympathetic sense.'],
-    ['indio pobre', 'Indigenous man who is poor', 'Pobre after the noun describes economic condition.'],
-    ['desde', 'from; since'], ['una basílica', 'a basilica'], ['la gente', 'people'], ['la santa patrona', 'patron saint']
-  ].map(([sp, en, explanation], index) => ({ id: `guadalupe-${index + 1}`, sp, en, explanation }));
+    ['edificar', 'to edify; to construct; to build', null, ['construir', 'levantar']], ['el obispo', 'bishop; priest', null, ['el sacerdote']], ['dile', 'tell him/her', null, ['dile a él', 'dile a ella']],
+    ['ve', 'go!', 'The command ve means go!'], ['que vayas', 'Go!; that you go', 'Subjunctive form in a phrase: that you go.'],
+    ['humilde', 'humble'], ['pedir', 'to ask for; to order'], ['no tengas miedo', "don't be afraid", null, ['no te asustes', 'no tengas temor']],
+    ['ni que decir', 'even what to say'], ['no sabía ni qué decir', 'I did not even know what to say'], ['el sendero', 'trail; path'], ['una parada', 'a stop'],
+    ['una nube', 'a cloud'], ['pobre indio', 'poor Indian; unfortunate Indian', 'Pobre before the noun means unfortunate or poor in a sympathetic sense.'],
+    ['indio pobre', 'poor Indian; an Indian who is poor ($)', 'Pobre after the noun describes economic condition.'],
+    ['desde', 'from; since'], ['una basílica', 'a basilica'], ['la gente', 'people (singular)'], ['la santa patrona', 'patron saint'],
+    ['la Virgen', 'the Virgin'], ['la aparición', 'the apparition; appearance']
+  ].map(([sp, en, explanation, variants], index) => ({ id: `guadalupe-${index + 1}`, sp, en, explanation, variants:variants || [] }));
+
+  const GUADALUPE_SPANISH_DEFINITIONS = {
+    'a plena vista':'En un lugar donde todos pueden verlo.', 'por encima':'En una posición más alta que otra cosa.',
+    'una capilla':'Un lugar pequeño para rezar o celebrar servicios religiosos.', 'el mismo sitio':'Exactamente el lugar mencionado antes.',
+    'el sitio mismo':'El lugar en sí, con énfasis en el lugar.', 'le traigo':'Voy a llevar algo a usted, a él o a ella.',
+    'la prueba':'Evidencia que demuestra algo; también puede ser un examen o cuestionario.', 'su tilma':'La manta o el poncho tradicional que le pertenece.',
+    'un ramo (de flores)':'Un conjunto de flores atadas o sostenidas juntas.', 'nopales, cactos':'Plantas con espinas que crecen en zonas secas.',
+    'sólo, solamente':'Nada más; únicamente.', 'la sorpresa':'La emoción de descubrir algo inesperado.', 'cuidar':'Proteger o atender a alguien o algo.',
+    'los pies':'Las partes del cuerpo que usamos para caminar.', 'crecer':'Aumentar de tamaño o desarrollarse al pasar el tiempo.',
+    'coger':'Tomar algo con la mano; recoger algo.', 'la bendición':'Una oración o deseo de bienestar; también una oración final.',
+    'siguiente':'Que viene después.', 'morirse':'Dejar de vivir.', 'se murió':'Dejó de vivir; falleció.', 'el cura':'Un sacerdote de la Iglesia católica.',
+    'supo':'Se enteró de algo o lo descubrió.', 'confundido':'Que no entiende bien una situación.', 'gran':'Forma corta de grande antes de un sustantivo singular; significa excelente o importante.',
+    'grande':'De tamaño considerable.', 'un gran hombre':'Un hombre excelente o admirable.', 'un hombre grande':'Un hombre de gran tamaño.',
+    'mal hombre':'Un hombre malo; mal aparece antes del sustantivo.', 'hombre malo':'Un hombre de mal carácter; malo aparece después del sustantivo.',
+    'un día':'En un día; en cierta ocasión.', 'un buen hombre':'Un hombre bondadoso.', 'le contó':'Le narró algo a él o a ella.',
+    'edificar':'Construir un edificio o una estructura.', 'el obispo':'Un líder religioso de alto rango; en el cuento, quien recibe a Juan Diego.',
+    'dile':'Da el mensaje a él o a ella.', 've':'Forma de mandato de ir: dirígete a un lugar.', 'que vayas':'Que tú te dirijas a un lugar.',
+    'humilde':'Modesto; que no presume de su importancia.', 'pedir':'Solicitar algo o hacer un pedido.', 'no tengas miedo':'No sientas temor.',
+    'ni que decir':'Ni siquiera saber qué decir.', 'no sabía ni qué decir':'No sabía qué palabras usar; no tenía nada que decir.',
+    'el sendero':'Un camino estrecho para caminar.', 'una parada':'El acto o lugar donde alguien se detiene.', 'una nube':'Una masa visible de gotas de agua en el cielo.',
+    'pobre indio':'Un hombre indígena desafortunado o digno de compasión.', 'indio pobre':'Un hombre indígena que tiene poco dinero.',
+    'desde':'A partir de un momento o lugar.', 'una basílica':'Una iglesia grande e importante.', 'la gente':'Las personas; este sustantivo se usa en singular.',
+    'la santa patrona':'La santa que protege o representa a un lugar.', 'la Virgen':'María, la madre de Jesús.', 'la aparición':'La visión o manifestación inesperada de alguien o algo.'
+  };
+
+  const GUADALUPE_STORY_EASY = [
+    ['¿En qué mes comienza el cuento de Juan Diego?', 'En diciembre.', ['En junio.', 'En marzo.', 'En agosto.']],
+    ['¿Adónde caminaba Juan Diego?', 'Hacia la ciudad.', ['Hacia una basílica en la capital.', 'Hacia la casa del obispo.', 'Hacia el pueblo de su tío.']],
+    ['¿Qué oyó Juan Diego de repente?', 'Música divina.', ['La voz del cura.', 'A la gente de la ciudad.', 'El sonido de las campanas.']],
+    ['¿Qué olió Juan Diego?', 'Un perfume más fragante.', ['El olor de los nopales.', 'El olor del pan.', 'El perfume del obispo.']],
+    ['¿Dónde vio a la mujer?', 'En la colina de Tepeyac.', ['En la ciudad de México.', 'En la casa del cura.', 'En la basílica.']],
+    ['¿Cómo estaba la mujer en el sendero?', 'Estaba parada delante de él.', ['Estaba caminando detrás de él.', 'Estaba sentada junto al obispo.', 'Estaba recogiendo nopales.']],
+    ['¿Cómo responde Juan Diego cuando la Virgen le pregunta cómo puede ayudar?', 'Dice que es un indio pobre y humilde y le pregunta cómo puede ayudarla.', ['Dice que ya es obispo.', 'Dice que va a edificar una basílica en la ciudad.', 'Dice que llevará a su tío al sendero.']],
+    ['¿Qué pidió la Virgen que edificara el obispo?', 'Una iglesia allí.', ['Una casa para Juan Diego.', 'Una parada en el sendero.', 'Una capilla en la capital.']],
+    ['¿Qué necesitaba el tío de Juan Diego?', 'La bendición del cura.', ['Una tilma nueva.', 'Un ramo de cactos.', 'La prueba del obispo.']],
+    ['¿Qué había en la colina al final del cuento?', 'Una pequeña capilla.', ['Una casa para el cura.', 'Un pueblo de cuatro millas.', 'Una iglesia en la capital.']]
+  ].map(([prompt, answer, distractors], index) => ({ id:`guadalupe-easy-${index+1}`, prompt, answer, distractors }));
+
+  const GUADALUPE_STORY_HARD = [
+    ['¿Por qué Juan Diego le pide ayuda a la Virgen?', 'Porque no sabe qué hacer y quiere servir a la Santa Madre.', ['Porque quiere ser obispo.', 'Porque el cura le pidió que buscara una tilma.', 'Porque quiere ir a la capital.']],
+    ['¿Qué demuestra que la primera visita de Juan Diego no convenció al obispo?', 'El obispo no creyó su cuento y pidió una prueba.', ['El obispo le dio una bendición.', 'El obispo fue a llamar al cura.', 'El obispo recogió rosas en la colina.']],
+    ['¿Qué encontró Juan Diego al llegar a casa?', 'Su tío estaba muy enfermo y quería la bendición del cura.', ['El cura estaba esperando con rosas.', 'El obispo había edificado una iglesia.', 'La Virgen estaba en su casa.']],
+    ['¿Por qué Juan Diego tomó otro camino a la mañana siguiente?', 'Iba a llamar al cura para su tío enfermo.', ['Quería evitar volver a ver al obispo.', 'Buscaba una basílica.', 'Quería recoger nopales para la Virgen.']],
+    ['¿Qué le aseguró la Virgen acerca de su tío?', 'Que desde ese momento estaría perfectamente bien.', ['Que el obispo le daría una prueba.', 'Que tenía que ir a la capital.', 'Que necesitaba una nueva tilma.']],
+    ['¿Qué pidió la Virgen que hiciera Juan Diego con las rosas?', 'Que las recogiera y las llevara al obispo.', ['Que las llevara al cura para la bendición.', 'Que las pusiera encima de la capilla.', 'Que se las diera a su tío.']],
+    ['¿Por qué era sorprendente encontrar rosas en esa región?', 'Allí sólo había cactos.', ['Allí sólo había capillas.', 'Era diciembre y no había colinas.', 'La gente no conocía las flores.']],
+    ['¿Qué vio el obispo cuando Juan Diego abrió la tilma?', 'Cayeron las rosas y apareció el retrato de la Virgen.', ['Cayeron nopales y apareció una nube.', 'El ramo se quedó en el sendero.', 'La tilma estaba vacía.']],
+    ['¿Por qué el obispo ya no necesitaba más prueba?', 'El retrato de la Virgen estaba pintado en la tilma.', ['Juan Diego le contó otra vez el cuento.', 'El cura confirmó que su tío estaba enfermo.', 'La gente construyó la capilla.']],
+    ['¿Dónde se construyó la pequeña capilla?', 'En el mismo sitio donde Juan Diego cogió las rosas.', ['En la casa del cura.', 'En el lugar donde vivía el obispo.', 'En la capital de México.']]
+  ].map(([prompt, answer, distractors], index) => ({ id:`guadalupe-hard-${index+1}`, prompt, answer, distractors }));
+
+  const GROUP2_FORMS = {
+    tener: ['tuve','tuviste','tuvo','tuvimos','tuvisteis','tuvieron'],
+    estar: ['estuve','estuviste','estuvo','estuvimos','estuvisteis','estuvieron'],
+    dar: ['di','diste','dio','dimos','disteis','dieron'],
+    ver: ['vi','viste','vio','vimos','visteis','vieron'],
+    poner: ['puse','pusiste','puso','pusimos','pusisteis','pusieron'],
+    querer: ['quise','quisiste','quiso','quisimos','quisisteis','quisieron']
+  };
+  const GROUP2_PERSONS = ['yo','tú','él/ella','nosotros','vosotros','ellos/ellas'];
+  const GROUP2_ITEMS = Object.entries(GROUP2_FORMS).flatMap(([verb, forms]) => forms.map((answer, i) => ({ id:`group2-${verb}-${i}`, verb, person:GROUP2_PERSONS[i], answer })));
+  const TEST3_MEANINGS = [
+    {id:'test3-poder',prompt:'En el pretérito, “pude” normalmente significa…',answer:'logré; tuve éxito en hacerlo',distractors:['tenía la capacidad habitualmente','era capaz de hacerlo, sin indicar resultado','estaba en un lugar']},
+    {id:'test3-saber',prompt:'En el pretérito, “supe” normalmente significa…',answer:'me enteré; descubrí',distractors:['sabía desde hacía tiempo','conocía a una persona','quería saber']},
+    {id:'test3-tener',prompt:'En el pretérito, “tuve” presenta normalmente…',answer:'un hecho o periodo completado de tener',distractors:['una posesión habitual o descripción','una acción que ocurría siempre','un mandato']},
+    {id:'test3-querer',prompt:'En el pretérito, “no quiso” normalmente significa…',answer:'se negó',distractors:['no quería habitualmente','no sabía','no pudo ver']}
+  ];
 
   function honorsRegularConjugate(verb, tense, code) {
     const type = verbType(verb);
@@ -3632,14 +3709,68 @@ mean/nice
           mode: 'text',
           prompt: `Translate to Spanish: <strong>${escapeHtml(item.en)}</strong>`,
           expectedDisplay: item.sp,
-          acceptable: buildAcceptableAnswerSet([item.sp]),
-          answerVariants: [item.sp],
+          acceptable: buildAcceptableAnswerSet([item.sp, ...item.variants]),
+          answerVariants: [item.sp, ...item.variants],
           hasAccent: /[áéíóúñüÁÉÍÓÚÑÜ]/.test(item.sp),
           explanation: item.explanation || 'Keep this card distinct from similar-looking words in the story.'
         };
       }
+    },
+    guadalupe_story_easy: {
+      generateQuestion(app) { return generateGuadalupeComprehension(app, 'guadalupe_story_easy', GUADALUPE_STORY_EASY); }
+    },
+    guadalupe_story_hard: {
+      generateQuestion(app) { return generateGuadalupeComprehension(app, 'guadalupe_story_hard', GUADALUPE_STORY_HARD); }
+    },
+    irregular_preterite_group2: {
+      generateQuestion(app) {
+        const item = pickByWeakScore(GROUP2_ITEMS.filter(x => !app.state.hiddenItems[x.id]), app.state.itemScores, new Set((app.recentByModule.irregular_preterite_group2 || []).slice(-5)));
+        if (!item) return null;
+        const prompt = `Conjuga <strong>${item.verb}</strong> para <strong>${item.person}</strong> en el pretérito.`;
+        if (!app.isNewModulesSpellingOnly() && Math.random() < 0.55) {
+          const options = shuffle([item.answer, ...shuffle(GROUP2_ITEMS.filter(x => x.verb !== item.verb).map(x => x.answer)).slice(0, 3)]);
+          return { module:'irregular_preterite_group2', id:item.id, mode:'mcq', prompt, options, correctIndex:options.indexOf(item.answer), expectedDisplay:item.answer, explanation:`${item.verb} es irregular en el pretérito. Memoriza la forma completa: ${item.answer}.` };
+        }
+        return { module:'irregular_preterite_group2', id:item.id, mode:'text', prompt, expectedDisplay:item.answer, acceptable:buildAcceptableAnswerSet([item.answer]), requireAccentExact:false, explanation:`${item.verb} es irregular en el pretérito. Forma correcta: ${item.answer}.` };
+      }
+    },
+    test3_review: {
+      generateQuestion(app) {
+        const roll = Math.random();
+        if (roll < 0.40) return generateGuadalupeComprehension(app, 'test3_review', [...GUADALUPE_STORY_EASY, ...GUADALUPE_STORY_HARD]);
+        if (roll < 0.60) {
+          const item = GUADALUPE_VOCAB_POOL[Math.floor(Math.random() * GUADALUPE_VOCAB_POOL.length)];
+          if (!item) return null;
+          const definition = GUADALUPE_SPANISH_DEFINITIONS[item.sp];
+          const otherDefinitions = GUADALUPE_VOCAB_POOL.filter(x => x.id !== item.id).map(x => GUADALUPE_SPANISH_DEFINITIONS[x.sp]).filter(Boolean);
+          const options = shuffle([definition, ...shuffle(otherDefinitions).slice(0, 3)]);
+          return { module:'test3_review', id:`test3-${item.id}`, mode:'mcq', prompt:`¿Qué expresión del vocabulario corresponde a esta descripción?<br><strong>${escapeHtml(definition)}</strong>`, options, correctIndex:options.indexOf(definition), expectedDisplay:definition, explanation:`La expresión correcta es “${item.sp}”. ${item.explanation || ''}` };
+        }
+        if (roll < 0.86) {
+          const pool = Math.random() < 0.78 ? GROUP2_ITEMS : SUMMER_IRREGULAR_PRETERITE_POOL;
+          const available = pool.filter(x => !app.state.hiddenItems[x.id]);
+          const item = available[Math.floor(Math.random() * available.length)];
+          if (!item) return null;
+          const answer = item.answer || conjugate(item.verb, 'preterite', item.person);
+          const options = shuffle([answer, ...shuffle([...new Set(pool.map(x => x.answer || conjugate(x.verb, 'preterite', x.person)).filter(x => x !== answer))]).slice(0, 3)]);
+          return { module:'test3_review', id:`test3-${item.id}`, mode:'mcq', prompt:`Conjuga <strong>${item.verb}</strong> para <strong>${personLabel(item.person)}</strong> en el pretérito.`, options, correctIndex:options.indexOf(answer), expectedDisplay:answer, explanation:`Forma correcta: ${answer}. El Grupo 2 incluye tener, estar, dar, ver, poner y querer.` };
+        }
+        const item = TEST3_MEANINGS[Math.floor(Math.random() * TEST3_MEANINGS.length)];
+        const options = shuffle([item.answer, ...item.distractors]);
+        return { module:'test3_review', id:item.id, mode:'mcq', prompt:item.prompt, options, correctIndex:options.indexOf(item.answer), expectedDisplay:item.answer, explanation:'El pretérito presenta el resultado o el momento completado; el imperfecto suele describir estados, hábitos o situaciones en curso.' };
+      }
     }
   };
+
+  function generateGuadalupeComprehension(app, moduleKey, pool) {
+    const hidden = app.state.hiddenItems || {};
+    const recent = new Set((app.recentByModule[moduleKey] || []).slice(-4));
+    const available = pool.filter(item => !hidden[item.id] && !recent.has(item.id));
+    const item = (available.length ? available : pool.filter(x => !hidden[x.id]))[Math.floor(Math.random() * (available.length ? available.length : pool.filter(x => !hidden[x.id]).length))];
+    if (!item) return null;
+    const options = shuffle([item.answer, ...item.distractors]);
+    return { module:moduleKey, id:item.id, mode:'mcq', prompt:item.prompt, options, correctIndex:options.indexOf(item.answer), expectedDisplay:item.answer, explanation:`La respuesta correcta es: ${item.answer}.` };
+  }
 
   function chooseSummerItem(app, moduleKey, pool, recentLimit = 4) {
     const hidden = app.state.hiddenItems;
@@ -3824,7 +3955,11 @@ mean/nice
       summer_irregular_imperfect: [],
       summer_tense_choice: [],
       summer_translations: [],
-      guadalupe_vocab: []
+      guadalupe_vocab: [],
+      guadalupe_story_easy: [],
+      guadalupe_story_hard: [],
+      irregular_preterite_group2: [],
+      test3_review: []
     },
 
     saveTimer: null,
@@ -4103,6 +4238,10 @@ mean/nice
         toggle_honors_test1_review: $('toggle_honors_test1_review'),
         toggle_test2_review: $('toggle_test2_review'),
         toggle_guadalupe_vocab: $('toggle_guadalupe_vocab'),
+        toggle_guadalupe_story_easy: $('toggle_guadalupe_story_easy'),
+        toggle_guadalupe_story_hard: $('toggle_guadalupe_story_hard'),
+        toggle_irregular_preterite_group2: $('toggle_irregular_preterite_group2'),
+        toggle_test3_review: $('toggle_test3_review'),
 
         tense_present: $('tense_present'),
         tense_preterite: $('tense_preterite'),
@@ -5373,6 +5512,17 @@ mean/nice
         return { total, available: Math.max(0, total - hiddenCount) };
       }
 
+      const extraPools = {
+        guadalupe_story_easy: GUADALUPE_STORY_EASY,
+        guadalupe_story_hard: GUADALUPE_STORY_HARD,
+        irregular_preterite_group2: GROUP2_ITEMS,
+        test3_review: [...GUADALUPE_STORY_EASY, ...GUADALUPE_STORY_HARD, ...GUADALUPE_VOCAB_POOL.map(x => ({id:`test3-${x.id}`})), ...GROUP2_ITEMS.map(x => ({id:`test3-${x.id}`})), ...SUMMER_IRREGULAR_PRETERITE_POOL.map(x => ({id:`test3-${x.id}`})), ...TEST3_MEANINGS]
+      }[moduleKey];
+      if (extraPools) {
+        const hiddenCount = extraPools.filter(item => hidden[item.id]).length;
+        return { total:extraPools.length, available:Math.max(0, extraPools.length-hiddenCount) };
+      }
+
       if (moduleKey === 'test2_review') {
         const pool = [...TEST2_REGULAR, ...TEST2_SCENES, ...TEST2_SCENE_BATCHES, ...TEST2_IRREGULAR_ITEMS, ...SUMMER_TIME_WORDS_POOL.map((item)=>({id:`test2-${item.id}`}))];
         const hiddenCount = pool.filter(item => hidden[item.id]).length;
@@ -5828,6 +5978,10 @@ mean/nice
       else if (moduleKey === 'honors_ordinal_numbers') for (const x of ORDINAL_POOL) if (!hidden[x.id]) ids.push(x.id);
       else if (moduleKey === 'honors_test1_review') for (const x of HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL, HONORS_TIME_WORDS, HONORS_CHOICE_POOL)) if (!hidden[x.id]) ids.push(x.id);
       else if (moduleKey === 'guadalupe_vocab') for (const x of GUADALUPE_VOCAB_POOL) if (!hidden[x.id]) ids.push(x.id);
+      else if (moduleKey === 'guadalupe_story_easy') for (const x of GUADALUPE_STORY_EASY) if (!hidden[x.id]) ids.push(x.id);
+      else if (moduleKey === 'guadalupe_story_hard') for (const x of GUADALUPE_STORY_HARD) if (!hidden[x.id]) ids.push(x.id);
+      else if (moduleKey === 'irregular_preterite_group2') for (const x of GROUP2_ITEMS) if (!hidden[x.id]) ids.push(x.id);
+      else if (moduleKey === 'test3_review') for (const x of [...GUADALUPE_STORY_EASY, ...GUADALUPE_STORY_HARD, ...GUADALUPE_VOCAB_POOL.map(item=>({id:`test3-${item.id}`})), ...GROUP2_ITEMS.map(item=>({id:`test3-${item.id}`})), ...SUMMER_IRREGULAR_PRETERITE_POOL.map(item=>({id:`test3-${item.id}`})), ...TEST3_MEANINGS]) if (!hidden[x.id]) ids.push(x.id);
       if (!ids.length) return 2.5;
       let total = 0;
       for (const id of ids) total += (scores[id] ?? 2);
@@ -6933,7 +7087,7 @@ mean/nice
     runAutomatedChecks(opts = {}) {
       const { startup = false } = opts;
       const results = [];
-      const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates', 'honors_ordinal_numbers', 'honors_test1_review', 'test2_review', 'guadalupe_vocab'];
+      const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates', 'honors_ordinal_numbers', 'honors_test1_review', 'test2_review', 'guadalupe_vocab', 'guadalupe_story_easy', 'guadalupe_story_hard', 'irregular_preterite_group2', 'test3_review'];
       const hasModules = requiredModules.every((key) => MODULES.some((m) => m.key === key) && modules[key]);
       results.push({ ok: hasModules, label: 'Expanded modules registered (including Mayo Madness parent submodules)' });
       results.push({ ok: [...PREMIUM_COMPLEX_MODULES].every((key) => this.getPremiumQuestionPool(key).length >= 2 && this.getPremiumQuestionCount(key) === Math.floor(this.getPremiumQuestionPool(key).length / 2)), label: 'Every partially Premium module has an exact stable half-pool split' });
@@ -6949,7 +7103,12 @@ mean/nice
       results.push({ ok: matchesGenderSlashAnswer('cansado/a','cansado') && matchesGenderSlashAnswer('cansado/a','cansada') && matchesGenderSlashAnswer('rápido/a','rápido') && matchesGenderSlashAnswer('rápido/a','rápida') && !matchesGenderSlashAnswer('rápido/a','rapido') && matchesGenderSlashAnswer('contenta/o','contento'), label: 'Gender slash answers accept either exact accented form only' });
       const test2Sample = modules.test2_review.generateQuestion(this);
       results.push({ ok: !!test2Sample && TEST2_REGULAR.some((item) => item.answer === 'hablé') && TEST2_REGULAR.some((item) => item.answer === 'hablabais') && TEST2_REGULAR.some((item) => item.answer === 'comíamos') && TEST2_IRREGULARS.ser.yo === 'fui' && TEST2_IRREGULARS.hacer.él === 'hizo' && SUMMER_TIME_WORDS_POOL.some((item) => item.id === 'summer-time-1') && TEST2_SCENES.length === 16 && TEST2_SCENE_BATCHES.length === 29 && TEST2_SCENE_BATCHES.every((batch)=>batch.items.length===2||batch.items.length===3), label: 'Test 2 Review combines regular tenses, requested irregulars, time words, and 2–3-box Rogelio scenes' });
-      results.push({ ok: GUADALUPE_VOCAB_POOL.length === 50 && new Set(GUADALUPE_VOCAB_POOL.map((item) => item.id)).size === 50, label: 'Guadalupe Vocab has 50 distinct stable cards' });
+      results.push({ ok: GUADALUPE_VOCAB_POOL.length === 53 && new Set(GUADALUPE_VOCAB_POOL.map((item) => item.id)).size === 53 && GUADALUPE_VOCAB_POOL.every(item => GUADALUPE_SPANISH_DEFINITIONS[item.sp]), label: 'Guadalupe Vocab has 53 distinct stable cards with Spanish definitions' });
+      results.push({ ok: GUADALUPE_STORY_EASY.length + GUADALUPE_STORY_HARD.length === 20 && Object.keys(GROUP2_FORMS).join(',') === 'tener,estar,dar,ver,poner,querer' && GROUP2_ITEMS.length === 36, label: 'Guadalupe comprehension has 20 questions and Group 2 covers all 36 forms' });
+      const newModuleKeys = ['guadalupe_story_easy','guadalupe_story_hard','irregular_preterite_group2','test3_review'];
+      results.push({ ok: newModuleKeys.every((key) => MODULES.some((module) => module.key === key) && !!modules[key] && !!this.$[`toggle_${key}`]), label: 'New Guadalupe and Test 3 modules have registry entries, generators, and visible settings controls' });
+      const storyQuestions = [...GUADALUPE_STORY_EASY, ...GUADALUPE_STORY_HARD];
+      results.push({ ok: storyQuestions.every((item) => item.prompt && item.answer && item.distractors.length === 3 && new Set([item.answer,...item.distractors]).size === 4) && new Set(storyQuestions.map((item) => item.id)).size === 20, label: 'All 20 Spanish story questions have four distinct answer choices and stable IDs' });
       results.push({ ok: !PREMIUM_COMPLEX_MODULES.has('guadalupe_vocab') && !!modules.guadalupe_vocab.generateQuestion(this), label: 'Guadalupe Vocab is available through the normal free study path' });
       results.push({ ok: MODULES.find((m) => m.key === 'honors_ordinal_numbers')?.level === 2 && MODULES.find((m) => m.key === 'honors_test1_review')?.level === 2, label: 'Spanish 2 Honors modules are level 2 only' });
       results.push({ ok: PREMIUM_COMPLEX_MODULES.has('honors_ordinal_numbers') && PREMIUM_COMPLEX_MODULES.has('honors_test1_review') && this.getPremiumQuestionCount('honors_ordinal_numbers') > 0 && this.getPremiumQuestionCount('honors_test1_review') > 0, label: 'Spanish 2 Honors modules have free and Premium question tiers' });
