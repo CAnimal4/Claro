@@ -141,13 +141,15 @@ window.LearningAppShared?.registerUpdate({id:'claro-test-for-review-2026-10',app
   // A shared module URL is an explicit selection snapshot; ordinary visits
   // continue to use the learner's saved settings.
   function installModuleSharing(app) {
-    const section = document.getElementById('moduleSettingsSection');
-    if (!section || section.querySelector('#shareModulesBtn')) return;
+    const settings = document.getElementById('settingsOverlay');
+    if (!settings || settings.querySelector('#shareModulesBtn')) return;
     const bar = document.createElement('div');
     bar.className = 'module-share-tools';
     bar.innerHTML = '<button type="button" class="btn small" id="shareModulesBtn">🔗 Share selected modules</button><span class="module-share-status" id="moduleShareStatus" role="status" aria-live="polite"></span>';
-    section.append(bar);
+    const anchor = settings.querySelector('.settings-quick-toggle') || settings.querySelector('#moduleSettingsSection');
+    anchor?.after(bar);
     const keys = new Set(MODULES.map((m) => m.key));
+    const currentLevelModules = () => MODULES.filter((module) => app.currentLevel === 'spanish2' ? module.level === 2 : module.level !== 2);
     const applyUrl = () => {
       const params = new URLSearchParams(location.search);
       const encoded = params.get('modules');
@@ -159,14 +161,14 @@ window.LearningAppShared?.registerUpdate({id:'claro-test-for-review-2026-10',app
     };
     applyUrl();
     document.getElementById('shareModulesBtn').addEventListener('click', async () => {
-      const selected = MODULES.filter((m) => app.state.settings.modulesEnabled[m.key]).map((m) => m.key);
-      const params = new URLSearchParams(location.search); params.set('modules', selected.join(','));
+      const selected = currentLevelModules().filter((m) => app.state.settings.modulesEnabled[m.key]).map((m) => m.key);
+      const params = new URLSearchParams(location.search); params.set('class', app.currentLevel); params.set('modules', selected.join(','));
       const url = `${location.origin}${location.pathname}?${params.toString()}${location.hash}`;
       history.replaceState(null, '', url);
       try { await navigator.clipboard.writeText(url); document.getElementById('moduleShareStatus').textContent = 'Link copied. Selected modules update the URL.'; }
       catch (_) { window.prompt('Copy this module link:', url); }
     });
-    section.addEventListener('change', (event) => {
+    settings.addEventListener('change', (event) => {
       if (event.target.matches('input[type="checkbox"]')) {
         const params = new URLSearchParams(location.search); params.delete('modules');
         const query = params.toString(); history.replaceState(null, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`);
