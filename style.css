@@ -450,6 +450,11 @@
     #settingsOverlay .summer-prep-settings .toggle{min-height:72px;margin:0;padding:12px 13px;border:1px solid #e5eaf1;border-radius:13px;background:#fff;align-items:center;gap:12px}
     #settingsOverlay .summer-prep-settings .toggle .label{font-size:.92rem;font-weight:800;line-height:1.25}
     #settingsOverlay .summer-prep-settings .toggle .desc{margin-top:4px;color:#718096;font-size:.78rem;line-height:1.35}
+    #settingsOverlay .test-review-mode-control{display:flex;align-items:center;gap:7px;margin-top:8px}
+    #settingsOverlay .test-review-mode-control label{color:#718096;font-size:.7rem;font-weight:800;letter-spacing:.02em}
+    #settingsOverlay .test-review-mode-control select{appearance:none;min-height:30px;min-width:0;padding:5px 28px 5px 10px;border:1px solid #d8e2f1;border-radius:999px;background-color:#f7faff;background-image:linear-gradient(45deg,transparent 50%,#64748b 50%),linear-gradient(135deg,#64748b 50%,transparent 50%);background-position:calc(100% - 12px) 12px,calc(100% - 8px) 12px;background-size:4px 4px,4px 4px;background-repeat:no-repeat;color:#334155;font:inherit;font-size:.72rem;font-weight:800;line-height:1.1;cursor:pointer;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+    #settingsOverlay .test-review-mode-control select:hover{border-color:#93b4f3;background-color:#eff6ff}
+    #settingsOverlay .test-review-mode-control select:focus-visible{outline:none;border-color:#60a5fa;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
     #settingsOverlay .premium-module-tag{font-size:.65rem}
     @media(max-width:620px){#settingsOverlay .modal-head{align-items:flex-start;flex-wrap:wrap;gap:10px}#settingsOverlay .study-settings-tools{width:100%;margin:0}#settingsOverlay .study-settings-tools button{flex:1}.module-group-content{grid-template-columns:1fr!important}}
     .modal h3{margin:14px 0 8px}

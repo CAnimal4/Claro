@@ -41,7 +41,7 @@
 (() => {
 window.LearningAppShared?.registerUpdate({id:'claro-test2-review-2026-09',app:'claro',title:'New: Test 2 Review',copy:'A Premium study set for past tense forms, time words, irregular verbs, and Rogelio scenes.',tourSteps:[{title:'Find Test 2 Review',copy:'Open Spanish 2 Honors Modules and choose Test 2 Review. Premium access is required.',target:'test2'},{title:'Choose a focused set',copy:'Practice regular preterite and imperfect forms, irregular preterites, and past-time vocabulary.',target:'modules'},{title:'Reason through each scene',copy:'Work through two or three Rogelio boxes at a time and use the explanation to compare the choices.',target:'practice'}]});
   window.LearningAppShared?.registerUpdate({id:'claro-guadalupe-test3-2026-10',app:'claro',title:'New: Guadalupe & Test 3 Practice',copy:'Study the Guadalupe cuento, its vocabulary, and irregular preterite verbs.',tourSteps:[{title:'Choose a Guadalupe module',copy:'Open Spanish 2 Honors Modules for vocabulary, easier or harder story questions, or Test 3 Review.',target:'modules'},{title:'Practice the story',copy:'Answer Spanish multiple-choice questions about Juan Diego and the Virgen de Guadalupe.',target:'practice'},{title:'Review Test 3 topics',copy:'Mix story comprehension, vocabulary, Group 1 and Group 2 preterite forms, and tense meanings.',target:'practice'}]});
-window.LearningAppShared?.registerUpdate({id:'claro-test-for-review-2026-10',app:'claro',title:'New: Test for Review',copy:'Practice regular preterite and imperfect forms, irregular Groups 1 and 2, meaning changes, and object pronouns.',tourSteps:[{title:'Start with Test for Review',copy:'Open Spanish 2 Honors Modules. This module appears first in the list.',target:'modules'},{title:'Choose a mode',copy:'Easy mode focuses on multiple choice. Hard mode asks you to type your answer.',target:'practice'},{title:'Practice in context',copy:'Conjugate verbs, translate sentences, compare past-tense meanings, and use pronouns like le and me.',target:'practice'}]});
+window.LearningAppShared?.registerUpdate({id:'claro-test-for-review-2026-10',app:'claro',title:'New: Test for Review',copy:'Mixed past forms, meaning changes, and pronouns.',tourSteps:[{title:'Start with Test for Review',copy:'Find it first in Spanish 2 Honors Modules.',target:'modules'},{title:'Choose a mode',copy:'Easy uses multiple choice; Hard uses typing.',target:'practice'},{title:'Practice in context',copy:'Conjugate, translate, compare meanings, and use pronouns.',target:'practice'}]});
   'use strict';
 
   const STORAGE_KEY = 'spanish_app_v2_state';
@@ -120,7 +120,7 @@ window.LearningAppShared?.registerUpdate({id:'claro-test-for-review-2026-10',app
     { key: 'ser_estar', name: 'Ser / Estar' },
     { key: 'gustar',    name: 'Gustar' },
     { key: 'dates',     name: 'Dates' },
-    { key: 'test_for_review', name: 'Test for Review', description: 'Regular preterite and imperfect, irregular Groups 1 and 2, meaning changes, and object pronouns.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'test_for_review', name: 'Test for Review', description: 'Regular past forms, mixed irregulars, tense meanings, and pronouns.', level: 2, category: 'Spanish 2 Honors' },
     { key: 'summer_time_words', name: 'Past-tense time words', level: 2, category: 'Summer Prep' },
     { key: 'summer_preterite', name: 'Preterite forms', level: 2, category: 'Summer Prep' },
     { key: 'summer_imperfect', name: 'Imperfect forms', level: 2, category: 'Summer Prep' },
