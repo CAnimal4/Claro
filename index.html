@@ -494,6 +494,13 @@ Developer note:
         <summary>Spanish 2 Honors <span class="summary-note">Spanish 2</span></summary>
         <div class="accordion-inner">
           <p class="settings-section-intro">Past-tense preparation from your Spanish 2 Honors summer packet.</p>
+          <div class="toggle" id="testForReviewModuleRow">
+              <div><div class="label">Test for Review</div><div class="desc">Regular preterite/imperfect plus irregular Groups 1 and 2, mixed together: saber, poder, ser, ir, decir, hacer; dar/ver, tener/estar, poner/querer. Includes meaning changes and pronouns in context.</div>
+              <label for="testForReviewMode" class="small">Practice mode</label>
+              <select id="testForReviewMode" aria-label="Test for Review practice mode"><option value="easy">Easy · mostly multiple choice</option><option value="hard">Hard · type your answers</option></select>
+            </div>
+            <label><input type="checkbox" id="toggle_test_for_review" aria-label="Toggle Test for Review module" /><span class="switch" aria-hidden="true"></span></label>
+          </div>
           <div class="toggle">
             <div><div class="label">Test 3 Review</div><div class="desc">Story comprehension, vocabulary, irregular preterites, and tense meanings.</div></div>
             <label><input type="checkbox" id="toggle_test3_review" aria-label="Toggle Test 3 Review module" /><span class="switch" aria-hidden="true"></span></label>
@@ -844,7 +851,7 @@ Developer note:
 <script src="app-shared.js?v=20260927-previous-review-1"></script>
 <script src="library.js"></script>
 <!-- moderationPanel moderationHistory moderationRequestOverlay are rendered by access-ui.js -->
-<script src="app.js?v=20261008-module-recency-1"></script>
+<script src="app.js?v=20261024-test-for-review-1"></script>
   <script src="access-ui.js?v=20261003-premium-split-1"></script>
 </body>
 </html>
