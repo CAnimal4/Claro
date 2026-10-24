@@ -120,7 +120,7 @@ window.LearningAppShared?.registerUpdate({id:'claro-test-for-review-2026-10',app
     { key: 'ser_estar', name: 'Ser / Estar' },
     { key: 'gustar',    name: 'Gustar' },
     { key: 'dates',     name: 'Dates' },
-    { key: 'test_for_review', name: 'Test for Review', description: 'Regular past forms, mixed irregulars, tense meanings, and pronouns.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'test_for_review', name: 'Test for Review', description: 'Past-tense forms, meanings, and pronouns.', level: 2, category: 'Spanish 2 Honors' },
     { key: 'summer_time_words', name: 'Past-tense time words', level: 2, category: 'Summer Prep' },
     { key: 'summer_preterite', name: 'Preterite forms', level: 2, category: 'Summer Prep' },
     { key: 'summer_imperfect', name: 'Imperfect forms', level: 2, category: 'Summer Prep' },
