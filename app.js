@@ -5650,7 +5650,7 @@ mean/nice
       const extraPools = {
         guadalupe_story_easy: GUADALUPE_STORY_EASY,
         guadalupe_story_hard: GUADALUPE_STORY_HARD,
-        test_for_review: [...TEST_FOR_REVIEW_POOLS.preterite,...TEST_FOR_REVIEW_POOLS.imperfect,...TEST_FOR_REVIEW_POOLS.irregular,...TEST_FOR_REVIEW_PRONOUN_ITEMS,...TEST_FOR_REVIEW_TRANSLATIONS,...TEST_FOR_REVIEW_MEANINGS],
+        test_for_review: [...TEST_FOR_REVIEW_POOLS.preterite,...TEST_FOR_REVIEW_POOLS.imperfect,...TEST_FOR_REVIEW_POOLS.irregularPreterite,...TEST_FOR_REVIEW_POOLS.irregularImperfect,...TEST_FOR_REVIEW_PRONOUN_ITEMS,...TEST_FOR_REVIEW_TRANSLATIONS,...TEST_FOR_REVIEW_MEANINGS],
         irregular_preterite_group2: GROUP2_ITEMS,
         test3_review: [...GUADALUPE_STORY_EASY, ...GUADALUPE_STORY_HARD, ...GUADALUPE_VOCAB_POOL.map(x => ({id:`test3-${x.id}`})), ...GROUP2_ITEMS.map(x => ({id:`test3-${x.id}`})), ...SUMMER_IRREGULAR_PRETERITE_POOL.map(x => ({id:`test3-${x.id}`})), ...TEST3_MEANINGS]
       }[moduleKey];
