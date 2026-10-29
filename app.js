@@ -41,7 +41,7 @@
 (() => {
 window.LearningAppShared?.registerUpdate({id:'claro-test2-review-2026-09',app:'claro',title:'New: Test 2 Review',copy:'A Premium study set for past tense forms, time words, irregular verbs, and Rogelio scenes.',tourSteps:[{title:'Find Test 2 Review',copy:'Open Spanish 2 Honors Modules and choose Test 2 Review. Premium access is required.',target:'test2'},{title:'Choose a focused set',copy:'Practice regular preterite and imperfect forms, irregular preterites, and past-time vocabulary.',target:'modules'},{title:'Reason through each scene',copy:'Work through two or three Rogelio boxes at a time and use the explanation to compare the choices.',target:'practice'}]});
   window.LearningAppShared?.registerUpdate({id:'claro-guadalupe-test3-2026-10',app:'claro',title:'New: Guadalupe & Test 3 Practice',copy:'Study the Guadalupe cuento, its vocabulary, and irregular preterite verbs.',tourSteps:[{title:'Choose a Guadalupe module',copy:'Open Spanish 2 Honors Modules for vocabulary, easier or harder story questions, or Test 3 Review.',target:'modules'},{title:'Practice the story',copy:'Answer Spanish multiple-choice questions about Juan Diego and the Virgen de Guadalupe.',target:'practice'},{title:'Review Test 3 topics',copy:'Mix story comprehension, vocabulary, Group 1 and Group 2 preterite forms, and tense meanings.',target:'practice'}]});
-window.LearningAppShared?.registerUpdate({id:'claro-test4-review-2026-10',app:'claro',title:'New: Test 4 Review',copy:'Mixed past forms, meaning changes, irregular verbs, and pronouns.',tourSteps:[{title:'Start with Test 4 Review',copy:'Find it first in Spanish 2 Honors Modules.',target:'modules'},{title:'Choose a mode',copy:'Easy uses multiple choice; Hard uses typing.',target:'practice'},{title:'Practice in context',copy:'Conjugate, translate, compare meanings, and use pronouns.',target:'practice'}]});
+window.LearningAppShared?.registerUpdate({id:'claro-test4-review-groups-2026-10',app:'claro',title:'Updated: Test 4 Review',copy:'Focused practice with Group 1 and Group 2 irregular verbs, conjugations, and meaning changes.',tourSteps:[{title:'Open Test 4 Review',copy:'Find it in Spanish 2 Honors Modules.',target:'modules'},{title:'Choose a mode',copy:'Easy uses multiple choice; Hard uses typing.',target:'practice'},{title:'Practice the two verb groups',copy:'Conjugate the irregular verbs, use them in context, and compare their meanings.',target:'practice'}]});
   'use strict';
 
   const STORAGE_KEY = 'spanish_app_v2_state';
@@ -120,7 +120,7 @@ window.LearningAppShared?.registerUpdate({id:'claro-test4-review-2026-10',app:'c
     { key: 'ser_estar', name: 'Ser / Estar' },
     { key: 'gustar',    name: 'Gustar' },
     { key: 'dates',     name: 'Dates' },
-    { key: 'test_for_review', name: 'Test 4 Review', description: 'Preterite and imperfect forms, irregular verbs, meaning changes, and pronouns.', level: 2, category: 'Spanish 2 Honors' },
+    { key: 'test_for_review', name: 'Test 4 Review', description: 'Group 1 and Group 2 irregular verbs: conjugations, usage, and meaning changes.', level: 2, category: 'Spanish 2 Honors' },
     { key: 'summer_time_words', name: 'Past-tense time words', level: 2, category: 'Summer Prep' },
     { key: 'summer_preterite', name: 'Preterite forms', level: 2, category: 'Summer Prep' },
     { key: 'summer_imperfect', name: 'Imperfect forms', level: 2, category: 'Summer Prep' },
@@ -3130,52 +3130,50 @@ mean/nice
     ...GROUP2_ITEMS.map(item=>({...item,tense:'preterite'})),
     ...Object.entries(TEST_FOR_REVIEW_IMPERFECT_FORMS).slice(6).flatMap(([verb,forms])=>forms.map((answer,i)=>({id:`tfr-group2-${verb}-imp-${i}`,verb,person:GROUP2_PERSONS[i],answer,tense:'imperfect'})))
   ];
-  const TEST_FOR_REVIEW_PRONOUN_ITEMS = [
-    {id:'tfr-pronoun-1',prompt:'I gave the book to her. (Use an indirect object pronoun.)',answer:'Le di el libro.',alts:['Le di el libro a ella.'],why:'Le replaces “a ella”; di is the yo form of dar in the preterite.'},
-    {id:'tfr-pronoun-2',prompt:'She gave me the keys.',answer:'Me dio las llaves.',alts:['Ella me dio las llaves.'],why:'Me is the indirect object pronoun; dio is the completed action.'},
-    {id:'tfr-pronoun-3',prompt:'We told them the truth.',answer:'Les dijimos la verdad.',alts:['Nosotros les dijimos la verdad.'],why:'Les means “to them”; dijimos is the preterite of decir.'},
-    {id:'tfr-pronoun-4',prompt:'He put the papers on the table for me.',answer:'Me puso los papeles en la mesa.',alts:['Él me puso los papeles en la mesa.'],why:'Me identifies who received the papers; puso is the preterite of poner.'},
-    {id:'tfr-pronoun-5',prompt:'I used to give him the newspaper every morning.',answer:'Le daba el periódico cada mañana.',alts:['Yo le daba el periódico cada mañana.'],why:'Le means “to him”; daba describes a repeated past habit.'},
-    {id:'tfr-pronoun-6',prompt:'They told us that the store was closed.',answer:'Nos dijeron que la tienda estaba cerrada.',alts:['Ellos nos dijeron que la tienda estaba cerrada.'],why:'Nos means “to us”; dijeron is completed, while estaba describes the situation.'},
-    {id:'tfr-pronoun-7',prompt:'He found out that his friend was sick.',answer:'Supo que su amigo estaba enfermo.',alts:['Él supo que su amigo estaba enfermo.'],why:'Supo means “found out”; estaba describes the friend’s state.'},
-    {id:'tfr-pronoun-8',prompt:'I knew that she had to study.',answer:'Sabía que ella tenía que estudiar.',alts:['Yo sabía que ella tenía que estudiar.'],why:'Sabía is ongoing knowledge; tenía que expresses what she had to do.'},
-    {id:'tfr-pronoun-9',prompt:'She gave it to me. (The thing is masculine: el regalo.)',answer:'Me lo dio.',alts:['Ella me lo dio.'],why:'Indirect me comes before direct lo; both pronouns go before dio.'},
-    {id:'tfr-pronoun-10',prompt:'I gave them to her. (The things are feminine plural: las flores.)',answer:'Se las di.',alts:['Yo se las di.'],why:'Le changes to se before las; indirect object pronoun comes before direct object pronoun.'},
-    {id:'tfr-pronoun-11',prompt:'He used to tell me stories.',answer:'Me contaba cuentos.',alts:['Él me contaba cuentos.'],why:'Me means “to me”; contaba presents a repeated or ongoing past action.'},
-    {id:'tfr-pronoun-12',prompt:'We gave the answer to the teacher.',answer:'Le dimos la respuesta.',alts:['Le dimos la respuesta al profesor.','Le dimos la respuesta a la profesora.','Dimos la respuesta al profesor.'],why:'Le refers to the teacher; dimos is the preterite of dar.'}
-  ];
   const TEST_FOR_REVIEW_MEANINGS = [
     {id:'tfr-meaning-saber-preterite',verb:'saber',person:'yo',tense:'preterite',context:'Supe la noticia anoche.',answer:'I found out the news last night.',wrong:'I knew the news last night.',wrong2:'I told the news last night.',explain:'Supe marks the moment of finding out; sabía means I knew / was aware.'},
     {id:'tfr-meaning-saber-imperfect',verb:'saber',person:'yo',tense:'imperfect',context:'Sabía la respuesta.',answer:'I knew the answer.',wrong:'I found out the answer.',wrong2:'I gave the answer.',explain:'Sabía describes knowledge that existed over time; supe means I found out.'},
-    {id:'tfr-meaning-poder-pret',verb:'poder',person:'yo',tense:'preterite',context:'Pude terminarlo anoche.',answer:'I managed to finish it last night.',wrong:'I was able to finish it (ongoing ability).',wrong2:'I wanted to finish it last night.',explain:'Pude often emphasizes that the attempt succeeded; podía describes ability or possibility.'},
+    {id:'tfr-meaning-poder-pret',verb:'poder',person:'yo',tense:'preterite',context:'Pude terminar la tarea anoche.',answer:'I managed to finish the homework last night.',wrong:'I was able to finish the homework (ongoing ability).',wrong2:'I wanted to finish the homework last night.',explain:'Pude often emphasizes that the attempt succeeded; podía describes ability or possibility.'},
     {id:'tfr-meaning-querer-pret',verb:'querer',person:'él/ella',tense:'preterite',context:'Quiso salir temprano.',answer:'He/she wanted to leave early (at that point).',wrong:'He/she used to want to leave early.',wrong2:'He/she refused to leave early.',explain:'Quiso presents a specific desire or decision. No quiso often means refused.'},
     {id:'tfr-meaning-querer-try',verb:'querer',person:'yo',tense:'preterite',context:'Quise abrir la puerta, pero no pude.',answer:'I tried to open the door, but I could not.',wrong:'I used to want to open the door, but I could not.',wrong2:'I refused to open the door, but I could not.',explain:'Querer + infinitive in the preterite can mean “tried to”; the following clause shows the attempt did not succeed. Quise can also mean “wanted to,” depending on context.'},
     {id:'tfr-meaning-no-querer-pret',verb:'querer',person:'él/ella',tense:'preterite',context:'No quiso aceptar la invitación.',answer:'He/she refused to accept the invitation.',wrong:'He/she did not want to (as a continuing state).',wrong2:'He/she could not accept the invitation.',explain:'No quiso often means refused; no quería describes a continuing lack of desire.'},
     {id:'tfr-meaning-querer-imperfect',verb:'querer',person:'él/ella',tense:'imperfect',context:'Quería ir al parque.',answer:'He/she wanted to go to the park (over time).',wrong:'He/she refused to go to the park.',wrong2:'He/she managed to go to the park.',explain:'Quería describes an ongoing desire; no quiso often means refused.'},
-    {id:'tfr-meaning-tener-imperfect',verb:'tener',person:'yo',tense:'imperfect',context:'Tenía tres años cuando nos mudamos.',answer:'I was three years old when we moved.',wrong:'I turned three when we moved.',wrong2:'I received three years when we moved.',explain:'Tenía describes an ongoing age/state; tuve presents a bounded event or period.'},
+    {id:'tfr-meaning-tener-imperfect',verb:'tener',person:'yo',tense:'imperfect',context:'Tenía tres años durante el viaje.',answer:'I was three years old during the trip.',wrong:'I turned three during the trip.',wrong2:'I received three years during the trip.',explain:'Tenía describes an ongoing age/state; tuve presents a bounded event or period.'},
     {id:'tfr-meaning-tener-pret',verb:'tener',person:'yo',tense:'preterite',context:'Tuve un resfriado por una semana.',answer:'I had a cold for one week (a completed period).',wrong:'I used to have a cold every week.',wrong2:'I was having a cold when something happened.',explain:'Tuve presents a bounded period of having something; tenía often describes an ongoing state or background.'},
     {id:'tfr-meaning-estar-pret',verb:'estar',person:'ella',tense:'preterite',context:'Estuvo enferma tres días.',answer:'She was sick for three days (a completed period).',wrong:'She used to be sick for three days.',wrong2:'She was being sick at that moment.',explain:'Estuvo presents a state over a completed period; estaba describes background or an ongoing state.'},
     {id:'tfr-meaning-ver-contrast',verb:'ver',person:'yo',tense:'preterite',context:'Vi la película anoche.',answer:'I watched/saw the movie last night (one completed viewing).',wrong:'I used to watch the movie every night.',wrong2:'I was watching the movie when…',explain:'Vi presents a completed viewing; veía can describe repeated viewing or an ongoing background action.'},
     {id:'tfr-meaning-dar-imp',verb:'dar',person:'yo',tense:'imperfect',context:'Daba un paseo cada tarde.',answer:'I used to take a walk every afternoon.',wrong:'I took one walk yesterday.',wrong2:'I gave a walk to someone.',explain:'Daba is a repeated/habitual action; di presents one completed event.'},
     {id:'tfr-meaning-ser-pret',verb:'ser',person:'yo',tense:'preterite',context:'Fui estudiante el año pasado.',answer:'I was a student last year.',wrong:'I went to be a student last year.',wrong2:'I used to be a student last year.',explain:'Fui is the preterite of both ser and ir; with a role or identity it means “I was.”'},
     {id:'tfr-meaning-ir-pret',verb:'ir',person:'yo',tense:'preterite',context:'Fui al parque ayer.',answer:'I went to the park yesterday.',wrong:'I was the park yesterday.',wrong2:'I used to go to the park yesterday.',explain:'Fui is also the preterite of ser. With a destination introduced by a, it is the ir form “I went.”'},
-    {id:'tfr-meaning-dar-pret',verb:'dar',person:'ella',tense:'preterite',context:'Ella me dio el libro una vez.',answer:'She gave me the book once.',wrong:'She used to give me the book.',wrong2:'She took the book from me once.',explain:'Dio is a completed event; daba can describe a habit or background.'}
+    {id:'tfr-meaning-dar-pret',verb:'dar',person:'él/ella',tense:'preterite',context:'El maestro dio una tarea difícil ayer.',answer:'The teacher gave a difficult assignment yesterday.',wrong:'The teacher used to give a difficult assignment.',wrong2:'The teacher took a difficult assignment yesterday.',explain:'Dio is a completed event; daba can describe a habit or background.'}
   ];
-  const TEST_FOR_REVIEW_TRANSLATIONS = [
-    {id:'tfr-trans-1',prompt:'Translate: I used to eat with my family.',answer:'Comía con mi familia.',alts:['Yo comía con mi familia.'],why:'A repeated past habit uses the imperfect.'},
-    {id:'tfr-trans-2',prompt:'Translate: Yesterday I ate with my family.',answer:'Ayer comí con mi familia.',alts:['Comí con mi familia ayer.','Ayer yo comí con mi familia.'],why:'A completed event at a specific time uses the preterite.'},
-    {id:'tfr-trans-3',prompt:'Translate: We were talking when the phone rang.',answer:'Hablábamos cuando sonó el teléfono.',alts:['Estábamos hablando cuando sonó el teléfono.'],why:'The ongoing background uses the imperfect; the interrupting event uses the preterite.'},
-    {id:'tfr-trans-4',prompt:'Translate: He had to leave at eight.',answer:'Tuvo que salir a las ocho.',alts:['Él tuvo que salir a las ocho.'],why:'Tuvo que presents a completed obligation/event; tenía que describes an ongoing obligation.'},
-    {id:'tfr-trans-5',prompt:'Translate: He used to have to leave early.',answer:'Tenía que salir temprano.',alts:['Él tenía que salir temprano.'],why:'Tenía que describes an ongoing or habitual obligation.'},
-    {id:'tfr-trans-6',prompt:'Translate: She found out that they were at home.',answer:'Supo que estaban en casa.',alts:['Ella supo que estaban en casa.'],why:'Supo means found out; estaban describes where they were.'},
-    {id:'tfr-trans-7',prompt:'Translate: I knew the answer, but I did not say it.',answer:'Sabía la respuesta, pero no la dije.',alts:['Yo sabía la respuesta, pero no la dije.'],why:'Sabía is ongoing knowledge; la replaces la respuesta.'},
-    {id:'tfr-trans-8',prompt:'Translate: They gave it to us. (The item is feminine: la carta.)',answer:'Nos la dieron.',alts:['Ellos nos la dieron.'],why:'Nos (indirect) comes before la (direct), and both come before dieron.'},
-    {id:'tfr-trans-9',prompt:'Translate: I saw him at the park every day.',answer:'Lo veía en el parque todos los días.',alts:['Yo lo veía en el parque todos los días.'],why:'Repeated action uses the imperfect; lo replaces him.'},
-    {id:'tfr-trans-10',prompt:'Translate: I saw him at the park yesterday.',answer:'Lo vi en el parque ayer.',alts:['Ayer lo vi en el parque.','Yo lo vi en el parque ayer.'],why:'A completed event uses the preterite; lo replaces him.'}
+  const TEST_FOR_REVIEW_USAGE_ITEMS = [
+    {id:'tfr-use-saber-pret',verb:'saber',tense:'preterite',prompt:'Anoche, yo ___ la respuesta (saber).',answer:'supe',why:'Supe means “found out” at that moment.'},
+    {id:'tfr-use-saber-imp',verb:'saber',tense:'imperfect',prompt:'Yo ya ___ la respuesta (saber) antes del examen.',answer:'sabía',why:'Sabía describes knowledge that already existed.'},
+    {id:'tfr-use-poder-pret',verb:'poder',tense:'preterite',prompt:'Por fin, yo ___ terminar el proyecto anoche (poder).',answer:'pude',why:'Pude often means the attempt succeeded: “managed to.”'},
+    {id:'tfr-use-poder-imp',verb:'poder',tense:'imperfect',prompt:'Cuando era niño, yo ___ correr muy rápido (poder).',answer:'podía',why:'Podía describes ability over time.'},
+    {id:'tfr-use-ser-pret',verb:'ser',tense:'preterite',prompt:'La película ___ muy interesante (ser).',answer:'fue',why:'Fue gives a completed judgment about the movie.'},
+    {id:'tfr-use-ser-imp',verb:'ser',tense:'imperfect',prompt:'La calle ___ estrecha y tranquila (ser).',answer:'era',why:'Era describes a setting or ongoing quality.'},
+    {id:'tfr-use-ir-pret',verb:'ir',tense:'preterite',prompt:'Ayer nosotros ___ al museo (ir).',answer:'fuimos',why:'Fuimos with a destination means “we went.”'},
+    {id:'tfr-use-ir-imp',verb:'ir',tense:'imperfect',prompt:'Cada verano, nosotros ___ a la playa (ir).',answer:'íbamos',why:'Íbamos describes a repeated past trip.'},
+    {id:'tfr-use-decir-pret',verb:'decir',tense:'preterite',prompt:'Durante la reunión, ellos ___ la verdad (decir).',answer:'dijeron',why:'Dijeron presents one completed act of telling.'},
+    {id:'tfr-use-decir-imp',verb:'decir',tense:'imperfect',prompt:'Mi abuelo siempre ___ cuentos interesantes (decir).',answer:'decía',why:'Decía describes what he used to say.'},
+    {id:'tfr-use-hacer-pret',verb:'hacer',tense:'preterite',prompt:'Anoche, yo ___ la cena (hacer).',answer:'hice',why:'Hice presents one completed action.'},
+    {id:'tfr-use-hacer-imp',verb:'hacer',tense:'imperfect',prompt:'Todos los sábados, yo ___ ejercicio (hacer).',answer:'hacía',why:'Hacía describes a repeated past habit.'},
+    {id:'tfr-use-tener-pret',verb:'tener',tense:'preterite',prompt:'El año pasado, yo ___ un resfriado por una semana (tener).',answer:'tuve',why:'Tuve presents a bounded period of having something.'},
+    {id:'tfr-use-tener-imp',verb:'tener',tense:'imperfect',prompt:'Cuando era pequeño, yo ___ ocho años (tener).',answer:'tenía',why:'Tenía is used for age and ongoing states.'},
+    {id:'tfr-use-estar-pret',verb:'estar',tense:'preterite',prompt:'Ayer, Marta ___ en casa todo el día (estar).',answer:'estuvo',why:'Estuvo presents a completed period in a state or place.'},
+    {id:'tfr-use-estar-imp',verb:'estar',tense:'imperfect',prompt:'Marta ___ en casa cuando empezó a llover (estar).',answer:'estaba',why:'Estaba describes the ongoing background situation.'},
+    {id:'tfr-use-dar-pret',verb:'dar',tense:'preterite',prompt:'El profesor ___ una explicación ayer (dar).',answer:'dio',why:'Dio presents one completed act of giving.'},
+    {id:'tfr-use-dar-imp',verb:'dar',tense:'imperfect',prompt:'El profesor siempre ___ ejemplos claros (dar).',answer:'daba',why:'Daba describes what the teacher used to do.'},
+    {id:'tfr-use-ver-pret',verb:'ver',tense:'preterite',prompt:'Anoche, nosotros ___ una película (ver).',answer:'vimos',why:'Vimos presents one completed viewing.'},
+    {id:'tfr-use-ver-imp',verb:'ver',tense:'imperfect',prompt:'De niños, nosotros ___ esa película cada invierno (ver).',answer:'veíamos',why:'Veíamos describes repeated viewings.'},
+    {id:'tfr-use-poner-pret',verb:'poner',tense:'preterite',prompt:'Ayer, ellos ___ los libros sobre la mesa (poner).',answer:'pusieron',why:'Pusieron presents one completed placement.'},
+    {id:'tfr-use-poner-imp',verb:'poner',tense:'imperfect',prompt:'Cada tarde, ellos ___ los libros en su lugar (poner).',answer:'ponían',why:'Ponían describes a repeated past action.'},
+    {id:'tfr-use-querer-pret',verb:'querer',tense:'preterite',prompt:'Yo ___ abrir la puerta, pero no pude (querer).',answer:'quise',why:'Quise + infinitive can mean “I tried to”; the context shows the attempt failed.'},
+    {id:'tfr-use-querer-imp',verb:'querer',tense:'imperfect',prompt:'Durante ese año, yo ___ aprender español (querer).',answer:'quería',why:'Quería describes an ongoing desire.'}
   ];
   const TEST_FOR_REVIEW_POOLS = {
-    preterite:buildHonorsConjugationPool('tfr-regular-pret',HONORS_PRETERITE_VERBS,'preterite'),
-    imperfect:buildHonorsConjugationPool('tfr-regular-imp',HONORS_IMPERFECT_VERBS,'imperfect'),
     irregularPreterite:[...TEST_FOR_REVIEW_GROUP1_ITEMS,...TEST_FOR_REVIEW_GROUP2_ITEMS].filter(x=>x.tense==='preterite'),
     irregularImperfect:[...TEST_FOR_REVIEW_GROUP1_ITEMS,...TEST_FOR_REVIEW_GROUP2_ITEMS].filter(x=>x.tense==='imperfect')
   };
@@ -3184,38 +3182,37 @@ mean/nice
     const moduleKey='test_for_review';
     const hard=app.testForReviewMode==='hard';
     const recent=new Set((app.recentByModule[moduleKey]||[]).slice(-7));
-    const buckets=['conjugate','pronoun','meaning','translate'];
-    let bucket=buckets[Math.floor(Math.random()*buckets.length)];
+    const buckets=['conjugate','use','meaning'];
+    const bucket=buckets[Math.floor(Math.random()*buckets.length)];
     let item=null, prompt='', answer='', explanation='', id='';
     if(bucket==='conjugate'){
-      const roll=Math.random();
-      const pool=roll<.24?TEST_FOR_REVIEW_POOLS.preterite:roll<.38?TEST_FOR_REVIEW_POOLS.imperfect:roll<.80?TEST_FOR_REVIEW_POOLS.irregularPreterite:TEST_FOR_REVIEW_POOLS.irregularImperfect;
+      const pool=Math.random()<.67?TEST_FOR_REVIEW_POOLS.irregularPreterite:TEST_FOR_REVIEW_POOLS.irregularImperfect;
       let available=pool.filter(x=>!app.state.hiddenItems[x.id]&&!recent.has(x.id));
       if(!available.length) available=pool.filter(x=>!app.state.hiddenItems[x.id]);
       item=available[Math.floor(Math.random()*available.length)];
       if(!item)return null;
-      const tense=item.tense||'preterite'; answer=item.answer || honorsRegularConjugate(item.verb,tense,item.person);
+      answer=item.answer;
       const person=HONORS_PERSONS_BY_CODE[item.person]?.display || personLabel(item.person);
-      prompt=`Conjugate <strong>${escapeHtml(item.verb)}</strong> for <strong>${escapeHtml(person)}</strong> in the ${tense}.`;
-      explanation=`${item.verb} for ${person} in the ${tense} is <strong>${answer}</strong>.`;
+      prompt=`Conjugate <strong>${escapeHtml(item.verb)}</strong> for <strong>${escapeHtml(person)}</strong> in the ${item.tense}.`;
+      explanation=`${item.verb} for ${person} in the ${item.tense} is <strong>${answer}</strong>.`;
       id=item.id;
-      if(!hard){const all=[...TEST_FOR_REVIEW_POOLS.preterite,...TEST_FOR_REVIEW_POOLS.imperfect,...TEST_FOR_REVIEW_POOLS.irregularPreterite,...TEST_FOR_REVIEW_POOLS.irregularImperfect].map(x=>x.answer || honorsRegularConjugate(x.verb,x.tense,x.person));const options=shuffle([answer,...shuffle([...new Set(all.filter(x=>x&&x!==answer))]).slice(0,3)]);return {module:moduleKey,id,mode:'mcq',prompt,options,correctIndex:options.indexOf(answer),expectedDisplay:answer,explanation};}
-    } else if(bucket==='pronoun'){
-      const pool=TEST_FOR_REVIEW_PRONOUN_ITEMS.filter(x=>!app.state.hiddenItems[x.id]&&!recent.has(x.id)); item=pool[Math.floor(Math.random()*pool.length)]||TEST_FOR_REVIEW_PRONOUN_ITEMS[0];
-      id=item.id; answer=item.answer; prompt=`Translate into Spanish using pronouns where appropriate: <strong>${escapeHtml(item.prompt)}</strong>`; explanation=item.why;
+      if(!hard){const all=[...TEST_FOR_REVIEW_POOLS.irregularPreterite,...TEST_FOR_REVIEW_POOLS.irregularImperfect].map(x=>x.answer);const options=shuffle([answer,...shuffle([...new Set(all.filter(x=>x!==answer))]).slice(0,3)]);return {module:moduleKey,id,mode:'mcq',prompt,options,correctIndex:options.indexOf(answer),expectedDisplay:answer,explanation};}
     } else if(bucket==='meaning'){
-      item=TEST_FOR_REVIEW_MEANINGS[Math.floor(Math.random()*TEST_FOR_REVIEW_MEANINGS.length)]; id=item.id; answer=item.answer;
-      const form=conjugate(item.verb,item.tense,/ella|él/.test(item.person)?'3s':'1s');
-      prompt=`What does <strong>${escapeHtml(item.context||form)}</strong> mean? (${item.verb}, ${item.tense})`;
+      const pool=TEST_FOR_REVIEW_MEANINGS.filter(x=>!app.state.hiddenItems[x.id]&&!recent.has(x.id));
+      item=pool[Math.floor(Math.random()*pool.length)]||TEST_FOR_REVIEW_MEANINGS[0];
+      id=item.id; answer=item.answer;
+      prompt=`What does <strong>${escapeHtml(item.context)}</strong> mean? (${item.verb}, ${item.tense})`;
       explanation=item.explain;
       if(!hard){const options=shuffle([item.answer,item.wrong,item.wrong2].filter(Boolean));return {module:moduleKey,id,mode:'mcq',prompt,options,correctIndex:options.indexOf(answer),expectedDisplay:answer,explanation};}
     } else {
-      const pool=TEST_FOR_REVIEW_TRANSLATIONS.filter(x=>!app.state.hiddenItems[x.id]&&!recent.has(x.id));item=pool[Math.floor(Math.random()*pool.length)]||TEST_FOR_REVIEW_TRANSLATIONS[0];id=item.id;answer=item.answer;prompt=escapeHtml(item.prompt);explanation=item.why;
+      const pool=TEST_FOR_REVIEW_USAGE_ITEMS.filter(x=>!app.state.hiddenItems[x.id]&&!recent.has(x.id));
+      item=pool[Math.floor(Math.random()*pool.length)]||TEST_FOR_REVIEW_USAGE_ITEMS[0];
+      id=item.id; answer=item.answer; prompt=`Complete the sentence with the correct ${item.tense} form of <strong>${escapeHtml(item.verb)}</strong>: ${escapeHtml(item.prompt)}`; explanation=item.why;
     }
     const acceptable=buildAcceptableAnswerSet([answer,...(item.alts||[])]);
     if(!hard){
-      const otherAnswers=[...TEST_FOR_REVIEW_PRONOUN_ITEMS,...TEST_FOR_REVIEW_TRANSLATIONS].filter(x=>x.id!==id).map(x=>x.answer);
-      const options=shuffle([answer,...shuffle([...new Set(otherAnswers.filter(x=>x!==answer))]).slice(0,3)]);
+      const otherAnswers=[...TEST_FOR_REVIEW_USAGE_ITEMS.map(x=>x.answer),...TEST_FOR_REVIEW_MEANINGS.map(x=>x.answer)].filter(x=>x!==answer);
+      const options=shuffle([answer,...shuffle([...new Set(otherAnswers)]).slice(0,3)]);
       return {module:moduleKey,id,mode:'mcq',prompt,options,correctIndex:options.indexOf(answer),expectedDisplay:answer,explanation};
     }
     return {module:moduleKey,id,mode:'text',prompt,expectedDisplay:answer,acceptable,answerVariants:[answer,...(item.alts||[])],requireAccentExact:false,explanation};
@@ -5650,7 +5647,7 @@ mean/nice
       const extraPools = {
         guadalupe_story_easy: GUADALUPE_STORY_EASY,
         guadalupe_story_hard: GUADALUPE_STORY_HARD,
-        test_for_review: [...TEST_FOR_REVIEW_POOLS.preterite,...TEST_FOR_REVIEW_POOLS.imperfect,...TEST_FOR_REVIEW_POOLS.irregularPreterite,...TEST_FOR_REVIEW_POOLS.irregularImperfect,...TEST_FOR_REVIEW_PRONOUN_ITEMS,...TEST_FOR_REVIEW_TRANSLATIONS,...TEST_FOR_REVIEW_MEANINGS],
+        test_for_review: [...TEST_FOR_REVIEW_POOLS.irregularPreterite,...TEST_FOR_REVIEW_POOLS.irregularImperfect,...TEST_FOR_REVIEW_USAGE_ITEMS,...TEST_FOR_REVIEW_MEANINGS],
         irregular_preterite_group2: GROUP2_ITEMS,
         test3_review: [...GUADALUPE_STORY_EASY, ...GUADALUPE_STORY_HARD, ...GUADALUPE_VOCAB_POOL.map(x => ({id:`test3-${x.id}`})), ...GROUP2_ITEMS.map(x => ({id:`test3-${x.id}`})), ...SUMMER_IRREGULAR_PRETERITE_POOL.map(x => ({id:`test3-${x.id}`})), ...TEST3_MEANINGS]
       }[moduleKey];
