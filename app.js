@@ -39,7 +39,8 @@
 */
 
 (() => {
-window.LearningAppShared?.registerUpdate({id:'claro-test2-review-2026-09',app:'claro',title:'New: Test 2 Review',copy:'A Premium study set for past tense forms, time words, irregular verbs, and Rogelio scenes.',tourSteps:[{title:'Find Test 2 Review',copy:'Open Spanish 2 Honors Modules and choose Test 2 Review. Premium access is required.',target:'test2'},{title:'Choose a focused set',copy:'Practice regular preterite and imperfect forms, irregular preterites, and past-time vocabulary.',target:'modules'},{title:'Reason through each scene',copy:'Work through two or three Rogelio boxes at a time and use the explanation to compare the choices.',target:'practice'}]});
+window.LearningAppShared?.registerUpdate({id:'claro-2-release-2026-11',app:'claro',action:'claro-2-release',title:'Claro 2.0 is here',copy:'A refreshed Claro experience with class spaces, flexible study modes, improved settings, module requests, and a clearer home.',createdAt:1794270000000});
+window.LearningAppShared?.registerUpdate({id:'claro-test2-review-2026-09',app:'claro',title:'New: Test 2 Review',copy:'A new study set for past tense forms, time words, irregular verbs, and Rogelio scenes.',tourSteps:[{title:'Find Test 2 Review',copy:'Open Spanish 2 Honors Modules and choose Test 2 Review.',target:'test2'},{title:'Choose a focused set',copy:'Practice regular preterite and imperfect forms, irregular preterites, and past-time vocabulary.',target:'modules'},{title:'Reason through each scene',copy:'Work through two or three Rogelio boxes at a time and use the explanation to compare the choices.',target:'practice'}]});
   window.LearningAppShared?.registerUpdate({id:'claro-guadalupe-test3-2026-10',app:'claro',title:'New: Guadalupe & Test 3 Practice',copy:'Study the Guadalupe cuento, its vocabulary, and irregular preterite verbs.',tourSteps:[{title:'Choose a Guadalupe module',copy:'Open Spanish 2 Honors Modules for vocabulary, easier or harder story questions, or Test 3 Review.',target:'modules'},{title:'Practice the story',copy:'Answer Spanish multiple-choice questions about Juan Diego and the Virgen de Guadalupe.',target:'practice'},{title:'Review Test 3 topics',copy:'Mix story comprehension, vocabulary, Group 1 and Group 2 preterite forms, and tense meanings.',target:'practice'}]});
 window.LearningAppShared?.registerUpdate({id:'claro-test4-review-groups-2026-10',app:'claro',title:'Updated: Test 4 Review',copy:'Focused practice with Group 1 and Group 2 irregular verbs, conjugations, and meaning changes.',tourSteps:[{title:'Open Test 4 Review',copy:'Find it in Spanish 2 Honors Modules.',target:'modules'},{title:'Choose a mode',copy:'Easy uses multiple choice; Hard uses typing.',target:'practice'},{title:'Practice the two verb groups',copy:'Conjugate the irregular verbs, use them in context, and compare their meanings.',target:'practice'}]});
   'use strict';
@@ -50,11 +51,9 @@ window.LearningAppShared?.registerUpdate({id:'claro-test4-review-groups-2026-10'
   const APP_VERSION = 2;
   const ANALYTICS_VERSION = 2;
   const APP_ID = 'claro';
-  const ATLAS_PLANS_URL = 'https://atlaslearning.vercel.app/plans.html';
   // Paste the public Tally form URLs here after creating the two forms.
   // Example: https://tally.so/r/xxxxxx
   const TALLY_FEEDBACK_URL = 'https://tally.so/r/68grLO';
-  const TALLY_PREMIUM_URL = 'https://tally.so/r/OD68ap';
 
   function openTallyForm(baseUrl, fields) {
     const url = new URL(baseUrl);
@@ -70,13 +69,6 @@ window.LearningAppShared?.registerUpdate({id:'claro-test4-review-groups-2026-10'
     return url.toString();
   }
 
-  function openAccessPlans() {
-    const url = new URL(ATLAS_PLANS_URL);
-    url.searchParams.set('app_name', APP_ID);
-    url.searchParams.set('source', 'premium_modal');
-    url.searchParams.set('return_to', tallyReturnUrl('premium_request_submitted'));
-    window.location.assign(url.toString());
-  }
 
   function showTallyReturnNotice(message) {
     document.getElementById('tallyReturnNotice')?.remove();
@@ -90,7 +82,7 @@ window.LearningAppShared?.registerUpdate({id:'claro-test4-review-groups-2026-10'
   }
 
   function tallyFeedbackType(value) {
-    return ({ bug: 'Bug report', ui_request: 'UI request', improvement: 'Improvement request', module_request: 'New module request', feedback_system: 'Feedback about feedback system', general: 'Other' })[value] || 'Other';
+    return ({ bug: 'Report Bug', feature_request: 'Feature Request', module_request: 'Module Request' })[value] || 'Feature Request';
   }
 
   window.APP_DEBUG = false;
@@ -177,51 +169,6 @@ window.LearningAppShared?.registerUpdate({id:'claro-test4-review-groups-2026-10'
   }
 
   const MAYO_MADNESS_KEY = 'mayo_madness';
-  const MAYO_MADNESS_PASSWORDS = new Set();
-  const PREMIUM_ACCESS_STORAGE_KEY = 'claro_premium_access_v1';
-  const PREMIUM_ACCESS_COOKIE_KEY = 'claro_premium_access';
-  const PREMIUM_ACCESS_DAY = 24 * 60 * 60 * 1000;
-  // Beginner recognition drills stay fully free. Premium adds advanced forms,
-  // sentence work, and a larger question pool to these modules.
-  const PREMIUM_COMPLEX_MODULES = new Set([
-    'commands', 'vocab', 'reflexive', 'tenses', 'prices', 'weather', 'clothing',
-    'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates',
-    'summer_preterite', 'summer_imperfect', 'summer_irregular_preterite',
-    'summer_irregular_imperfect', 'summer_tense_choice', 'summer_translations',
-    'honors_ordinal_numbers', 'honors_test1_review', 'test2_review'
-  ]);
-
-  function readPremiumAccessRecord() {
-    let raw = '';
-    try { raw = localStorage.getItem(PREMIUM_ACCESS_STORAGE_KEY) || ''; } catch (_) {}
-    if (!raw) {
-      const cookie = document.cookie.split('; ').find((part) => part.startsWith(`${PREMIUM_ACCESS_COOKIE_KEY}=`));
-      if (cookie) raw = decodeURIComponent(cookie.slice(PREMIUM_ACCESS_COOKIE_KEY.length + 1));
-    }
-    try {
-      const record = JSON.parse(raw);
-      if (!record || !['permanent', 'temporary'].includes(record.mode)) return null;
-      if (record.mode === 'temporary' && Number(record.expiresAt) <= Date.now()) return null;
-      return { mode: record.mode, expiresAt: Number(record.expiresAt) || 0 };
-    } catch (_) {
-      return null;
-    }
-  }
-
-  function writePremiumAccessRecord(record) {
-    const raw = JSON.stringify(record);
-    try { localStorage.setItem(PREMIUM_ACCESS_STORAGE_KEY, raw); } catch (_) {}
-    try {
-      document.cookie = `${PREMIUM_ACCESS_COOKIE_KEY}=${encodeURIComponent(raw)}; max-age=31536000; path=/; SameSite=Lax`;
-    } catch (_) {}
-  }
-
-  function clearPremiumAccessRecord() {
-    try { localStorage.removeItem(PREMIUM_ACCESS_STORAGE_KEY); } catch (_) {}
-    try { document.cookie = `${PREMIUM_ACCESS_COOKIE_KEY}=; max-age=0; path=/; SameSite=Lax`; } catch (_) {}
-  }
-
-  const PREMIUM_QUESTION_IDS = new Map();
   const MAYO_MADNESS_SUBMODULE_KEYS = [
     'mayo_madness_1',
     'mayo_madness_2',
@@ -3963,16 +3910,14 @@ mean/nice
   }
 
   function generateOrdinalQuestion(app) {
-    const freeLimit = 12; // compact free rotation; premium sees the complete variety
-    const pool = app.hasPremiumAccess() ? ORDINAL_POOL : ORDINAL_POOL.slice(0, freeLimit);
+    const pool = ORDINAL_POOL;
     const item = chooseHonorsItem(app, 'honors_ordinal_numbers', pool, 5);
     if (!item) return null;
     return { module: 'honors_ordinal_numbers', id: item.id, mode: 'text', prompt: item.prompt, expectedDisplay: item.expectedDisplay, acceptable: buildAcceptableAnswerSet(item.acceptable), explanation: item.explanation || 'Ordinal numbers agree with the noun they describe.' };
   }
 
   function honorsQuota(app, section) {
-    const premium = app.hasPremiumAccess();
-    const quotas = premium ? { preterite: 6, imperfect: 6, vocabulary: 5, translation: 4, choice: 3 } : { preterite: 3, imperfect: 3, vocabulary: 2, translation: 2, choice: 2 };
+    const quotas = { preterite: 6, imperfect: 6, vocabulary: 5, translation: 4, choice: 3 };
     return { target: Object.values(quotas).reduce((sum, value) => sum + value, 0), used: app.activeSession?.sectionCounts?.[section] || 0, max: quotas[section] };
   }
 
@@ -3983,11 +3928,11 @@ mean/nice
     const section = pickRandom(open.length ? open : sections);
     let q;
     if (section === 'vocabulary') {
-      const item = chooseHonorsItem(app, 'honors_test1_review', HONORS_TIME_WORDS.slice(0, app.hasPremiumAccess() ? HONORS_TIME_WORDS.length : 12), 5);
+      const item = chooseHonorsItem(app, 'honors_test1_review', HONORS_TIME_WORDS, 5);
       if (!item) return null;
       q = { id: item.id, prompt: `Translate into Spanish: <strong>“${escapeHtml(item.en[0])}”</strong>`, expectedDisplay: item.sp, acceptable: [item.sp], explanation: 'Write the Spanish time expression. Accents are optional for correctness.' };
     } else if (section === 'translation') {
-      const sourcePool = app.hasPremiumAccess() ? HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL) : HONORS_PRETERITE_POOL.slice(0, 30).concat(HONORS_IMPERFECT_POOL.slice(0, 30));
+      const sourcePool = HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL);
       const item = chooseHonorsItem(app, 'honors_test1_review', sourcePool, 5);
       if (!item) return null;
       const form = honorsRegularConjugate(item.verb, item.tense, item.person);
@@ -4031,9 +3976,6 @@ mean/nice
 
     currentQuestion: null,
     answered: false,
-    mayoPremiumUnlocked: false,
-    premiumAccessMode: null,
-    premiumAccessExpiresAt: 0,
     activeSession: null,
     sessionQuestionRecorded: false,
 
@@ -4108,14 +4050,13 @@ mean/nice
       this.state.answerHistory = this.state.answerHistory || {};
       Object.defineProperty(this.state.itemScores, '__practiceApp', { value: this, enumerable: false, configurable: true });
       this.ensureProfileAndAnalytics();
-      this.loadPremiumAccess();
       const lastView = readLastViewCookie() || {};
       const requestedLevel = new URLSearchParams(window.location.search).get('class');
-      this.currentLevel = requestedLevel === 'spanish2' || requestedLevel === 'spanish1'
-        ? requestedLevel
-        : (this.state.lastLevel || lastView.level || 'spanish1');
+      const savedClass = this.state.lastClass;
+      this.currentClass = ['spanish1a','spanish1b','spanish2'].includes(requestedLevel) ? requestedLevel : (['spanish1a','spanish1b','spanish2'].includes(savedClass) ? savedClass : (requestedLevel === 'spanish2' || this.state.lastLevel === 'spanish2' || lastView.level === 'spanish2' ? 'spanish2' : 'spanish1b'));
+      this.currentLevel = this.currentClass === 'spanish2' ? 'spanish2' : 'spanish1';
       this.soloMode = this.state.lastModule || lastView.module || null;
-      this.setLevel(this.currentLevel, { historyMode: 'replace' });
+      this.setLevel(this.currentClass, { historyMode: 'replace' });
 
       // Parse vocab
       this.vocab = parseQuizletBlock(QUIZLET_VOCAB_BLOCK);
@@ -4316,7 +4257,6 @@ mean/nice
         feedback: $('feedback'),
 
         // settings modal
-        premiumBtn: $('premiumBtn'),
         settingsBtn: $('settingsBtn'),
         settingsOverlay: $('settingsOverlay'),
         settingsCloseBtn: $('settingsCloseBtn'),
@@ -4327,7 +4267,6 @@ mean/nice
         toggle_vocab: $('toggle_vocab'),
         mayoMadnessDetails: $('mayoMadnessDetails'),
         mayoSubmoduleList: $('mayoSubmoduleList'),
-        mayoLockedNote: $('mayoLockedNote'),
         toggle_mayo_madness: $('toggle_mayo_madness'),
         toggle_mayo_madness_1: $('toggle_mayo_madness_1'),
         toggle_mayo_madness_2: $('toggle_mayo_madness_2'),
@@ -4404,18 +4343,6 @@ mean/nice
         runChecksBtn: $('runChecksBtn'),
         checksOutput: $('checksOutput'),
 
-        // premium modal
-        premiumOverlay: $('premiumOverlay'),
-        premiumCloseBtn: $('premiumCloseBtn'),
-        premiumPasswordInput: $('premiumPasswordInput'),
-        premiumSubmitBtn: $('premiumSubmitBtn'),
-        premiumFeedback: $('premiumFeedback'),
-        premiumRequestToggle: $('premiumRequestToggle'),
-        premiumRequestForm: $('premiumRequestForm'),
-        premiumRequestName: $('premiumRequestName'),
-        premiumRequestEmail: $('premiumRequestEmail'),
-        premiumRequestSubmit: $('premiumRequestSubmit'),
-        premiumRequestFeedback: $('premiumRequestFeedback'),
 
         // feedback
         feedbackBtn: $('feedbackBtn'),
@@ -4466,7 +4393,6 @@ mean/nice
 
     wireEvents() {
       // Settings open/close
-      this.$.premiumBtn.addEventListener('click', () => this.openPremiumAccess());
       this.$.settingsBtn.addEventListener('click', () => this.openSettings());
       this.$.enterPracticeBtn.addEventListener('click', () => this.enterPractice());
       this.$.homeSettingsBtn.addEventListener('click', () => this.openSettings());
@@ -4478,22 +4404,6 @@ mean/nice
         if (e.target === this.$.settingsOverlay) this.closeModal(this.$.settingsOverlay);
       });
 
-      // Premium access
-      this.$.premiumCloseBtn.addEventListener('click', () => this.closeModal(this.$.premiumOverlay));
-      this.$.premiumOverlay.addEventListener('click', (e) => {
-        if (e.target === this.$.premiumOverlay) this.closeModal(this.$.premiumOverlay);
-      });
-      this.$.premiumSubmitBtn.addEventListener('click', () => this.submitPremiumPassword());
-      this.$.premiumPasswordInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          this.submitPremiumPassword();
-        }
-      });
-      this.$.premiumRequestToggle.addEventListener('click', () => {
-        openAccessPlans();
-      });
-      this.$.premiumRequestForm.addEventListener('submit', (e) => this.submitPremiumRequest(e));
 
       // Feedback
       this.$.feedbackBtn.addEventListener('click', () => this.openFeedback());
@@ -4523,11 +4433,6 @@ mean/nice
       });
       this.$.toggle_mayo_madness.addEventListener('click', (e) => e.stopPropagation());
       this.$.toggle_mayo_madness.addEventListener('change', () => {
-        if (!this.hasPremiumAccess()) {
-          this.$.toggle_mayo_madness.checked = false;
-          this.openPremiumAccess();
-          return;
-        }
         this.state.settings.mayoMadnessEnabled = !!this.$.toggle_mayo_madness.checked;
         if (!this.state.settings.mayoMadnessEnabled && this.currentQuestion && isMayoMadnessKey(this.currentQuestion.module)) {
           this.soloMode = null;
@@ -4909,9 +4814,8 @@ mean/nice
         if (!el) continue;
         el.checked = !!this.state.settings.modulesEnabled[m.key];
       }
-      this.updatePremiumModuleLabels();
       if (this.$.testForReviewMode) this.$.testForReviewMode.value = this.testForReviewMode || 'easy';
-      if (this.$.toggle_mayo_madness) this.$.toggle_mayo_madness.checked = !!(this.hasPremiumAccess() && this.state.settings.mayoMadnessEnabled);
+      if (this.$.toggle_mayo_madness) this.$.toggle_mayo_madness.checked = !!this.state.settings.mayoMadnessEnabled;
 
       // Tense toggles
       this.$.tense_present.checked = !!this.state.settings.tensesEnabled.present;
@@ -4946,7 +4850,6 @@ mean/nice
       this.$.toggleDebugMode.checked = !!window.APP_DEBUG;
 
       // Enable/disable solo buttons based on enabled modules
-      this.refreshPremiumAccessUI();
       this.updateSoloButtonsDisabled();
     },
 
@@ -5075,7 +4978,6 @@ mean/nice
         this.$.hiddenOverlay,
         this.$.endSessionOverlay,
         this.$.feedbackOverlay,
-        this.$.premiumOverlay,
         this.$.settingsOverlay,
         this.$.numbersGuideOverlay,
         this.$.firstRunOverlay
@@ -5091,217 +4993,24 @@ mean/nice
 
     isModulePracticeEnabled(moduleKey) {
       if (moduleKey === MAYO_MADNESS_KEY) return this.getEnabledMayoMadnessModules().length > 0;
-      if (!this.state.settings.modulesEnabled[moduleKey]) return false;
-      if (!isMayoMadnessKey(moduleKey)) return true;
-      return !!(this.hasPremiumAccess() && this.state.settings.mayoMadnessEnabled);
+      return !!this.state.settings.modulesEnabled[moduleKey] && (!isMayoMadnessKey(moduleKey) || !!this.state.settings.mayoMadnessEnabled);
     },
 
     getEnabledMayoMadnessModules() {
-      if (!this.hasPremiumAccess() || !this.state.settings.mayoMadnessEnabled) return [];
+      if (!this.state.settings.mayoMadnessEnabled) return [];
       return MAYO_MADNESS_SUBMODULE_KEYS.filter((key) => this.state.settings.modulesEnabled[key] && this.getModuleCounts(key).available > 0);
     },
 
-    refreshPremiumAccessUI() {
-      const unlocked = this.hasPremiumAccess();
-      const parentOn = !!this.state.settings.mayoMadnessEnabled;
-      if (this.$.premiumBtn) {
-        this.$.premiumBtn.classList.toggle('unlocked', unlocked);
-        const temporary = this.premiumAccessMode === 'temporary';
-        this.$.premiumBtn.title = unlocked ? (temporary ? 'Premium active for one day' : 'Premium active') : 'Unlock Premium';
-        this.$.premiumBtn.setAttribute('aria-label', unlocked ? (temporary ? 'Premium active for one day' : 'Premium active') : 'Unlock Premium');
-      }
-      if (this.$.toggle_mayo_madness) {
-        this.$.toggle_mayo_madness.checked = unlocked && parentOn;
-        this.$.toggle_mayo_madness.disabled = !unlocked;
-      }
-      if (this.$.mayoLockedNote) this.$.mayoLockedNote.style.display = unlocked ? 'none' : '';
-      if (this.$.mayoSubmoduleList) this.$.mayoSubmoduleList.style.display = unlocked ? '' : 'none';
 
-      const mayoButtons = [
-        this.$.soloMayoMadnessBtn,
-        this.$.soloMayoMadness1Btn,
-        this.$.soloMayoMadness2Btn,
-        this.$.soloRapidTranslations2Btn,
-        this.$.soloRapidRegularVerbsBtn,
-        this.$.soloRapidIrregularVerbsBtn,
-        this.$.soloMayoMadness3RapidTranslationsBtn
-      ].filter(Boolean);
-      for (const btn of mayoButtons) btn.style.display = unlocked ? '' : 'none';
 
-      const mayoOptions = this.$.soloSelect ? Array.from(this.$.soloSelect.options).filter((opt) => opt.value === MAYO_MADNESS_KEY || isMayoMadnessKey(opt.value)) : [];
-      for (const opt of mayoOptions) {
-        opt.disabled = !unlocked;
-        opt.hidden = !unlocked;
-      }
 
-      for (const key of MAYO_MADNESS_SUBMODULE_KEYS) {
-        const el = this.$['toggle_' + key];
-        if (el) el.disabled = !unlocked;
-      }
-    },
 
-    loadPremiumAccess() {
-      const record = readPremiumAccessRecord();
-      if (!record) {
-        clearPremiumAccessRecord();
-        this.mayoPremiumUnlocked = false;
-        this.premiumAccessMode = null;
-        this.premiumAccessExpiresAt = 0;
-        return;
-      }
-      this.mayoPremiumUnlocked = true;
-      this.premiumAccessMode = record.mode;
-      this.premiumAccessExpiresAt = record.expiresAt;
-    },
 
-    hasPremiumAccess() {
-      if (!this.mayoPremiumUnlocked) return false;
-      if (this.premiumAccessMode === 'temporary' && this.premiumAccessExpiresAt <= Date.now()) {
-        this.mayoPremiumUnlocked = false;
-        this.premiumAccessMode = null;
-        this.premiumAccessExpiresAt = 0;
-        clearPremiumAccessRecord();
-        return false;
-      }
-      return true;
-    },
 
-    isQuestionAvailableWithoutPremium(question) {
-      if (!question || !PREMIUM_COMPLEX_MODULES.has(question.module)) return true;
-      return this.hasPremiumAccess() || !this.getPremiumQuestionIds(question.module).has(String(question.id));
-    },
 
-    getPremiumQuestionPool(moduleKey) {
-      const pools = {
-        commands: this.commandPool, vocab: this.vocab, reflexive: this.reflexivePool, tenses: this.tensesPool,
-        days: DAYS_POOL, months: MONTHS_POOL, seasons: SEASONS_POOL, time: TIME_POOL, colors: COLORS_POOL,
-        prices: PRICES_POOL, weather: WEATHER_POOL, clothing: CLOTHING_POOL, foods: FOODS_POOL,
-        present_progressive: PRESENT_PROGRESSIVE_POOL, ser_estar: SER_ESTAR_POOL, gustar: GUSTAR_POOL, dates: DATES_POOL,
-        summer_preterite: SUMMER_PRETERITE_POOL, summer_imperfect: SUMMER_IMPERFECT_POOL,
-        summer_irregular_preterite: SUMMER_IRREGULAR_PRETERITE_POOL, summer_irregular_imperfect: SUMMER_IRREGULAR_IMPERFECT_POOL,
-        summer_tense_choice: SUMMER_TENSE_CHOICE_POOL, summer_translations: SUMMER_TRANSLATIONS_POOL,
-        honors_ordinal_numbers: ORDINAL_POOL,
-        honors_test1_review: HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL, HONORS_TIME_WORDS, HONORS_CHOICE_POOL,
-          HONORS_PRETERITE_POOL.concat(HONORS_IMPERFECT_POOL).map((item) => ({ id: `honors-translation-${item.id}` }))),
-        test2_review: [...TEST2_REGULAR, ...TEST2_SCENES, ...TEST2_SCENE_BATCHES, ...TEST2_IRREGULAR_ITEMS, ...SUMMER_TIME_WORDS_POOL.map((item) => ({ id: `test2-${item.id}` }))]
-      };
-      const pool = pools[moduleKey] || [];
-      return [...new Map(pool.filter((item) => item?.id != null).map((item) => [String(item.id), item])).values()];
-    },
 
-    getPremiumQuestionIds(moduleKey) {
-      if (!PREMIUM_QUESTION_IDS.has(moduleKey)) {
-        const ids = [...new Set(this.getPremiumQuestionPool(moduleKey).map((item) => String(item.id)).filter(Boolean))];
-        PREMIUM_QUESTION_IDS.set(moduleKey, new Set(ids.filter((_, index) => index % 2 === 1)));
-      }
-      return PREMIUM_QUESTION_IDS.get(moduleKey);
-    },
 
-    getPremiumQuestionCount(moduleKey) {
-      return this.getPremiumQuestionIds(moduleKey).size;
-    },
 
-    updatePremiumModuleLabels() {
-      for (const module of MODULES) {
-        if (!PREMIUM_COMPLEX_MODULES.has(module.key)) continue;
-        const toggle = this.$['toggle_' + module.key];
-        const row = toggle?.closest('.toggle');
-        const label = row?.querySelector('.label');
-        if (!row || !label) continue;
-        const total = this.getPremiumQuestionPool(module.key).length;
-        const premium = this.getPremiumQuestionCount(module.key);
-        if (!premium) continue;
-        let badge = label.querySelector('.premium-module-tag');
-        if (!badge) { badge = document.createElement('span'); badge.className = 'premium-module-tag'; label.append(' ', badge); }
-        badge.textContent = `◐ ${premium} Premium questions`;
-        badge.setAttribute('aria-label', `Half-premium module. ${premium} Premium questions.`);
-        let summary = row.querySelector('.module-access-summary');
-        if (!summary) { summary = document.createElement('div'); summary.className = 'module-access-summary'; row.querySelector('.desc')?.after(summary); }
-        if (summary) summary.textContent = `${total} questions · ${total - premium} free + ${premium} Premium`;
-      }
-    },
-
-    openPremiumAccess() {
-      this.$.premiumPasswordInput.value = '';
-      this.$.premiumRequestForm.reset();
-      this.$.premiumRequestForm.hidden = true;
-      this.$.premiumRequestFeedback.textContent = '';
-      const unlocked = this.hasPremiumAccess();
-      const status = this.premiumAccessMode === 'temporary' ? ' for today' : '';
-      this.setPremiumFeedback(unlocked ? `Premium is already active${status}.` : 'Unlock advanced materials and the full question pools.', unlocked ? 'good' : 'neutral');
-      this.openModal(this.$.premiumOverlay, this.$.premiumPasswordInput);
-    },
-
-    async submitPremiumRequest(event) {
-      event.preventDefault();
-      const form = this.$.premiumRequestForm;
-      const submit = this.$.premiumRequestSubmit;
-      const status = this.$.premiumRequestFeedback;
-      if (!form.reportValidity()) return;
-      if (!TALLY_PREMIUM_URL) {
-        status.className = 'feedback bad';
-        status.textContent = 'Tally is not connected yet. Add the premium form URL in app.js.';
-        return;
-      }
-      openTallyForm(TALLY_PREMIUM_URL, {
-        form_type: 'premium_access_request',
-        app_name: APP_ID,
-        name: this.$.premiumRequestName.value.trim(),
-        email: this.$.premiumRequestEmail.value.trim(),
-        source: 'premium_modal',
-        level: this.currentLevel === 'spanish2' ? 'Spanish 2' : 'Spanish 1',
-        module: this.currentQuestion?.module || 'dashboard',
-        page_url: tallyReturnUrl('premium_request_submitted')
-      });
-      status.className = 'feedback good';
-      status.textContent = 'Tally opened in a new tab. Submit your request there.';
-      return;
-      /* legacy provider path retained below for easy rollback */
-      submit.disabled = true;
-      status.className = 'feedback neutral';
-      status.textContent = 'Sending your request…';
-      try {
-        const formData = new FormData(form);
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: formData,
-          headers: { Accept: 'application/json' }
-        });
-        if (!response.ok) throw new Error('Request failed');
-        status.className = 'feedback good';
-        status.textContent = 'Request sent. We’ll discuss access by email.';
-        form.reset();
-      } catch (error) {
-        status.className = 'feedback bad';
-        status.textContent = 'Could not send the request. Please try again.';
-      } finally {
-        submit.disabled = false;
-      }
-    },
-
-    setPremiumFeedback(html, tone) {
-      this.$.premiumFeedback.className = `feedback ${tone || 'neutral'}`;
-      this.$.premiumFeedback.innerHTML = html;
-    },
-
-    submitPremiumPassword() {
-      const password = this.$.premiumPasswordInput.value.trim();
-      const temporary = false;
-      if (MAYO_MADNESS_PASSWORDS.has(password) || temporary) {
-        this.mayoPremiumUnlocked = true;
-        this.premiumAccessMode = temporary ? 'temporary' : 'permanent';
-        this.premiumAccessExpiresAt = temporary ? Date.now() + PREMIUM_ACCESS_DAY : 0;
-        writePremiumAccessRecord({ mode: this.premiumAccessMode, expiresAt: this.premiumAccessExpiresAt });
-        this.setPremiumFeedback(temporary ? 'Premium unlocked for 1 day.' : 'Premium unlocked and saved on this device.', 'good');
-        this.closeModal(this.$.premiumOverlay);
-        this.refreshSettingsUI();
-        this.updateCountsRow();
-        this.showBanner(temporary ? 'Premium unlocked for <strong>1 day</strong>.' : 'Premium unlocked: advanced materials are now available.');
-        return;
-      }
-      this.setPremiumFeedback('Incorrect password. Try again.', 'bad');
-      this.$.premiumPasswordInput.select();
-    },
 
     openFeedback() {
       this.$.feedbackForm.reset();
@@ -5335,11 +5044,6 @@ mean/nice
         this.$.feedbackMessage.focus();
         return;
       }
-      if (feedbackType === 'module_request' && !requestedModule) {
-        this.setFeedbackStatus('Please name the module you would like to request.', 'bad');
-        this.$.feedbackModuleRequest.focus();
-        return;
-      }
       if (!TALLY_FEEDBACK_URL) {
         this.setFeedbackStatus('Tally is not connected yet. Add the feedback form URL in app.js.', 'bad');
         return;
@@ -5353,10 +5057,10 @@ mean/nice
         requested_module: requestedModule,
         message: tallyMessage,
         email,
-        level: this.currentLevel === 'spanish2' ? 'Spanish 2' : 'Spanish 1',
+        level: this.currentClass === 'spanish2' ? 'Spanish 2 Honors' : this.currentClass === 'spanish1a' ? 'Spanish 1A' : 'Spanish 1B',
         module: this.currentQuestion?.module || 'dashboard',
         source: 'feedback_button',
-        dashboard: this.currentLevel === 'spanish2' ? 'Spanish 2 Honors' : 'Spanish 1',
+        dashboard: this.currentClass === 'spanish2' ? 'Spanish 2 Honors' : this.currentClass === 'spanish1a' ? 'Spanish 1A' : 'Spanish 1B',
         page_url: tallyReturnUrl('feedback_submitted')
       });
       this.setFeedbackStatus('Tally opened in a new tab. Submit your feedback there.', 'good');
@@ -5408,6 +5112,8 @@ mean/nice
     },
 
     isModuleInCurrentLevel(module) {
+      if (module.classId) return module.classId === this.currentClass;
+      if (this.currentClass === 'spanish1a') return false;
       return this.currentLevel === 'spanish2' ? module.level === 2 : module.level !== 2;
     },
 
@@ -5474,6 +5180,18 @@ mean/nice
           this.showBanner('<strong>No practice items available.</strong> You appear to have hidden everything. Restore some hidden questions.');
         }
       }
+    },
+
+    registerContentModule(content) {
+      if (!content || !['spanish1a','spanish1b','spanish2'].includes(content.class_id) || !Array.isArray(content.items) || !content.items.length) return false;
+      const sourceSlug = String(content.slug || content.id || '').toLowerCase().replace(/[^a-z0-9_-]/g,'-').slice(0,80); const slug = `class-${content.class_id}-${sourceSlug}`; if (!sourceSlug || modules[slug]) return false;
+      const items = content.items.filter(item => item && item.id && item.prompt && item.answer).map(item => ({...item,id:`${slug}:${item.id}`})); if (!items.length) return false;
+      this.remoteModuleItems=this.remoteModuleItems||{};this.remoteModuleItems[slug]=items;
+      const level=content.class_id==='spanish2'?2:1; MODULES.push({key:slug,name:String(content.title||'New module'),level,classId:content.class_id,category:'Class modules'});
+      modules[slug]={generateQuestion:(app)=>{const all=app.remoteModuleItems?.[slug]||[];const difficulty=app.__claroStudyDifficulty;const subset=all.filter(x=>!difficulty||difficulty==='standard'||!x.difficulty||x.difficulty===difficulty);const pool=(subset.length?subset:all).filter(x=>!app.state.hiddenItems[x.id]);const item=pool[Math.floor(Math.random()*pool.length)];if(!item)return null;const acceptable=new Set([item.answer,...(item.acceptedAnswers||[]),...(item.accepted_answers||[])].map(x=>String(x).toLocaleLowerCase().trim()));return {module:slug,id:item.id,mode:'text',prompt:item.prompt,expectedDisplay:item.answer,acceptable,options:item.choices||item.options,correctIndex:item.correctIndex,explanation:item.explanation||'',difficulty:item.difficulty||'standard',hint:item.hint||''};}};
+      this.state.settings.modulesEnabled[slug]=true;
+      const section=document.querySelector('#moduleSettingsSection > .accordion-inner');if(section){const row=document.createElement('div');row.className='toggle remote-class-module';row.dataset.class=content.class_id;row.dataset.slug=sourceSlug;row.innerHTML='<div><div class="label"></div><div class="desc"></div></div><label><input type="checkbox"><span class="switch"></span></label>';row.querySelector('.label').textContent=String(content.title||'New module');row.querySelector('.desc').textContent=String(content.summary||'Class module · flashcards, typing, and multiple choice');const input=row.querySelector('input');input.id=`toggle_${slug}`;input.checked=true;input.setAttribute('aria-label',`Toggle ${content.title||'class module'}`);input.onchange=()=>{this.state.settings.modulesEnabled[slug]=input.checked;this.saveSoon();this.updateHomeSummary();};section.append(row);}
+      this.refreshSettingsUI();this.updateHomeSummary();this.saveSoon();return true;
     },
 
     getModuleCounts(moduleKey) {
@@ -5669,6 +5387,7 @@ mean/nice
         return { total: pool.length, available: Math.max(0, pool.length - hiddenCount) };
       }
 
+      if (this.remoteModuleItems?.[moduleKey]) { const pool=this.remoteModuleItems[moduleKey]; const hiddenCount=pool.filter(item=>hidden[item.id]).length; return {total:pool.length,available:Math.max(0,pool.length-hiddenCount)}; }
       const summerPool = {
         summer_time_words: SUMMER_TIME_WORDS_POOL,
         summer_preterite: SUMMER_PRETERITE_POOL,
@@ -5689,7 +5408,7 @@ mean/nice
 
     enterPractice() {
       // Don't start a session that cannot produce a question. Adapters can
-      // filter premium-locked modules or modules whose questions are hidden.
+      // filter unavailable modules or modules whose questions are hidden.
       const enabledModules = this.getEnabledModules();
       const availableModules = enabledModules.filter((key) => (this.getModuleCounts(key)?.available ?? 0) > 0);
       if (!availableModules.length) {
@@ -5712,44 +5431,51 @@ mean/nice
     },
 
     setLevel(level, { historyMode = 'replace' } = {}) {
-      this.currentLevel = level === 'spanish2' ? 'spanish2' : 'spanish1';
+      this.currentClass = ['spanish1a','spanish1b','spanish2'].includes(level) ? level : (level === 'spanish2' ? 'spanish2' : 'spanish1b');
+      this.currentLevel = this.currentClass === 'spanish2' ? 'spanish2' : 'spanish1';
       const url = new URL(window.location.href);
-      url.searchParams.set('class', this.currentLevel);
+      url.searchParams.set('class', this.currentClass);
       if (historyMode === 'push') window.history.pushState({ class: this.currentLevel }, '', url);
       if (historyMode === 'replace') window.history.replaceState({ class: this.currentLevel }, '', url);
       this.updateDocumentTitle();
       if (this.state) {
+        this.state.lastClass = this.currentClass;
         this.state.lastLevel = this.currentLevel;
         persistLastView({ level: this.currentLevel, module: this.state.lastModule || this.soloMode || null });
         this.saveSoon();
       }
-      const spanish2 = this.currentLevel === 'spanish2';
+      const spanish2 = this.currentClass === 'spanish2';
+      const spanish1a = this.currentClass === 'spanish1a';
       const summerModules = MODULES.filter(m => m.level === 2);
       const enabledSummerModules = summerModules.filter(m => this.state?.settings?.modulesEnabled?.[m.key]);
-      this.$.headerLevel.textContent = spanish2 ? 'Spanish 2 Honors' : 'Spanish 1';
+      this.$.headerLevel.textContent = spanish2 ? 'Spanish 2 Honors' : spanish1a ? 'Spanish 1A' : 'Spanish 1B';
       const classSwitcherLabel = document.getElementById('classSwitcherLabel');
-      if (classSwitcherLabel) classSwitcherLabel.textContent = spanish2 ? 'Spanish 2 Honors' : 'Spanish 1';
-      document.querySelectorAll('#classSwitcherMenu [data-class]').forEach((option) => { const current = option.dataset.class === this.currentLevel; option.classList.toggle('is-current', current); option.setAttribute('aria-current', current ? 'page' : 'false'); });
+      if (classSwitcherLabel) classSwitcherLabel.textContent = spanish2 ? 'Spanish 2 Honors' : spanish1a ? 'Spanish 1A' : 'Spanish 1B';
+      document.querySelectorAll('#classSwitcherMenu [data-class]').forEach((option) => { const current = option.dataset.class === this.currentClass; option.classList.toggle('is-current', current); option.setAttribute('aria-current', current ? 'page' : 'false'); });
       this.$.spanish1Tab.classList.toggle('is-active', !spanish2);
       this.$.spanish2Tab.classList.toggle('is-active', spanish2);
       this.$.spanish1Tab.setAttribute('aria-selected', String(!spanish2));
       this.$.spanish2Tab.setAttribute('aria-selected', String(spanish2));
-      this.$.spanish1Panel.hidden = spanish2;
+      this.$.spanish1Panel.hidden = spanish2 || spanish1a;
       this.$.spanish2Panel.hidden = !spanish2;
+      const class1aPanel = document.getElementById('spanish1aPanel'); if (class1aPanel) class1aPanel.hidden = !spanish1a;
+      document.querySelector('.dashboard-analytics')?.toggleAttribute('hidden', spanish1a);
+      document.querySelector('.session-history')?.toggleAttribute('hidden', spanish1a);
       document.body.classList.toggle('level-spanish1', !spanish2);
+      document.body.classList.toggle('class-spanish1a', spanish1a);
       document.body.classList.toggle('level-spanish2', spanish2);
       if (this.$.settingsIntro) {
         this.$.settingsIntro.textContent = spanish2
           ? 'Spanish 2 Honors modules. Choose only the drills you want today.'
-          : 'Spanish 1 modules. Choose only the topics you want today.';
+          : spanish1a ? 'Spanish 1A starts with your teacher’s curriculum.' : 'Spanish 1B modules. Choose only the topics you want today.';
       }
-      this.$.enterPracticeBtn.disabled = spanish2 && enabledSummerModules.length === 0;
-      this.$.enterPracticeBtn.textContent = spanish2
-        ? (enabledSummerModules.length ? 'Enter Spanish 2 Honors →' : 'Enable Spanish 2 Honors modules')
-        : 'Enter practice session →';
+      this.$.enterPracticeBtn.disabled = spanish1a || (spanish2 && enabledSummerModules.length === 0);
+      this.$.enterPracticeBtn.textContent = spanish1a ? 'Modules are coming soon' : spanish2
+        ? (enabledSummerModules.length ? 'Continue Spanish 2 Honors →' : 'Enable Spanish 2 Honors modules')
+        : 'Continue Spanish 1B →';
       this.$.enterPracticeBtn.setAttribute('aria-label', spanish2
         ? (enabledSummerModules.length ? 'Enter Spanish 2 Honors' : 'Enable Spanish 2 Honors modules')
-        : 'Enter practice session');
+        : spanish1a ? 'Modules coming soon for Spanish 1A' : 'Continue Spanish 1B');
       if (this.$.spanish2ModuleSummary) {
         this.$.spanish2ModuleSummary.textContent = enabledSummerModules.length
           ? enabledSummerModules.map(m => m.name).join(', ')
@@ -5758,9 +5484,7 @@ mean/nice
     },
 
     updateDocumentTitle() {
-      document.title = this.currentLevel === 'spanish2'
-        ? 'Claro — Spanish 2 Honors'
-        : 'Claro — Spanish 1';
+      document.title = this.currentClass === 'spanish2' ? 'Claro — Spanish 2 Honors' : this.currentClass === 'spanish1a' ? 'Claro — Spanish 1A' : 'Claro — Spanish 1B';
     },
 
     ensureProfileAndAnalytics() {
@@ -5768,6 +5492,10 @@ mean/nice
       this.state.profileId = profileId;
       persistProfileId(profileId);
       this.state.practiceSessions = Array.isArray(this.state.practiceSessions) ? this.state.practiceSessions : [];
+      let migratedSessions=false;for(const session of this.state.practiceSessions){if(!session.classId){session.classId=session.level==='spanish2'?'spanish2':'spanish1b';migratedSessions=true;}}
+      try{this.__classStats=JSON.parse(localStorage.getItem('claro_class_stats_v1')||'null')}catch(_){this.__classStats=null}
+      if(!this.__classStats){const sessions=this.state.practiceSessions;const honors=sessions.filter(x=>x.classId==='spanish2');this.__classStats={spanish1a:{answered:0,correct:0,currentStreak:0,bestStreak:0,sessions:0},spanish1b:{...(this.state.lifetimeStats||{answered:0,correct:0,currentStreak:0,bestStreak:0}),sessions:sessions.filter(x=>x.classId==='spanish1b').length},spanish2:{answered:honors.reduce((n,x)=>n+(x.answered||0),0),correct:honors.reduce((n,x)=>n+(x.correct||0),0),currentStreak:0,bestStreak:honors.reduce((n,x)=>Math.max(n,x.bestStreak||0),0),sessions:honors.length}};try{localStorage.setItem('claro_class_stats_v1',JSON.stringify(this.__classStats))}catch(_){}}
+      if(migratedSessions)this.saveSoon();
       this.state.lifetimeStats = this.state.lifetimeStats || { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 };
     },
 
@@ -5779,6 +5507,7 @@ mean/nice
       this.activeSession = {
         id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         level: this.currentLevel === 'spanish2' ? 'spanish2' : 'spanish1',
+        classId: this.currentClass || (this.currentLevel==='spanish2'?'spanish2':'spanish1b'),
         startedAt: new Date().toISOString(),
         answered: 0,
         correct: 0,
@@ -5794,47 +5523,13 @@ mean/nice
     },
 
     getSessionTarget() {
-      const premium = this.hasPremiumAccess();
       const enabled = this.getEnabledModules();
-      if (enabled.length === 1 && enabled[0] === 'honors_ordinal_numbers') return premium ? 14 : 8;
-      if (enabled.includes('honors_test1_review')) return this.getHonorsTest1SessionLimit();
-      if (enabled.includes('test2_review')) return premium ? 24 : 12;
+      if (enabled.length === 1 && enabled[0] === 'honors_ordinal_numbers') return 14;
+      if (enabled.includes('honors_test1_review') || enabled.includes('test2_review')) return 24;
       return null;
     },
 
-    getHonorsTest1SessionLimit() { return this.hasPremiumAccess() ? 24 : 12; },
-
-    recordSessionAnswer(correct) {
-      if (!this.activeSession || this.sessionQuestionRecorded) return;
-      this.sessionQuestionRecorded = true;
-      const session = this.activeSession;
-      session.answered += 1;
-      if (correct) {
-        session.correct += 1;
-        session.currentStreak += 1;
-        session.bestStreak = Math.max(session.bestStreak, session.currentStreak);
-        if ([3, 5, 10, 15, 20].includes(session.currentStreak) || (session.currentStreak > 20 && session.currentStreak % 5 === 0)) {
-          this.celebrateStreak();
-        }
-      } else {
-        session.incorrect += 1;
-        session.currentStreak = 0;
-      }
-      if (this.currentQuestion?.module) session.modules.add(this.currentQuestion.module);
-
-      const lifetime = this.state.lifetimeStats;
-      lifetime.answered += 1;
-      if (correct) {
-        lifetime.correct += 1;
-        lifetime.currentStreak += 1;
-        lifetime.bestStreak = Math.max(lifetime.bestStreak, lifetime.currentStreak);
-      } else {
-        lifetime.currentStreak = 0;
-      }
-      this.updateSessionStatsUI();
-      this.updateDashboardAnalyticsUI();
-      this.saveSoon();
-    },
+    getHonorsTest1SessionLimit() { return 24; },
 
     celebrateStreak() {
       const streakCard = this.$?.sessionStreak?.closest('.session-stat-streak');
@@ -5889,6 +5584,7 @@ mean/nice
       this.state.practiceSessions.push({
         id: session.id,
         level: session.level,
+        classId: session.classId || (session.level==='spanish2'?'spanish2':'spanish1b'),
         startedAt: session.startedAt,
         endedAt: endedAt.toISOString(),
         durationSeconds: Math.max(0, Math.round((endedAt - startedAt) / 1000)),
@@ -5908,15 +5604,25 @@ mean/nice
       this.returnHome();
     },
 
+    recordSessionAnswer(correct) {
+      if(this.sessionQuestionRecorded)return;this.sessionQuestionRecorded=true;
+      if(!this.activeSession)this.startPracticeSession();const session=this.activeSession;session.answered++;
+      if(correct){session.correct++;session.currentStreak++;session.bestStreak=Math.max(session.bestStreak,session.currentStreak);}else{session.incorrect++;session.currentStreak=0;}
+      if(this.currentQuestion?.module)session.modules.add(this.currentQuestion.module);
+      const totals=this.state.lifetimeStats||(this.state.lifetimeStats={answered:0,correct:0,currentStreak:0,bestStreak:0});totals.answered++;if(correct){totals.correct++;totals.currentStreak++;totals.bestStreak=Math.max(totals.bestStreak,totals.currentStreak);}else totals.currentStreak=0;
+      const cls=this.currentClass||'spanish1b',perClass=this.__classStats?.[cls]||(this.__classStats[cls]={answered:0,correct:0,currentStreak:0,bestStreak:0,sessions:0});perClass.answered++;if(correct){perClass.correct++;perClass.currentStreak++;perClass.bestStreak=Math.max(perClass.bestStreak,perClass.currentStreak);}else perClass.currentStreak=0;
+      try{localStorage.setItem('claro_class_stats_v1',JSON.stringify(this.__classStats))}catch(_){}this.updateSessionStatsUI();this.saveSoon();
+    },
+
     updateDashboardAnalyticsUI() {
       if (!this.$?.allTimeAccuracy || !this.state) return;
-      const stats = this.state.lifetimeStats || { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 };
+      const stats = this.__classStats?.[this.currentClass] || this.state.lifetimeStats || { answered: 0, correct: 0, currentStreak: 0, bestStreak: 0 };
       this.$.allTimeAccuracy.textContent = this.formatPercent(stats.correct, stats.answered);
       this.$.allTimeCorrect.textContent = String(stats.correct);
       this.$.allTimeAnsweredLabel.textContent = `of ${stats.answered} answered`;
       this.$.allTimeCurrentStreak.textContent = String(stats.currentStreak);
       this.$.allTimeBestStreak.textContent = String(stats.bestStreak);
-      this.$.allTimeSessions.textContent = String(this.state.practiceSessions.length);
+      this.$.allTimeSessions.textContent = String((this.state.practiceSessions||[]).filter(s=>s.classId===(this.currentClass||'spanish1b')).length);
       this.$.profileNote.textContent = this.state.profileId ? 'Saved in this browser' : 'Local progress';
       this.renderSessionHistory();
     },
@@ -5926,14 +5632,14 @@ mean/nice
       const empty = this.$?.sessionHistoryEmpty;
       if (!list || !empty || !this.state) return;
       list.innerHTML = '';
-      const sessions = [...(this.state.practiceSessions || [])].reverse();
+      const sessions = [...(this.state.practiceSessions || [])].filter(session=>session.classId===(this.currentClass||'spanish1b')).reverse();
       empty.style.display = sessions.length ? 'none' : '';
       for (const session of sessions) {
         const row = document.createElement('article');
         row.className = 'session-history-row';
         const date = new Date(session.endedAt || session.startedAt);
         const dateLabel = Number.isNaN(date.getTime()) ? 'Practice session' : date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
-        const levelLabel = session.level === 'spanish2' ? 'Spanish 2 · Honors' : 'Spanish 1';
+        const levelLabel = session.classId === 'spanish1a' ? 'Spanish 1A' : (session.classId === 'spanish1b' || session.level !== 'spanish2') ? 'Spanish 1B' : 'Spanish 2 · Honors';
         const modules = session.modules?.length ? session.modules.join(', ') : 'All enabled modules';
         row.innerHTML = `<div class="session-history-main"><strong>${levelLabel}</strong><small>${dateLabel}</small><small>${modules}</small></div><div class="session-history-result"><strong>${this.formatPercent(session.correct, session.answered)}</strong><small>${session.correct} correct · ${session.incorrect} incorrect · ${session.answered} answered</small></div>`;
         list.appendChild(row);
@@ -5967,7 +5673,7 @@ mean/nice
         parts.push(on ? label : `<span style="opacity:.45">${label}</span>`);
       }
       this.$.countsRow.innerHTML = parts.join(' &nbsp;•&nbsp; ');
-      if (this.currentLevel) this.setLevel(this.currentLevel);
+      if (this.currentClass) this.setLevel(this.currentClass);
       this.updateHomeSummary();
     },
 
@@ -6032,11 +5738,6 @@ mean/nice
     },
 
     setSoloMode(moduleKey) {
-      if ((moduleKey === MAYO_MADNESS_KEY || isMayoMadnessKey(moduleKey)) && !this.hasPremiumAccess()) {
-        if (this.$.soloSelect) this.$.soloSelect.value = '';
-        this.openPremiumAccess();
-        return;
-      }
       if (!this.isModulePracticeEnabled(moduleKey)) {
         this.showBanner(`Can’t enter practice-only mode: <strong>${moduleKey}</strong> is disabled in Settings.`);
         if (this.$.soloSelect) this.$.soloSelect.value = '';
@@ -6125,7 +5826,7 @@ mean/nice
       const { forceModule = null, keepFeedback = false } = opts;
 
       if (this.currentQuestion && !forceModule && !this.canAdvanceFromCurrentQuestion()) {
-        if (this.currentQuestion.module === 'numbers') {
+        if (this.currentQuestion.module === 'numbers' && !this.currentQuestion.studyMode) {
           this.setNumberFeedback('Type the correct Spanish spelling to continue.', 'bad');
           if (this.$.numberAnswerInput && this.$.numberAnswerInput.offsetParent !== null) this.$.numberAnswerInput.focus();
         } else {
@@ -6159,14 +5860,8 @@ mean/nice
 
       // Generate question; if generator fails (empty), disable module and retry.
       let q = null;
-      let premiumSkipped = 0;
       for (let tries = 0; tries < 8; tries++) {
         q = this.generateQuestion(moduleKey);
-        if (q && !this.isQuestionAvailableWithoutPremium(q)) {
-          premiumSkipped++;
-          q = null;
-          continue;
-        }
         if (q) break;
 
         // auto-disable and try a different module
@@ -6178,15 +5873,6 @@ mean/nice
         const stillEnabled = this.getEnabledModules();
         if (!stillEnabled.length) break;
         moduleKey = this.chooseModule(stillEnabled);
-      }
-
-      // A random generator can occasionally return only premium questions in
-      // a short run. Keep the free module usable instead of auto-disabling it.
-      if (!q && premiumSkipped) {
-        for (let tries = 0; tries < 20 && !q; tries++) {
-          const candidate = this.generateQuestion(moduleKey);
-          if (candidate && this.isQuestionAvailableWithoutPremium(candidate)) q = candidate;
-        }
       }
 
       if (!q) {
@@ -6213,7 +5899,7 @@ mean/nice
     canAdvanceFromCurrentQuestion() {
       const q = this.currentQuestion;
       if (!q) return true;
-      if (q.module === 'numbers') return !this.state.settings.numbersRequireTyping || !!this.answered;
+      if (q.module === 'numbers' && !q.studyMode) return !this.state.settings.numbersRequireTyping || !!this.answered;
       if (q.mode === 'mcq') return !!this.answered;
       if (q.mode === 'text') return !!this.answered;
       return true;
@@ -6597,7 +6283,7 @@ mean/nice
       this.$.neverBtn.disabled = !q || !q.id;
       this.$.nextQBtn.disabled = !this.answered;
 
-      if (q.module === 'numbers') {
+      if (q.module === 'numbers' && !q.studyMode) {
         this.$.numbersSection.style.display = '';
         this.$.qaSection.style.display = 'none';
         this.updateNumbersRangeText();
@@ -6711,7 +6397,7 @@ mean/nice
     revealHint() {
       const q = this.currentQuestion;
       if (!q) return;
-      if (q.module === 'numbers') {
+      if (q.module === 'numbers' && !q.studyMode) {
         this.revealSpanishNumber();
         this.revealStage = 1;
         return;
@@ -6733,7 +6419,7 @@ mean/nice
     revealFull() {
       const q = this.currentQuestion;
       if (!q) return;
-      if (q.module === 'numbers') {
+      if (q.module === 'numbers' && !q.studyMode) {
         this.revealSpanishNumber();
         this.revealStage = 2;
         return;
@@ -6750,7 +6436,7 @@ mean/nice
 
     handleAdvanceKey() {
       if (!this.currentQuestion) return;
-      if (this.currentQuestion.module === 'numbers') {
+      if (this.currentQuestion.module === 'numbers' && !this.currentQuestion.studyMode) {
         this.nextQuestion({ keepFeedback: false });
         return;
       }
@@ -6766,7 +6452,7 @@ mean/nice
     // --------------------------------------------
     submitAnswer() {
       const q = this.currentQuestion;
-      if (!q || q.module === 'numbers') return; // numbers has no typing submission
+      if (!q || (q.module === 'numbers' && !q.studyMode)) return; // legacy Numbers uses its dedicated answer flow
 
       if (this.answered) {
         this.setFeedback('Already answered — press Next to continue.', 'neutral');
@@ -6834,7 +6520,7 @@ mean/nice
       this.recordSessionAnswer(correct);
 
       this.answered = true;
-      if (q.module === 'numbers') this.$.nextNumbersBtn.disabled = false;
+      if (q.module === 'numbers' && !q.studyMode) this.$.nextNumbersBtn.disabled = false;
       else this.$.nextQBtn.disabled = false;
       this.saveSoon();
     },
@@ -7223,16 +6909,6 @@ mean/nice
       const requiredModules = ['days', 'months', 'seasons', 'time', 'colors', 'mayo_madness_1', 'mayo_madness_2', 'rapid_translations_2', 'rapid_regular_verbs', 'rapid_irregular_verbs', 'mayo_madness_3_rapid_translations', 'prices', 'weather', 'clothing', 'foods', 'present_progressive', 'ser_estar', 'gustar', 'dates', 'test_for_review', 'honors_ordinal_numbers', 'honors_test1_review', 'test2_review', 'guadalupe_vocab', 'guadalupe_story_easy', 'guadalupe_story_hard', 'irregular_preterite_group2', 'test3_review'];
       const hasModules = requiredModules.every((key) => MODULES.some((m) => m.key === key) && modules[key]);
       results.push({ ok: hasModules, label: 'Expanded modules registered (including Mayo Madness parent submodules)' });
-      results.push({ ok: [...PREMIUM_COMPLEX_MODULES].every((key) => this.getPremiumQuestionPool(key).length >= 2 && this.getPremiumQuestionCount(key) === Math.floor(this.getPremiumQuestionPool(key).length / 2)), label: 'Every partially Premium module has an exact stable half-pool split' });
-      const premiumTest2Id = this.getPremiumQuestionIds('test2_review').values().next().value;
-      const priorPremiumCheck = this.hasPremiumAccess;
-      this.hasPremiumAccess = () => false;
-      const test2QuestionBlocked = !this.isQuestionAvailableWithoutPremium({ module: 'test2_review', id: premiumTest2Id });
-      this.hasPremiumAccess = () => true;
-      const test2QuestionUnlocked = this.isQuestionAvailableWithoutPremium({ module: 'test2_review', id: premiumTest2Id });
-      this.hasPremiumAccess = priorPremiumCheck;
-      results.push({ ok: test2QuestionBlocked && test2QuestionUnlocked, label: 'A Premium question is blocked for free access and enabled after unlock' });
-      results.push({ ok: PREMIUM_COMPLEX_MODULES.has('test2_review') && this.getPremiumQuestionCount('test2_review') === Math.floor(this.getPremiumQuestionPool('test2_review').length / 2), label: 'Test 2 Review exposes a balanced Premium question half' });
       results.push({ ok: matchesGenderSlashAnswer('cansado/a','cansado') && matchesGenderSlashAnswer('cansado/a','cansada') && matchesGenderSlashAnswer('rápido/a','rápido') && matchesGenderSlashAnswer('rápido/a','rápida') && !matchesGenderSlashAnswer('rápido/a','rapido') && matchesGenderSlashAnswer('contenta/o','contento'), label: 'Gender slash answers accept either exact accented form only' });
       const test2Sample = modules.test2_review.generateQuestion(this);
       results.push({ ok: !!test2Sample && TEST2_REGULAR.some((item) => item.answer === 'hablé') && TEST2_REGULAR.some((item) => item.answer === 'hablabais') && TEST2_REGULAR.some((item) => item.answer === 'comíamos') && TEST2_IRREGULARS.ser.yo === 'fui' && TEST2_IRREGULARS.hacer.él === 'hizo' && SUMMER_TIME_WORDS_POOL.some((item) => item.id === 'summer-time-1') && TEST2_SCENES.length === 16 && TEST2_SCENE_BATCHES.length === 29 && TEST2_SCENE_BATCHES.every((batch)=>batch.items.length===2||batch.items.length===3), label: 'Test 2 Review combines regular tenses, requested irregulars, time words, and 2–3-box Rogelio scenes' });
@@ -7242,58 +6918,39 @@ mean/nice
       results.push({ ok: newModuleKeys.every((key) => MODULES.some((module) => module.key === key) && !!modules[key] && !!this.$[`toggle_${key}`]), label: 'New Guadalupe and Test 3 modules have registry entries, generators, and visible settings controls' });
       const storyQuestions = [...GUADALUPE_STORY_EASY, ...GUADALUPE_STORY_HARD];
       results.push({ ok: storyQuestions.every((item) => item.prompt && item.answer && item.distractors.length === 3 && new Set([item.answer,...item.distractors]).size === 4) && new Set(storyQuestions.map((item) => item.id)).size === 20, label: 'All 20 Spanish story questions have four distinct answer choices and stable IDs' });
-      results.push({ ok: !PREMIUM_COMPLEX_MODULES.has('guadalupe_vocab') && !!modules.guadalupe_vocab.generateQuestion(this), label: 'Guadalupe Vocab is available through the normal free study path' });
       results.push({ ok: MODULES.find((m) => m.key === 'honors_ordinal_numbers')?.level === 2 && MODULES.find((m) => m.key === 'honors_test1_review')?.level === 2, label: 'Spanish 2 Honors modules are level 2 only' });
-      results.push({ ok: PREMIUM_COMPLEX_MODULES.has('honors_ordinal_numbers') && PREMIUM_COMPLEX_MODULES.has('honors_test1_review') && this.getPremiumQuestionCount('honors_ordinal_numbers') > 0 && this.getPremiumQuestionCount('honors_test1_review') > 0, label: 'Spanish 2 Honors modules have free and Premium question tiers' });
       const ordinalAnswers = buildAcceptableAnswerSet(['tercera']);
       results.push({ ok: ordinalAnswers.has(normalizeLoose('TERCERA')) && buildAcceptableAnswerSet(['tercer']).has(normalizeLoose('tercer')) && !buildAcceptableAnswerSet(['tercera']).has(normalizeLoose('tercero')), label: 'Ordinal gender agreement and contextual tercero/tercer forms are strict' });
       results.push({ ok: honorsRegularConjugate('hablar', 'preterite', '1s') === 'hablé' && honorsRegularConjugate('comer', 'imperfect', '1p') === 'comíamos' && honorsRegularConjugate('vivir', 'imperfect', '2p') === 'vivíais', label: 'Honors regular preterite/imperfect endings cover all six persons' });
       results.push({ ok: buildAcceptableAnswerSet(['suddenly', 'all of a sudden']).has(normalizeLoose('all of a sudden')) && buildAcceptableAnswerSet(['normally', 'generally']).has(normalizeLoose('generally')), label: 'Honors vocabulary accepts natural English synonyms' });
-      const priorPremiumForChecks = this.mayoPremiumUnlocked;
-      const priorHasPremiumForChecks = this.hasPremiumAccess;
-      this.hasPremiumAccess = () => !!this.mayoPremiumUnlocked;
-      this.mayoPremiumUnlocked = false;
-      const freeOrdinal = modules.honors_ordinal_numbers.generateQuestion(this);
-      this.mayoPremiumUnlocked = true;
-      const premiumOrdinal = modules.honors_ordinal_numbers.generateQuestion(this);
-      this.mayoPremiumUnlocked = priorPremiumForChecks;
-      results.push({ ok: !!freeOrdinal && !!premiumOrdinal && ORDINAL_POOL.length > 12, label: 'Honors ordinal free/premium pools differ in depth' });
+      const ordinalSample = modules.honors_ordinal_numbers.generateQuestion(this);
+      results.push({ ok: !!ordinalSample && ORDINAL_POOL.length > 12, label: 'Honors ordinal module uses its complete question pool' });
       const priorCheckLevel = this.currentLevel;
       const priorCheckSolo = this.soloMode;
       const priorOrdinalOn = this.state.settings.modulesEnabled.honors_ordinal_numbers;
       const priorTestOn = this.state.settings.modulesEnabled.honors_test1_review;
       const priorTest2On = this.state.settings.modulesEnabled.test2_review;
-      const priorPremiumTarget = this.mayoPremiumUnlocked;
       this.currentLevel = 'spanish2';
       this.soloMode = 'honors_ordinal_numbers';
       this.state.settings.modulesEnabled.honors_ordinal_numbers = true;
       this.state.settings.modulesEnabled.honors_test1_review = false;
       this.state.settings.modulesEnabled.test2_review = true;
-      this.mayoPremiumUnlocked = false;
-      const freeOrdinalTarget = this.getSessionTarget();
+      const fullOrdinalTarget = this.getSessionTarget();
       this.state.settings.modulesEnabled.honors_test1_review = true;
       const freeTest1Enabled = this.isModulePracticeEnabled('honors_test1_review');
       const freeTest1Limit = this.getHonorsTest1SessionLimit();
       this.state.settings.modulesEnabled.honors_test1_review = false;
       const freeTest2Enabled = this.isModulePracticeEnabled('test2_review');
-      this.mayoPremiumUnlocked = true;
-      const premiumOrdinalTarget = this.getSessionTarget();
-      const premiumTest2Enabled = this.isModulePracticeEnabled('test2_review');
       this.soloMode = 'honors_test1_review';
       this.state.settings.modulesEnabled.honors_test1_review = true;
-      const premiumTestTarget = this.getSessionTarget();
-      this.mayoPremiumUnlocked = false;
       const freeTestTarget = this.getSessionTarget();
       this.currentLevel = priorCheckLevel;
       this.soloMode = priorCheckSolo;
       this.state.settings.modulesEnabled.honors_ordinal_numbers = priorOrdinalOn;
       this.state.settings.modulesEnabled.honors_test1_review = priorTestOn;
       this.state.settings.modulesEnabled.test2_review = priorTest2On;
-      this.mayoPremiumUnlocked = priorPremiumTarget;
-      this.hasPremiumAccess = priorHasPremiumForChecks;
-      results.push({ ok: freeOrdinalTarget === 8 && premiumOrdinalTarget === 14 && freeTestTarget === 12 && premiumTestTarget === 24, label: 'Honors free/premium session targets differ as intended' });
       results.push({ ok: freeTest1Enabled && freeTest1Limit === 12, label: 'Test 1 Review stays available to free learners with a half-length session' });
-      results.push({ ok: freeTest2Enabled && premiumTest2Enabled, label: 'Test 2 Review stays available with a Premium question half' });
+      results.push({ ok: freeTest2Enabled && fullOrdinalTarget === 14 && freeTestTarget === 24, label: 'Honors modules use their complete session pools' });
       results.push({ ok: MAYO_MADNESS_SUBMODULE_KEYS.length === 6 && MAYO_MADNESS_SUBMODULE_KEYS.every((key) => requiredModules.includes(key)), label: 'Mayo Madness parent tracks all submodules' });
       results.push({ ok: !MODULES.some((m) => m.key === 'ser_estar_gustar'), label: 'Deprecated ser_estar_gustar module removed from registry' });
       results.push({ ok: DAYS_POOL.length >= 7, label: 'Days pool has >= 7 items' });
@@ -7345,24 +7002,17 @@ mean/nice
       results.push({ ok: hurryAnswers.has(normalizeLoose('nosotras estamos con prisa y tenemos hambre')), label: 'Mayo Madness Level 3 accepts subject and regional sentence variants' });
       const knewAnswers = buildAcceptableAnswerSet(MAYO_MADNESS_LEVEL_3_RAPID_TRANSLATIONS_POOL.find((x) => x.id === 'mayo3-i-knew').acceptable);
       results.push({ ok: knewAnswers.has(normalizeLoose('yo supe')) && knewAnswers.has(normalizeLoose('yo sabia')), label: 'Mayo Madness Level 3 accepts past-tense variation pairs' });
-      const priorPremiumUnlocked = this.mayoPremiumUnlocked;
       const priorParentEnabled = this.state.settings.mayoMadnessEnabled;
       const priorLevel1Enabled = this.state.settings.modulesEnabled.mayo_madness_1;
       const priorMayoHidden = this.state.hiddenItems['mayo1-lapiz'];
       delete this.state.hiddenItems['mayo1-lapiz'];
       this.state.settings.mayoMadnessEnabled = true;
       this.state.settings.modulesEnabled.mayo_madness_1 = true;
-      this.mayoPremiumUnlocked = false;
-      const lockedBlocksMayo = !this.isModulePracticeEnabled('mayo_madness_1') && this.getEnabledMayoMadnessModules().length === 0;
-      this.mayoPremiumUnlocked = true;
-      const unlockedAllowsMayo = this.isModulePracticeEnabled('mayo_madness_1') && this.getEnabledMayoMadnessModules().includes('mayo_madness_1');
-      this.mayoPremiumUnlocked = priorPremiumUnlocked;
+      const mayoAvailable = this.isModulePracticeEnabled('mayo_madness_1');
       this.state.settings.mayoMadnessEnabled = priorParentEnabled;
       this.state.settings.modulesEnabled.mayo_madness_1 = priorLevel1Enabled;
-      if (priorMayoHidden) this.state.hiddenItems['mayo1-lapiz'] = priorMayoHidden;
-      else delete this.state.hiddenItems['mayo1-lapiz'];
-      results.push({ ok: lockedBlocksMayo && unlockedAllowsMayo, label: 'Premium gate blocks Mayo Madness until unlock' });
-      results.push({ ok: this.$.premiumPasswordInput?.type === 'password', label: 'Premium password input hides typed characters' });
+      if (priorMayoHidden) this.state.hiddenItems['mayo1-lapiz'] = priorMayoHidden; else delete this.state.hiddenItems['mayo1-lapiz'];
+      results.push({ ok: mayoAvailable, label: 'Mayo Madness modules are included in ordinary study access' });
       const priorNumbersMin = this.state.settings.numbersMin;
       const priorNumbersMax = this.state.settings.numbersMax;
       const priorNumbersSequential = this.state.settings.numbersSequential;
@@ -7584,8 +7234,6 @@ mean/nice
     const notice = new URLSearchParams(window.location.search).get('atlas_notice');
     const messages = {
       feedback_submitted: 'Feedback submitted — thanks for helping improve Atlas.',
-      premium_request_submitted: 'Premium request submitted — we’ll get in touch soon.',
-      moderator_application_submitted: 'Moderator application submitted — we’ll review it soon.'
     };
     if (messages[notice]) {
       showTallyReturnNotice(messages[notice]);
@@ -7606,9 +7254,9 @@ mean/nice
     const classMenu = document.getElementById('classSwitcherMenu');
     const classLabel = document.getElementById('classSwitcherLabel');
     const syncClassSwitcher = () => {
-      const spanish2 = App.currentLevel === 'spanish2';
-      if (classLabel) classLabel.textContent = spanish2 ? 'Spanish 2 Honors' : 'Spanish 1';
-      classMenu?.querySelectorAll('[data-class]').forEach((option) => { const current = option.dataset.class === App.currentLevel; option.classList.toggle('is-current', current); option.setAttribute('aria-current', current ? 'page' : 'false'); });
+      const spanish2 = App.currentClass === 'spanish2';
+      if (classLabel) classLabel.textContent = spanish2 ? 'Spanish 2 Honors' : App.currentClass === 'spanish1a' ? 'Spanish 1A' : 'Spanish 1B';
+      classMenu?.querySelectorAll('[data-class]').forEach((option) => { const current = option.dataset.class === App.currentClass; option.classList.toggle('is-current', current); option.setAttribute('aria-current', current ? 'page' : 'false'); });
     };
     if (classSwitcher && classButton && classMenu) {
       classButton.addEventListener('click', () => { classMenu.hidden = !classMenu.hidden; classButton.setAttribute('aria-expanded', String(!classMenu.hidden)); });

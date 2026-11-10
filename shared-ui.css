@@ -6,7 +6,7 @@
 .learning-app-shell .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid var(--line,var(--border,#e2e8f0));border-radius:20px;background:rgba(255,255,255,.9);box-shadow:0 18px 55px rgba(15,23,42,.10);backdrop-filter:blur(12px)}
 .study-settings-tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.study-settings-tools button{border:1px solid var(--line,#dbe4de);border-radius:9px;background:#fff;color:var(--brand-strong,var(--brand,#2563eb));padding:6px 9px;font-weight:750;cursor:pointer}.study-question-star[hidden]{display:none}
 .study-review-backdrop{position:fixed;z-index:10029;inset:0;display:grid;place-items:center;padding:14px;background:#0f172a66}.study-review-backdrop[hidden]{display:none}
-.study-settings-tools{margin:0 8px 0 auto;align-self:center}.study-settings-tools button{white-space:nowrap}.is-premium-locked{opacity:.64}.premium-module-tag{display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:.68rem;vertical-align:middle}
+.study-settings-tools{margin:0 8px 0 auto;align-self:center}.study-settings-tools button{white-space:nowrap}
 .learning-app-shell .dashboard-card,.learning-app-shell .home-card{margin-top:18px;padding:30px;border:1px solid var(--line,var(--border,#e2e8f0));border-radius:26px;background:rgba(255,255,255,.9);box-shadow:0 18px 55px rgba(15,23,42,.10)}
 .learning-app-shell .hero,.learning-app-shell .home-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
 .learning-app-shell h1{margin:0;font-size:clamp(2rem,5vw,3rem);line-height:1.05;letter-spacing:-.035em}
@@ -33,13 +33,6 @@
 .learning-app-shell .modal-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .learning-app-shell .modal-heading h2{margin:0;letter-spacing:-.03em}
 .learning-app-shell .modal-heading p{margin:6px 0 0;color:var(--muted)}
-.learning-app-shell .premium-request-divider{display:flex;align-items:center;gap:10px;margin:16px 0 10px;color:var(--muted);font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
-.learning-app-shell .premium-request-divider:before,.learning-app-shell .premium-request-divider:after{content:"";height:1px;flex:1;background:var(--line)}
-.learning-app-shell .premium-request-toggle{width:100%;justify-content:center}
-.learning-app-shell .premium-request-form{display:grid;gap:12px;margin-top:12px;padding:13px;border:1px solid var(--line);border-radius:14px;background:var(--brand-soft,#f7fdf8)}
-.learning-app-shell .premium-request-form label{display:grid;gap:6px}
-.learning-app-shell .premium-request-form input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);color:var(--ink)}
-.learning-app-shell .premium-request-form button{width:100%;justify-content:center}
 .learning-app-shell .feedback-modal,.learning-app-shell .modal.compact{width:min(540px,100%);padding:20px;border-radius:20px;background:var(--surface,#fff);box-shadow:0 24px 60px rgba(0,0,0,.28)}
 /* Cross-app shell parity: Claro keeps its legacy DOM/runtime IDs, but its visible
    shell follows the same geometry as Vertex.  Brand tokens remain app-specific. */
@@ -56,10 +49,7 @@
 .app.learning-app-shell .brand>.subtitle{display:none}
 .app.learning-app-shell .top-actions{gap:10px}
 .app.learning-app-shell #activeModuleChip{display:none}
-.app.learning-app-shell #premiumBtn,.app.learning-app-shell #settingsBtn{height:48px;min-width:0;border-radius:12px}
-.app.learning-app-shell #premiumBtn{width:auto;padding:10px 14px;font-size:16px;background:#fff;color:var(--primary-2,#1d4ed8);border:1px solid var(--keyhint-border,#bfdbfe);box-shadow:none}
 .app.learning-app-shell #settingsBtn{width:auto;padding:10px 14px;font-size:16px;background:#fff;color:var(--text,#0f172a);border:1px solid var(--keyhint-border,#bfdbfe);box-shadow:none}
-.app.learning-app-shell #premiumBtn:hover,.app.learning-app-shell #settingsBtn:hover{background:var(--keyhint-bg,#eff6ff);box-shadow:0 10px 20px rgba(37,99,235,.12)}
 .app.learning-app-shell .brand-switcher-button:hover{transform:none;box-shadow:none;background:transparent}
 .app.learning-app-shell #dashboardAnalytics .analytics-card{background:var(--surface-2,#fbfffc);background-image:none;box-shadow:none}
 .app.learning-app-shell #dashboardAnalytics .analytics-card:hover{box-shadow:0 12px 24px rgba(15,23,42,.10)}
@@ -96,7 +86,6 @@ body:has(.learning-app-shell){padding:0!important}
 .learning-app-shell .brand-switcher-button,.learning-app-shell .brand-button{font:16px/24px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
 .learning-app-shell .brand-switcher-button .claro-brand-copy strong,.learning-app-shell .brand-copy strong{font-size:1.15rem!important;line-height:1.1!important}
 .learning-app-shell .brand-switcher-button .claro-brand-copy #headerLevel,.learning-app-shell .brand-copy span{font-size:.77rem!important;line-height:1.1!important}
-.learning-app-shell #premiumBtn,.learning-app-shell #premiumButton,.learning-app-shell #settingsBtn{height:46px!important;min-height:46px!important;font-size:16px!important;line-height:24px!important;padding:10px 14px!important}
 .learning-app-shell #settingsBtn{width:auto!important}
 .learning-app-shell .home-hero{padding:0!important}
 .learning-app-shell .home-start-btn,.learning-app-shell .home-settings-btn,.learning-app-shell #enterPracticeBtn,.learning-app-shell #homeSettingsBtn{height:46px!important;min-height:46px!important;padding:10px 14px!important;font-size:16px!important;line-height:24px!important;font-weight:800!important;border-radius:12px!important}
@@ -114,9 +103,6 @@ body:has(.learning-app-shell){padding:0!important}
 .app-switcher-menu,.app-switcher{width:300px!important}
 .learning-app-shell .level-switch{display:none!important}
 .learning-app-shell .analytics-card{display:block!important}
-.modal-overlay .claro-premium-modal,.modal-overlay #premiumOverlay .modal{width:min(460px,100%)!important}
-.modal-overlay .premium-field input,.modal-overlay #premiumPassword,.modal-overlay #premiumRequestName,.modal-overlay #premiumRequestEmail{min-height:42px;padding:10px 12px;border-radius:10px}
-.modal-overlay .claro-premium-modal .icon-button,.modal-overlay #premiumOverlay .icon-button{width:38px;height:38px;border-radius:10px}
 .learning-app-shell .hero p:not(.eyebrow),.learning-app-shell .home-intro{margin-bottom:12px!important;font-size:16px!important;line-height:24px!important}
 .learning-app-shell .analytics-card-accuracy,.learning-app-shell .analytics-card-correct{border-color:#bde8c8!important}
 .learning-app-shell .analytics-card-streak,.learning-app-shell .analytics-card-best{border-color:#f5d6b3!important}
@@ -125,7 +111,6 @@ body:has(.learning-app-shell){padding:0!important}
 .learning-app-shell .session-history{margin-top:26px!important;padding-top:22px!important}
 .feedback-fab,#feedbackButton{display:inline-flex!important;align-items:center!important;gap:7px!important}
 .dashboard-switcher-button,#classSwitcherButton{font:800 16px/24px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
-#premiumBtn,#premiumButton{min-width:101px!important}
 .app-shell.learning-app-shell .home-actions{border-bottom:0!important}
 .app-shell.learning-app-shell .dashboard-analytics{border-top:0!important}
 @media(max-width:620px){.learning-app-shell .home-actions{display:grid}.learning-app-shell .home-start-btn,.learning-app-shell .home-settings-btn{width:100%}.learning-app-shell .level-switch{margin-top:12px}}
@@ -158,8 +143,6 @@ body:has(.learning-app-shell){padding:0!important}
 .learning-app-shell button.primary{border:1px solid var(--brand,#2563eb);background:var(--brand,#2563eb);color:#fff}
 .learning-app-shell button.secondary:hover,.learning-app-shell button.icon-button:hover,.learning-app-shell button.icon-btn:hover,.learning-app-shell button.primary:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,23,42,.12)}
 .learning-app-shell button.secondary:focus-visible,.learning-app-shell button.icon-button:focus-visible,.learning-app-shell button.icon-btn:focus-visible,.learning-app-shell button.primary:focus-visible{outline:3px solid color-mix(in srgb,var(--focus,#818cf8) 35%,transparent);outline-offset:2px}
-.learning-app-shell .moderation-panel{display:grid;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border,#e2e8f0)}
-.learning-app-shell .moderation-panel button{justify-self:start}
 .learning-app-shell .dashboard-card,.learning-app-shell .home-card{box-shadow:0 18px 48px rgba(15,23,42,.08)!important;overflow:hidden}
 .learning-app-shell .home-actions{display:flex;align-items:center;gap:12px!important;padding-bottom:0!important;border-bottom:0!important}
 .learning-app-shell .dashboard-analytics{margin-top:26px!important;padding-top:0!important;border-top:0!important}
@@ -167,21 +150,6 @@ body:has(.learning-app-shell){padding:0!important}
 .learning-app-shell .home-overview-card,.learning-app-shell .vertex-overview-cards article{box-shadow:0 4px 14px rgba(15,23,42,.04)}
 .learning-app-shell .home-overview-card strong,.learning-app-shell .vertex-overview-cards article strong{line-height:1.25!important}
 @media(max-width:620px){.learning-app-shell .home-actions{display:grid;gap:10px!important}.learning-app-shell .dashboard-analytics{margin-top:24px!important}}
-/* Modal parity: both apps use the same control rhythm and motion; only theme
-   tokens and copy are app-specific. */
-.learning-app-shell .modal-overlay .modal form,
-.learning-app-shell .modal-overlay .premium-form,
-.learning-app-shell .modal-overlay .feedback-form{display:grid;gap:13px;margin-top:16px}
-.learning-app-shell .modal-overlay .modal label,
-.learning-app-shell .modal-overlay .feedback-field,
-.learning-app-shell .modal-overlay .premium-field{display:grid;gap:6px;color:var(--muted,#475569);font:900 .76rem/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.04em;text-transform:uppercase}
-.learning-app-shell .modal-overlay .modal input,
-.learning-app-shell .modal-overlay .modal select,
-.learning-app-shell .modal-overlay .modal textarea,
-.learning-app-shell .modal-overlay .feedback-field input,
-.learning-app-shell .modal-overlay .feedback-field select,
-.learning-app-shell .modal-overlay .feedback-field textarea,
-.learning-app-shell .modal-overlay .premium-field input{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--line,var(--border,#cbd5e1));border-radius:10px;background:var(--surface-soft,#fbfcff);color:var(--ink,var(--text,#0f172a));font:400 16px/24px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0;text-transform:none;transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
 .learning-app-shell .modal-overlay .modal textarea{min-height:118px;resize:vertical}
 .learning-app-shell .modal-overlay .modal input:focus,
 .learning-app-shell .modal-overlay .modal select:focus,
@@ -198,7 +166,6 @@ body:has(.learning-app-shell){padding:0!important}
   .learning-app-shell .brand-switcher-button .claro-brand-copy strong,.learning-app-shell .brand-copy strong{font-size:1rem!important}
   .learning-app-shell .brand-switcher-button .claro-brand-copy #headerLevel,.learning-app-shell .brand-copy span{font-size:.7rem!important}
   .learning-app-shell .top-actions{margin-left:auto;gap:7px!important;flex-wrap:nowrap!important}
-  .learning-app-shell #premiumBtn,.learning-app-shell #premiumButton,.learning-app-shell #settingsBtn{height:42px!important;min-height:42px!important;padding:8px 10px!important;font-size:.88rem!important;border-radius:11px!important}
   .learning-app-shell #settingsBtn{font-size:0!important}
   .learning-app-shell #settingsBtn::after{content:"Modules";font-size:.88rem}
   .learning-app-shell #classSwitcherButton,.learning-app-shell #dashboardSwitcherButton{height:38px!important;min-height:38px!important;padding:7px 10px!important;font-size:.86rem!important}
@@ -228,9 +195,6 @@ body:has(.learning-app-shell){padding:0!important}
   .learning-app-shell .modal-overlay .modal-actions,.learning-app-shell .modal-overlay .feedback-form-actions{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
   .learning-app-shell .modal-overlay .modal-actions button,.learning-app-shell .modal-overlay .feedback-form-actions button{width:100%!important}
 }
-
-/* Dismissible feedback and premium nudges shared by all learning apps. */
-.shared-prompt{position:fixed;right:20px;bottom:20px;z-index:100;display:flex;align-items:center;gap:18px;width:min(520px,calc(100vw - 32px));padding:16px 18px;border:1px solid color-mix(in srgb,var(--brand,#2563eb) 22%,#fff);border-radius:18px;background:color-mix(in srgb,#fff 88%,var(--brand-soft,#eef2ff));box-shadow:0 18px 50px rgba(15,23,42,.18);opacity:0;transform:translateY(12px);transition:opacity .2s ease,transform .2s ease}
 .shared-prompt.is-visible{opacity:1;transform:translateY(0)}
 .shared-prompt strong{display:block;font-size:.98rem;color:var(--ink,#0f172a)}
 .shared-prompt p{margin:3px 0 0;color:var(--muted,#475569);font-size:.86rem;line-height:1.35}
@@ -280,4 +244,4 @@ body:has(.learning-app-shell){padding:0!important}
 @media(max-width:640px){.shared-prompt{right:10px;bottom:10px;display:grid;gap:12px;padding:14px}.shared-prompt-actions{display:grid;grid-template-columns:1fr 1fr}.shared-prompt button{width:100%}}
 @media(max-width:640px){.study-settings-tools{position:static;margin:10px 0 0 auto;flex-wrap:nowrap}#settingsOverlay .modal-head,#settingsOverlay .modal-header{padding-right:0!important}.study-notification-panel{top:68px;right:10px}}
 
-.study-question-previous-star{display:inline-flex;align-items:center;justify-content:center;min-height:36px;margin:8px 8px 0 0;padding:8px 11px;border:1px solid var(--brand,#2563eb);border-radius:10px;background:var(--brand-soft,#eff6ff);color:var(--brand-strong,var(--brand,#2563eb));font:700 .84rem/1 system-ui,sans-serif;cursor:pointer}.study-question-previous-star:disabled{background:#f8fafc;color:#64748b;border-color:var(--line,#dbe4de);cursor:default}.study-question-previous-star[hidden]{display:none!important}
+.study-review-question-action .study-question-previous-star{min-height:42px;padding:10px 16px;background:var(--brand-soft,#eff6ff);font-size:.92rem}.study-review-question-action .study-question-previous-star:disabled{opacity:1;background:#f1f5f9;color:#475569}.study-question-previous-star[hidden]{display:none!important}

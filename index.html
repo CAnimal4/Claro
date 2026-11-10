@@ -12,7 +12,7 @@ Changelog: 2026-02-13
 - Added a11y improvements (sr-only helper text, deterministic settings focus, dialog semantics preserved).
 - Added startup and on-demand smoke checks via runAutomatedChecks().
 - Added Numbers lower/upper range controls, typed endpoint inputs, typed-spelling mode, and ordered practice.
-- Added Honors Vocab, premium-gated Mayo Madness submodules, and Rapid Fire sentence/conjugation modules.
+- Added Honors Vocab, Mayo Madness submodules, and Rapid Fire sentence/conjugation modules.
 
 localStorage schema (key: spanish_app_v2_state):
 {
@@ -52,11 +52,12 @@ Developer note:
   <link rel="apple-touch-icon" href="assets/claro-mark-clean.png?v=20260912-2" />
   <link rel="manifest" href="manifest.webmanifest?v=20260912-2" />
   <link rel="stylesheet" href="style.css?v=20261024-test-for-review-3" />
-  <link rel="stylesheet" href="shared-ui.css?v=20260927-previous-review-1" />
-  <link rel="stylesheet" href="app-modifiers.css?v=20261003-premium-split-1" />
+  <link rel="stylesheet" href="shared-ui.css?v=20261110-claro2-2" />
+  <link rel="stylesheet" href="app-modifiers.css?v=20261003-claro-refresh-1" />
   <link rel="stylesheet" href="style-shared.css?v=20260927-previous-review-1" />
+  <link rel="stylesheet" href="claro-refresh.css?v=20261110-claro2-3" />
   <style>
-    .brand-switcher-button{min-height:48px;padding:0 2px;line-height:1.1}.brand-switcher-button .brand-mark{width:42px;height:42px}.claro-brand-copy{display:grid;line-height:1.1;text-align:left}.brand-switcher-button #brandName{font-size:1.15rem}.brand-switcher-button #headerLevel{display:block;font-size:.77rem;color:var(--muted);font-weight:700}.brand-switcher-button .brand-separator{display:none}.claro-chevron{margin-left:3px;color:var(--muted);font-size:1.2rem;line-height:1;transform:translateY(-2px)}.modules-btn{width:auto!important;min-width:80px;padding:0 13px!important;font-size:.78rem!important;font-weight:900!important}.premium-btn{min-width:100px!important;height:48px!important;border:1px solid #d7e7db!important;border-radius:14px!important;background:#fff!important;color:#14532d!important;box-shadow:none!important}.premium-btn:hover{background:#f1faf3!important;box-shadow:0 10px 20px rgba(20,83,45,.12)!important}.premium-btn span:first-child{color:#14532d!important}.brand .subtitle[hidden]{display:none!important}
+    .brand-switcher-button{min-height:48px;padding:0 2px;line-height:1.1}.brand-switcher-button .brand-mark{width:42px;height:42px}.claro-brand-copy{display:grid;line-height:1.1;text-align:left}.brand-switcher-button #brandName{font-size:1.15rem}.brand-switcher-button #headerLevel{display:block;font-size:.77rem;color:var(--muted);font-weight:700}.brand-switcher-button .brand-separator{display:none}.claro-chevron{margin-left:3px;color:var(--muted);font-size:1.2rem;line-height:1;transform:translateY(-2px)}.modules-btn{width:auto!important;min-width:80px;padding:0 13px!important;font-size:.78rem!important;font-weight:900!important}.brand .subtitle[hidden]{display:none!important}
   </style>
 </head>
 <body data-app-id="claro">
@@ -64,7 +65,7 @@ Developer note:
     <header class="topbar">
       <div class="brand">
         <div class="brand-switcher">
-          <button class="title brand-switcher-button" id="appSwitcherButton" type="button" aria-expanded="false" aria-controls="appSwitcherMenu"><img class="brand-mark" src="assets/claro-mark-clean.png?v=20260912-2" alt="" aria-hidden="true" /> <span class="claro-brand-copy"><strong id="brandName">Claro</strong><span id="headerLevel">Spanish 1</span></span><span class="claro-chevron" aria-hidden="true">⌄</span></button>
+          <button class="title brand-switcher-button" id="appSwitcherButton" type="button" aria-expanded="false" aria-controls="appSwitcherMenu"><img class="brand-mark" src="assets/claro-mark-clean.png?v=20260912-2" alt="" aria-hidden="true" /> <span class="claro-brand-copy"><strong id="brandName">Claro</strong><span id="headerLevel">Spanish 1B</span></span><span class="claro-chevron" aria-hidden="true">⌄</span></button>
           <div class="app-switcher-menu" id="appSwitcherMenu" hidden>
             <p>Learning apps</p>
             <a href="https://clarospanish.vercel.app" class="is-current" aria-current="page"><img src="assets/claro-mark-clean.png?v=20260912-2" alt="" /> <span>Claro<small>Spanish learning</small></span><em>Current</em></a>
@@ -77,10 +78,11 @@ Developer note:
       </div>
       <div class="top-actions">
         <div class="dashboard-switcher">
-          <button class="dashboard-switcher-button" id="classSwitcherButton" type="button" aria-expanded="false" aria-controls="classSwitcherMenu"><span class="dashboard-dot" aria-hidden="true"></span><span id="classSwitcherLabel">Spanish 1</span><span aria-hidden="true">⌄</span></button>
+          <button class="dashboard-switcher-button" id="classSwitcherButton" type="button" aria-expanded="false" aria-controls="classSwitcherMenu"><span class="dashboard-dot" aria-hidden="true"></span><span id="classSwitcherLabel">Spanish 1B</span><span aria-hidden="true">⌄</span></button>
           <div class="dashboard-switcher-menu" id="classSwitcherMenu" hidden>
-            <button class="dashboard-switcher-option is-current" type="button" data-class="spanish1" aria-current="page">Spanish 1<small>Current dashboard</small></button>
-            <button class="dashboard-switcher-option" type="button" data-class="spanish2">Spanish 2 Honors<small>Advanced dashboard</small></button>
+            <button class="dashboard-switcher-option" type="button" data-class="spanish1a">Spanish 1A<small>New course</small></button>
+            <button class="dashboard-switcher-option is-current" type="button" data-class="spanish1b" aria-current="page">Spanish 1B<small>Spanish 1 catalog</small></button>
+            <button class="dashboard-switcher-option" type="button" data-class="spanish2">Spanish 2 Honors<small>Advanced course</small></button>
           </div>
         </div>
         <span class="chip" id="activeModuleChip" title="Active module">
@@ -88,8 +90,7 @@ Developer note:
           <span id="activeModuleLabel">Numbers</span>
           <span class="meta" id="activeModuleMeta"></span>
         </span>
-        <button class="icon-btn premium-btn" id="premiumBtn" aria-label="Unlock Premium" title="Unlock Premium"><span class="premium-btn-label">Premium</span></button>
-        <button class="icon-btn modules-btn" id="settingsBtn" aria-label="Open modules and settings">Modules</button>
+        <button class="icon-btn modules-btn" id="settingsBtn" aria-label="Open modules">Modules</button><button class="icon-btn modules-btn" id="studentSettingsBtn" type="button">Settings</button>
       </div>
     </header>
 
@@ -106,17 +107,14 @@ Developer note:
         <div>
           <p class="eyebrow">Your practice space</p>
           <h1>Practice Spanish</h1>
-          <p class="home-intro">Choose a level. Start practicing.</p>
+          <p class="home-intro">Pick up where you left off, or choose a short practice set for today.</p>
         </div>
         <img class="home-mark" src="assets/claro-mark-clean.png?v=20260912-2" alt="" aria-hidden="true" />
       </div>
-      <div class="level-switch" role="tablist" aria-label="Spanish level">
-        <button class="level-tab is-active" id="spanish1Tab" role="tab" aria-selected="true">Spanish 1</button>
-        <button class="level-tab" id="spanish2Tab" role="tab" aria-selected="false">Spanish 2 Honors</button>
-      </div>
+      <div class="level-switch legacy-level-switch" role="tablist" aria-label="Class" hidden><button class="level-tab is-active" id="spanish1Tab" role="tab" aria-selected="true">Spanish 1</button><button class="level-tab" id="spanish2Tab" role="tab" aria-selected="false">Spanish 2 Honors</button></div>
       <div class="home-actions">
-        <button class="btn primary home-start-btn" id="enterPracticeBtn">Enter practice session <span aria-hidden="true">→</span></button>
-        <button class="btn home-settings-btn" id="homeSettingsBtn">Choose modules &amp; settings</button>
+        <button class="btn primary home-start-btn" id="enterPracticeBtn">Continue studying <span aria-hidden="true">→</span></button>
+        <button class="btn home-settings-btn" id="homeSettingsBtn">Choose modules</button><button class="btn" id="requestModuleBtn" type="button">Request a module</button>
       </div>
       <section class="dashboard-analytics" id="dashboardAnalytics" aria-labelledby="analyticsTitle">
         <div class="dashboard-section-heading">
@@ -137,12 +135,9 @@ Developer note:
           <strong id="homeModuleSummary">Numbers, Days, Months, Seasons, Time &amp; Colors</strong>
           <small>Enabled topics are used when you choose All enabled modules.</small>
         </div>
-        <div class="home-overview-card home-overview-card-muted">
-          <span class="home-overview-label">Simple by default</span>
-          <strong>One question at a time</strong>
-          <small>Your progress stays in this browser.</small>
-        </div>
+        <div class="home-overview-card home-overview-card-muted"><span class="home-overview-label">Your next step</span><strong id="homeNextStep">A few minutes is a good start</strong><small id="homeNextStepNote">Pick a topic and study in the way that works for you.</small></div>
       </div>
+      <div class="spanish1a-panel level-panel" id="spanish1aPanel" hidden><div class="spanish2-icon" aria-hidden="true">✦</div><div><span class="home-overview-label">Spanish 1A</span><h2>Your class space is ready.</h2><p>Request a topic you would like to practice. Teachers can share curriculum with the class from their dashboard.</p><button class="btn primary" type="button" id="requestCurriculumBtn">Request a module</button></div></div>
       <div class="spanish2-panel level-panel" id="spanish2Panel" role="tabpanel" hidden>
         <div class="spanish2-icon" aria-hidden="true">✦</div>
         <div>
@@ -159,17 +154,12 @@ Developer note:
       </section>
       <details class="home-help">
         <summary>How it works</summary>
-        <p>Choose your modules in Settings, enter a session, answer at your pace, and use Next whenever you’re ready. You can change settings at any time.</p>
+        <p>Choose your class, pick Modules and select a study style. Your progress stays on this device. You can replay the tour from Notifications.</p>
       </details>
       <section class="session-history" aria-labelledby="historyTitle">
         <div class="dashboard-section-heading"><div><span class="home-overview-label">History</span><h2 id="historyTitle">Practice sessions</h2></div><small>Most recent first</small></div>
         <div id="sessionHistory" class="session-history-list"></div>
         <p id="sessionHistoryEmpty" class="session-history-empty">Complete a session and it will appear here.</p>
-      </section>
-      <section class="admin-export-panel" id="adminExportPanel" hidden>
-        <div><span class="home-overview-label">Admin tools</span><h2>Question removal queue</h2><p id="adminQueueSummary">No questions selected.</p></div>
-        <button class="btn primary" id="adminExportBtn" type="button">Send selected questions</button>
-        <p class="feedback neutral" id="adminExportStatus" aria-live="polite"></p>
       </section>
     </main>
 
@@ -364,7 +354,7 @@ Developer note:
       <div class="modal-head">
         <div>
           <div style="font-weight:900; font-size:1.05rem" id="settingsTitle">Settings</div>
-          <div class="muted small" id="settingsIntro">Spanish 1 modules. Everything else can stay on its default.</div>
+          <div class="muted small" id="settingsIntro">Choose what you want to study and how Claro should feel.</div>
         </div>
         <button class="icon-btn" id="settingsCloseBtn" aria-label="Close settings">✕</button>
       </div>
@@ -398,7 +388,6 @@ Developer note:
               <label class="summary-toggle" id="mayoMadnessParentToggleLabel"><span>Enabled</span><input type="checkbox" id="toggle_mayo_madness" aria-label="Toggle Mayo Madness parent module" /><span class="switch" aria-hidden="true"></span></label>
             </summary>
             <div class="accordion-inner">
-              <div class="locked-note" id="mayoLockedNote">Premium collection. Unlock Premium Access to use the Mayo Madness modules.</div>
               <div class="mayo-submodules" id="mayoSubmoduleList">
                 <div class="toggle">
                   <div><div class="label">Level 1 vocabulary</div><div class="desc">Classroom objects and people vocabulary.</div></div>
@@ -520,7 +509,7 @@ Developer note:
             <div><div class="label">Guadalupe Vocab</div><div class="desc">Story vocabulary with context notes for meaning and word-order distinctions.</div></div>
             <label><input type="checkbox" id="toggle_guadalupe_vocab" aria-label="Toggle Guadalupe Vocab module" /><span class="switch" aria-hidden="true"></span></label>
           </div>
-          <div class="toggle premium-module-row" id="test2ReviewModuleRow"><div><div class="label">Test 2 Review</div><div class="desc">Regular past-tense forms, irregular preterites, and scene choices.</div></div><label><input type="checkbox" id="toggle_test2_review" aria-label="Toggle Test 2 Review module" /><span class="switch" aria-hidden="true"></span></label></div>
+          <div class="toggle " id="test2ReviewModuleRow"><div><div class="label">Test 2 Review</div><div class="desc">Regular past-tense forms, irregular preterites, and scene choices.</div></div><label><input type="checkbox" id="toggle_test2_review" aria-label="Toggle Test 2 Review module" /><span class="switch" aria-hidden="true"></span></label></div>
           <div class="toggle">
             <div><div class="label">Test 1 Review</div><div class="desc">Preterite, imperfect, past-tense vocabulary, tense choice, and verb translation.</div></div>
             <label><input type="checkbox" id="toggle_honors_test1_review" aria-label="Toggle Test 1 Review module" /><span class="switch" aria-hidden="true"></span></label>
@@ -647,6 +636,17 @@ Developer note:
         </div>
       </details>
 
+      <details class="settings-accordion student-preferences" id="studentPreferencesSection" open>
+        <summary>Your study experience</summary><div class="accordion-inner">
+          <label class="feedback-field"><span>Home layout</span><select id="preferredHomeLayout"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></label>
+          <label class="feedback-field"><span>Accent color</span><select id="preferredTheme"><option value="blue">Claro blue</option><option value="violet">Violet</option><option value="green">Green</option></select></label>
+          <label class="feedback-field"><span>Default study activity</span><select id="preferredActivity"><option value="standard">Claro standard</option><option value="flashcards">Flashcards</option><option value="typing">Type it</option><option value="multiple_choice">Multiple choice</option><option value="mix">Mix activities</option></select></label>
+          <label class="feedback-field"><span>Default difficulty</span><select id="preferredDifficulty"><option value="standard">Standard</option><option value="easy">Easy</option><option value="hard">Hard</option></select></label>
+          <div class="toggle"><div><div class="label">Show progress summary</div><div class="desc">Accuracy, streaks, and completed sessions on Home.</div></div><label><input id="customShowProgress" type="checkbox" checked><span class="switch"></span></label></div>
+          <div class="toggle"><div><div class="label">Show practice history</div><div class="desc">Keep recent sessions visible on Home.</div></div><label><input id="customShowHistory" type="checkbox" checked><span class="switch"></span></label></div>
+          <button class="btn small" type="button" id="studentTourBtn">Take the app tour</button>
+        </div>
+      </details>
       <details class="settings-accordion">
         <summary>Developer Checks <span class="summary-note">Advanced</span></summary>
         <div class="accordion-inner">
@@ -660,39 +660,24 @@ Developer note:
     </div>
   </div>
 
-  <div class="modal-overlay admin-gate-overlay" id="adminGateOverlay" role="dialog" aria-modal="true" aria-labelledby="adminGateTitle" style="display:none">
-    <div class="modal compact admin-gate-modal">
-      <div class="modal-head"><div><div style="font-weight:900;font-size:1.05rem" id="adminGateTitle">Admin access</div><div class="muted small">Enter the administrator password to continue.</div></div></div>
-      <form id="adminGateForm"><label class="premium-field" for="adminPasswordInput"><span>Admin password</span><input id="adminPasswordInput" type="password" autocomplete="current-password" required /></label><button class="btn primary" type="submit">Enter admin</button><div class="feedback bad" id="adminGateStatus" aria-live="polite"></div></form>
-    </div>
-  </div>
-
-  <!-- PREMIUM ACCESS MODAL -->
-  <div class="modal-overlay" id="premiumOverlay" role="dialog" aria-modal="true" aria-labelledby="premiumTitle">
-    <div class="modal compact claro-premium-modal">
-      <div class="modal-heading"><div><h2 id="premiumTitle">Premium access</h2><p>Use your existing access password.</p></div><button class="icon-button" id="premiumCloseBtn" aria-label="Close premium access">×</button></div>
-      <div class="premium-form">
-        <label class="premium-field" for="premiumPasswordInput"><span>Access password</span><input id="premiumPasswordInput" type="password" autocomplete="current-password" required placeholder="Enter password" aria-label="Premium password" /></label>
-        <div class="modal-actions"><button class="btn primary" id="premiumSubmitBtn" aria-label="Unlock premium access">Unlock premium</button></div>
-        <div class="feedback neutral" id="premiumFeedback" aria-live="polite">Premium is verified securely when Claro is deployed with its server configuration.</div>
-      </div>
-      <div class="premium-request-divider"><span>Need access?</span></div>
-      <button class="btn premium-request-toggle" id="premiumRequestToggle" type="button">Explore access plans</button>
-      <form class="premium-request-form" id="premiumRequestForm" action="#" method="post" hidden>
-        <input type="hidden" name="form_type" value="premium access request" />
-        <p class="small muted">Send a request and we’ll discuss access by email.</p>
-        <label class="premium-field" for="premiumRequestName"><span>Name</span><input id="premiumRequestName" name="name" type="text" autocomplete="name" required /></label>
-        <label class="premium-field" for="premiumRequestEmail"><span>Email</span><input id="premiumRequestEmail" name="email" type="email" autocomplete="email" required /></label>
-        <input type="hidden" name="_subject" value="Claro premium access request" />
-        <button class="btn primary" id="premiumRequestSubmit" type="submit">Send request</button>
-        <div class="feedback neutral" id="premiumRequestFeedback" aria-live="polite"></div>
-      </form>
-    </div>
-  </div>
-
   <button class="feedback-fab" id="feedbackBtn" aria-label="Send feedback" title="Send feedback">
     <span aria-hidden="true">✦</span><span>Feedback</span>
   </button>
+
+  <div class="modal-overlay" id="studentRequestOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="studentRequestTitle">
+    <section class="modal feedback-modal">
+      <div class="modal-heading"><div><h2 id="studentRequestTitle">Request a module</h2><p>Your request goes to the teacher for the selected class.</p></div><button class="icon-button" id="studentRequestClose" type="button" aria-label="Close request form">×</button></div>
+      <form id="studentRequestForm" class="feedback-form">
+        <input id="studentRequestClass" name="classId" type="hidden" value="spanish1b" />
+        <label class="feedback-field" for="studentRequestName"><span>First name <small>(optional)</small></span><input id="studentRequestName" name="name" maxlength="80" autocomplete="given-name" placeholder="First name" /></label>
+        <label class="feedback-field" for="studentRequestTitleInput"><span>Module title</span><input id="studentRequestTitleInput" name="title" required maxlength="140" placeholder="For example: ordering at a café" /></label>
+        <label class="feedback-field" for="studentRequestDescription"><span>What would you like to study?</span><textarea id="studentRequestDescription" name="description" required maxlength="2000" placeholder="Share the topic, vocabulary, or skills you want to practice."></textarea></label>
+        <label class="feedback-field" for="studentRequestEmail"><span>Email <small>(optional, for request status updates)</small></span><input id="studentRequestEmail" name="email" type="email" maxlength="160" autocomplete="email" placeholder="you@example.com" /></label>
+        <div class="modal-actions feedback-form-actions"><button class="btn ghost" type="button" id="studentRequestCancel">Cancel</button><button class="btn primary" type="submit">Send request</button></div>
+        <div class="feedback neutral" id="studentRequestStatus" aria-live="polite"></div>
+      </form>
+    </section>
+  </div>
 
   <div class="modal-overlay" id="feedbackOverlay" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
     <section class="modal feedback-modal">
@@ -701,12 +686,9 @@ Developer note:
         <label class="feedback-field" for="feedbackType">
           <span>What kind of feedback is this?</span>
           <select id="feedbackType" name="feedback_type">
-            <option value="general">General feedback or suggestion</option>
-            <option value="bug">Report a bug</option>
-            <option value="ui_request">Request a UI change</option>
-            <option value="improvement">Suggest an improvement</option>
-            <option value="module_request">Request a new module</option>
-            <option value="feedback_system">Feedback about the feedback experience</option>
+            <option value="feature_request">Feature Request</option>
+            <option value="module_request">Module Request</option>
+            <option value="bug">Report Bug</option>
           </select>
         </label>
         <label class="feedback-field" for="feedbackModuleRequest" id="feedbackModuleRequestField" hidden>
@@ -831,9 +813,9 @@ Developer note:
       </div>
 
       <div class="welcome-steps">
-        <div class="welcome-step"><span>1</span><div><strong>Pick a level and your modules</strong><small>Choose Spanish 1 or Spanish 2 Honors, then open <b>Modules</b> to turn topics on or off. Your enabled topics are what Claro practices.</small></div></div>
-        <div class="welcome-step"><span>2</span><div><strong>Start one short practice session</strong><small>Choose <b>Enter practice session</b>. Use <b>Practice focus</b> for one topic or all enabled topics, answer the question, then choose <b>Next</b>. If you get stuck, reveal the answer.</small></div></div>
-        <div class="welcome-step"><span>3</span><div><strong>Come back and adjust anytime</strong><small>Your progress stays in this browser. Open <b>Modules</b> for study choices and Settings, or tap the header bell for saved questions, updates, and feature guides.</small></div></div>
+        <div class="welcome-step"><span>1</span><div><strong>Pick your class and modules</strong><small>Choose Spanish 1A, Spanish 1B, or Spanish 2 Honors, then open <b>Modules</b> to turn topics on or off. Your enabled topics are what Claro practices.</small></div></div>
+        <div class="welcome-step"><span>2</span><div><strong>Start one short practice session</strong><small>Choose Flashcards, Type It, Multiple Choice, or Mix, then set Standard, Easy, or Hard for the session.</small></div></div>
+        <div class="welcome-step"><span>3</span><div><strong>Come back and adjust anytime</strong><small>Your progress stays in this browser. Open <b>Modules</b> for study choices and Settings, or open Notifications for updates, past notices, and the tour whenever you need it.</small></div></div>
       </div>
 
       <div class="row">
@@ -847,10 +829,9 @@ Developer note:
     <button id="undoResetBtn" aria-label="Undo reset action">Undo</button>
   </div>
 
-<script src="app-shared.js?v=20260927-previous-review-1"></script>
+<script src="app-shared.js?v=20261110-claro2-4"></script>
 <script src="library.js"></script>
-<!-- moderationPanel moderationHistory moderationRequestOverlay are rendered by access-ui.js -->
-<script src="app.js?v=20261024-test-for-review-3"></script>
-  <script src="access-ui.js?v=20261003-premium-split-1"></script>
+<script src="app.js?v=20261110-claro2-6"></script>
+<script src="claro-refresh.js?v=20261110-claro2-11"></script>
 </body>
 </html>
