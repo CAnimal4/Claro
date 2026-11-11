@@ -88,3 +88,10 @@ create table if not exists public.claro_modules (
 );
 create index if not exists claro_modules_class_status on public.claro_modules(class_id,status);
 alter table public.claro_modules enable row level security;
+create index if not exists claro_requests_requester_idx on public.claro_module_requests(requester_id);
+create index if not exists claro_modules_created_by_idx on public.claro_modules(created_by);
+create index if not exists claro_modules_source_request_idx on public.claro_modules(source_request_id);
+create index if not exists claro_notifications_class_idx on public.claro_notifications(class_id);
+create index if not exists claro_request_events_actor_idx on public.claro_request_events(actor_id);
+create index if not exists claro_request_events_request_idx on public.claro_request_events(request_id);
+create index if not exists claro_teacher_classes_class_idx on public.claro_teacher_classes(class_id);
