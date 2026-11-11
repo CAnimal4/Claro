@@ -4085,8 +4085,11 @@ mean/nice
       this.returnHome();
 
       // First-run overlay
-      if (!this.state.settings.firstRunSeen) {
+      if (!this.state.settings.firstRunSeen && document.body.dataset.appId !== 'claro') {
         this.openModal(this.$.firstRunOverlay, this.$.firstRunGotItBtn);
+      } else if (document.body.dataset.appId === 'claro') {
+        this.state.settings.firstRunSeen = true;
+        this.saveSoon();
       }
 
         // Questions are created when the user enters a dashboard. This keeps
